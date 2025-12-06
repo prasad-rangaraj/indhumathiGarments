@@ -1,0 +1,262 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Indhumathi Brand Design System - Elegant Pink & Purple Theme */
+
+@layer base {
+  :root {
+    /* Base colors - soft pink-white */
+    --background: 340 30% 98%;
+    --foreground: 340 30% 15%;
+
+    /* Card and surface colors - white with pink tint */
+    --card: 0 0% 100%;
+    --card-foreground: 340 30% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 340 30% 15%;
+
+    /* Primary brand colors - Soft Pink */
+    --primary: 340 70% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 340 60% 70%;
+    --primary-dark: 340 80% 45%;
+
+    /* Secondary brand colors - Deeper Pink */
+    --secondary: 350 65% 45%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-light: 350 50% 60%;
+    --secondary-dark: 350 75% 35%;
+
+    /* Accent colors - very light pink */
+    --accent: 340 40% 96%;
+    --accent-foreground: 340 50% 25%;
+
+    /* Muted colors - soft grays with pink undertone */
+    --muted: 340 20% 96%;
+    --muted-foreground: 340 15% 45%;
+
+    /* Utility colors */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 340 30% 90%;
+    --input: 340 20% 95%;
+    --ring: 340 60% 60%;
+
+    --radius: 0.75rem;
+
+    /* Custom gradient variables */
+    --gradient-primary: linear-gradient(135deg, hsl(340 70% 60%), hsl(350 60% 70%));
+    --gradient-secondary: linear-gradient(45deg, hsl(340 40% 95%), hsl(350 35% 90%));
+    --gradient-hero: linear-gradient(135deg, hsl(340 50% 80%) 0%, hsl(350 40% 85%) 100%);
+    
+    /* Texture and pattern variables */
+    --cotton-texture: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='hsl(340 30% 85%)' fill-opacity='0.08'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='1'/%3E%3Ccircle cx='33' cy='5' r='1'/%3E%3Ccircle cx='3' cy='23' r='2'/%3E%3Ccircle cx='25' cy='25' r='2'/%3E%3Ccircle cx='45' cy='25' r='1'/%3E%3Ccircle cx='15' cy='35' r='1'/%3E%3Ccircle cx='35' cy='35' r='2'/%3E%3Ccircle cx='55' cy='35' r='1'/%3E%3Ccircle cx='25' cy='45' r='1'/%3E%3Ccircle cx='45' cy='45' r='2'/%3E%3Ccircle cx='5' cy='55' r='1'/%3E%3Ccircle cx='25' cy='55' r='1'/%3E%3Ccircle cx='45' cy='55' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    
+    /* Animation variables */
+    --animation-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --animation-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    /* Sidebar - white with pink accents */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 340 30% 25%;
+    --sidebar-primary: 340 70% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 340 40% 96%;
+    --sidebar-accent-foreground: 340 50% 25%;
+    --sidebar-border: 340 25% 92%;
+    --sidebar-ring: 340 60% 60%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans overflow-x-hidden;
+    background-image: var(--cotton-texture);
+    background-attachment: fixed;
+  }
+
+  /* Ensure fixed backgrounds don't scroll */
+  .fixed {
+    position: fixed;
+  }
+
+  /* Prevent background scrolling on mobile */
+  @media (max-width: 768px) {
+    html {
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+
+  /* Hide side scrollbars while keeping scroll behavior */
+  html,
+  body {
+    scrollbar-width: none; /* Firefox */
+  }
+
+  body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+  }
+}
+
+@layer components {
+  /* Button variants for the brand */
+  .btn-primary {
+    @apply bg-gradient-to-r from-primary to-secondary text-primary-foreground px-6 py-3 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:scale-105;
+  }
+  
+  .btn-secondary {
+    @apply bg-accent text-accent-foreground border border-primary/20 px-6 py-3 rounded-lg font-medium transition-all duration-300 hover:bg-gradient-to-r hover:from-primary/10 hover:to-secondary/10 hover:shadow-md;
+  }
+
+  /* Card variants */
+  .card-elegant {
+    @apply bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300;
+  }
+
+  .card-product {
+    @apply bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2;
+  }
+
+  /* Text animations */
+  .text-animate {
+    @apply opacity-0 animate-fade-in;
+  }
+
+  /* Background Slideshow Animation */
+  @keyframes bgSlide1 {
+    0%, 33.33% { opacity: 1; }
+    33.34%, 100% { opacity: 0; }
+  }
+
+  @keyframes bgSlide2 {
+    0%, 33.33% { opacity: 0; }
+    33.34%, 66.66% { opacity: 1; }
+    66.67%, 100% { opacity: 0; }
+  }
+
+  @keyframes bgSlide3 {
+    0%, 66.66% { opacity: 0; }
+    66.67%, 100% { opacity: 1; }
+  }
+
+  .animate-bg-slide-1 {
+    animation: bgSlide1 6s ease-in-out infinite;
+  }
+
+  .animate-bg-slide-2 {
+    animation: bgSlide2 6s ease-in-out infinite;
+  }
+
+  .animate-bg-slide-3 {
+    animation: bgSlide3 6s ease-in-out infinite;
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes zoom-in {
+    from {
+      transform: scale(0.9);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.6s var(--animation-smooth) forwards;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.8s var(--animation-smooth) forwards;
+  }
+
+  .animate-zoom-in {
+    animation: zoom-in 0.5s var(--animation-bounce) forwards;
+  }
+
+  /* Hover effects */
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary/25;
+  }
+
+  /* Hide scrollbar but keep scrolling */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
+}
