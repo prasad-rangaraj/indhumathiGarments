@@ -1,15 +1,21 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Product, CartItem } from '@/contexts/CartContext';
+import { Product, CartItem as BaseCartItem } from '@/contexts/CartContext';
 import { cartAPI } from '@/lib/api';
 import { useAuthStore } from './authStore';
+
+interface CartItem extends BaseCartItem {
+  cartItemId?: string;
+}
 
 interface CartState {
   items: CartItem[];
   total: number;
   loading: boolean;
   error: string | null;
-  fetchCart: () => Promise<void>;
+  lastFetchedCart: number;
+  abortController: AbortController | null;
+  fetchCart: (force?: boolean) => Promise<void>;
   addItem: (product: Product, size: string) => Promise<void>;
   removeItem: (id: string) => Promise<void>;
   updateQuantity: (id: string, quantity: number) => Promise<void>;
@@ -29,8 +35,10 @@ export const useCartStore = create<CartState>()(
       total: 0,
       loading: false,
       error: null,
+      lastFetchedCart: 0,
+      abortController: null,
 
-      fetchCart: async () => {
+      fetchCart: async (force = false) => {
         const userId = getUserId();
         if (userId === 'guest') {
           // For guests, keep local storage items
@@ -40,20 +48,40 @@ export const useCartStore = create<CartState>()(
           return;
         }
         
-        set({ loading: true, error: null });
+        const { lastFetchedCart, loading, abortController } = get();
+        const now = Date.now();
+        const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes shorter cache for cart
+
+        if (!force && !loading && (now - lastFetchedCart < CACHE_DURATION)) {
+          return; 
+        }
+
+        if (abortController) {
+          abortController.abort();
+        }
+
+        const newAbortController = new AbortController();
+        set({ loading: true, error: null, abortController: newAbortController });
+
         try {
-          const cartItems = await cartAPI.get(userId);
-          const items: CartItem[] = cartItems.map((item: any) => ({
-            ...item.product,
-            quantity: item.quantity,
-            selectedSize: item.size,
-            id: `${item.product.id}-${item.size}`,
-            cartItemId: item.id, // Store backend cart item ID for updates/deletes
-          }));
-          const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-          set({ items, total, loading: false });
+          const cartItems = await cartAPI.get(newAbortController.signal);
+          
+          if (!newAbortController.signal.aborted) {
+            const items: CartItem[] = cartItems.map((item: any) => ({
+              ...item.product,
+              quantity: item.quantity,
+              selectedSize: item.size,
+              id: `${item.product.id}-${item.size}`,
+              cartItemId: item.id,
+            }));
+            const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            set({ items, total, loading: false, lastFetchedCart: now, abortController: null });
+          }
         } catch (error) {
-          set({ error: error instanceof Error ? error.message : 'Failed to fetch cart', loading: false });
+           if (error instanceof Error && error.name === 'AbortError') {
+            return;
+          }
+          set({ error: error instanceof Error ? error.message : 'Failed to fetch cart', loading: false, abortController: null });
         }
       },
 
@@ -62,18 +90,15 @@ export const useCartStore = create<CartState>()(
         set({ loading: true, error: null });
         
         try {
-          // Always make individual API call (no batching)
           const existingItem = get().items.find(
             item => item.id === product.id && item.selectedSize === size
           );
 
           if (userId !== 'guest') {
-            if (existingItem && (existingItem as any).cartItemId) {
-              // Item exists, update quantity via API
+            if (existingItem && existingItem.cartItemId) {
               const newQuantity = existingItem.quantity + 1;
-              await cartAPI.update((existingItem as any).cartItemId, newQuantity);
+              await cartAPI.update(existingItem.cartItemId, newQuantity);
               
-              // Update local state
               const updatedItems = get().items.map(item =>
                 item.id === product.id && item.selectedSize === size
                   ? { ...item, quantity: newQuantity }
@@ -82,15 +107,12 @@ export const useCartStore = create<CartState>()(
               const total = updatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
               set({ items: updatedItems, total, loading: false });
             } else {
-              // New item, add via API
               const result = await cartAPI.add({
-                userId,
                 productId: product.id,
                 quantity: 1,
                 size,
               });
               
-              // Update local state
               const newItem: CartItem = {
                 ...product,
                 quantity: 1,
@@ -102,7 +124,6 @@ export const useCartStore = create<CartState>()(
               set({ items: updatedItems, total, loading: false });
             }
           } else {
-            // Guest user - update local state only
             let updatedItems: CartItem[];
             if (existingItem) {
               updatedItems = get().items.map(item =>
@@ -132,10 +153,9 @@ export const useCartStore = create<CartState>()(
         
         try {
           if (userId !== 'guest') {
-            // Find the item to get its cartItemId
             const item = get().items.find(item => item.id === id);
-            if (item && (item as any).cartItemId) {
-              await cartAPI.remove((item as any).cartItemId);
+            if (item && item.cartItemId) {
+              await cartAPI.remove(item.cartItemId);
             }
           }
           
@@ -153,10 +173,9 @@ export const useCartStore = create<CartState>()(
         
         try {
           if (userId !== 'guest' && quantity > 0) {
-            // Find the item to get its cartItemId
             const item = get().items.find(item => item.id === id);
-            if (item && (item as any).cartItemId) {
-              await cartAPI.update((item as any).cartItemId, quantity);
+            if (item && item.cartItemId) {
+              await cartAPI.update(item.cartItemId, quantity);
             }
           }
           

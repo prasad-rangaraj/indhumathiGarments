@@ -209,8 +209,13 @@ const ProductDetail = () => {
               {product.description}
             </p>
 
-            <div className="mb-4 sm:mb-6">
+            <div className="mb-4 sm:mb-6 flex items-center gap-4">
               <span className="text-2xl sm:text-3xl font-bold text-primary">₹{product.price}</span>
+              {!product.inStock && (
+                <span className="px-3 py-1 rounded-full bg-destructive/10 text-destructive text-sm font-semibold border border-destructive/20">
+                  Out of Stock
+                </span>
+              )}
             </div>
 
             {/* Material Info & Returns Highlight */}
@@ -291,18 +296,20 @@ const ProductDetail = () => {
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8">
               <button
                 onClick={handleAddToCart}
-                className="btn-secondary flex-1 flex items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-2.5"
+                disabled={!product.inStock}
+                className={`btn-secondary flex-1 flex items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-2.5 ${!product.inStock ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-                <span className="hidden sm:inline">Add to Cart</span>
-                <span className="sm:hidden">Add to Cart</span>
+                <span className="hidden sm:inline">{product.inStock ? 'Add to Cart' : 'Out of Stock'}</span>
+                <span className="sm:hidden">{product.inStock ? 'Add' : 'Sold Out'}</span>
               </button>
               <button
                 onClick={handleBuyNow}
-                className="btn-primary flex-1 flex items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-2.5"
+                disabled={!product.inStock}
+                className={`btn-primary flex-1 flex items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-2.5 ${!product.inStock ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-                <span>Buy Now</span>
+                <span>{product.inStock ? 'Buy Now' : 'Out of Stock'}</span>
               </button>
               <button
                 onClick={handleWishlistToggle}

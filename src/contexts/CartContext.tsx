@@ -10,6 +10,7 @@ export interface Product {
   sizes: string[];
   category: string;
   subcategory: string;
+  inStock?: boolean;
 }
 
 export interface CartItem extends Product {

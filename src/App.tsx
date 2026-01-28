@@ -8,6 +8,7 @@ import { WishlistProvider } from "./contexts/WishlistContext";
 import Navigation from "./components/Navigation";
 import About from "./pages/About";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import Products from "./pages/Products";
 import CategoryProducts from "./pages/CategoryProducts";
 import ProductDetail from "./pages/ProductDetail";
@@ -25,11 +26,16 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 
+import Profile from "./pages/Profile";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+
 // Admin imports
 import AdminLayout from "./components/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import AdminProducts from "./pages/admin/Products";
 import AddProduct from "./pages/admin/AddProduct";
+import EditProduct from "./pages/admin/EditProduct";
 import Categories from "./pages/admin/Categories";
 import Inventory from "./pages/admin/Inventory";
 import Orders from "./pages/admin/Orders";
@@ -41,6 +47,7 @@ import Reviews from "./pages/admin/Reviews";
 import Coupons from "./pages/admin/Coupons";
 import Reports from "./pages/admin/Reports";
 import Settings from "./pages/admin/Settings";
+import SeedData from "./pages/admin/SeedData";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +64,10 @@ const App = () => (
               <Route path="/" element={<Login />} />
               <Route path="/about" element={<><Navigation /><About /></>} />
               <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password/:token" element={<ResetPassword />} />
+              <Route path="/profile" element={<><Navigation /><Profile /></>} />
               <Route path="/products" element={<><Navigation /><Products /></>} />
               <Route path="/search" element={<><Navigation /><SearchResults /></>} />
               <Route path="/category/:category" element={<><Navigation /><CategoryProducts /></>} />
@@ -79,6 +90,7 @@ const App = () => (
               <Route index element={<Dashboard />} />
               <Route path="products" element={<AdminProducts />} />
               <Route path="products/add" element={<AddProduct />} />
+              <Route path="products/edit/:id" element={<EditProduct />} />
               <Route path="products/categories" element={<Categories />} />
               <Route path="products/inventory" element={<Inventory />} />
               <Route path="orders" element={<Orders />} />
@@ -90,6 +102,7 @@ const App = () => (
               <Route path="coupons" element={<Coupons />} />
               <Route path="reports" element={<Reports />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="seed-data" element={<SeedData />} />
             </Route>
 
             {/* Catch-all */}

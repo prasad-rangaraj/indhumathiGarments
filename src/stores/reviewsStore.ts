@@ -15,7 +15,9 @@ interface ReviewsState {
   reviews: Record<string, Review[]>; // productId -> reviews
   loading: boolean;
   error: string | null;
-  fetchReviews: (productId: string) => Promise<void>;
+  lastFetched: Record<string, number>;
+  abortController: AbortController | null;
+  fetchReviews: (productId: string, force?: boolean) => Promise<void>;
   getReviewsByProductId: (productId: string) => Review[];
   addReview: (productId: string, review: Omit<Review, 'id' | 'date' | 'productId'>) => Promise<void>;
   getAverageRating: (productId: string) => number;
@@ -27,28 +29,51 @@ export const useReviewsStore = create<ReviewsState>()(
       reviews: {},
       loading: false,
       error: null,
+      lastFetched: {},
+      abortController: null,
 
-      fetchReviews: async (productId: string) => {
-        set({ loading: true, error: null });
+      fetchReviews: async (productId: string, force = false) => {
+        const { lastFetched, loading, abortController } = get();
+        const now = Date.now();
+        const CACHE_DURATION = 5 * 60 * 1000;
+
+        if (!force && !loading && lastFetched[productId] && (now - lastFetched[productId] < CACHE_DURATION)) {
+          return;
+        }
+
+        if (abortController) {
+          abortController.abort();
+        }
+
+        const newAbortController = new AbortController();
+        set({ loading: true, error: null, abortController: newAbortController });
+
         try {
           const reviewsData = await import('@/lib/api').then(m => m.reviewsAPI.getByProduct(productId));
           
-          const productReviews: Review[] = reviewsData.map((review: any) => ({
-            id: review.id,
-            name: review.name,
-            rating: review.rating,
-            title: review.title,
-            content: review.content,
-            date: new Date(review.createdAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
-            productId: review.productId,
-          }));
-          
-          set(state => ({
-            reviews: { ...state.reviews, [productId]: productReviews },
-            loading: false
-          }));
+          if (!newAbortController.signal.aborted) {
+            const productReviews: Review[] = reviewsData.map((review: any) => ({
+              id: review.id,
+              name: review.name,
+              rating: review.rating,
+              title: review.title,
+              content: review.content,
+              date: new Date(review.createdAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
+              productId: review.productId,
+            }));
+            
+            set(state => ({
+              reviews: { ...state.reviews, [productId]: productReviews },
+              loading: false,
+              lastFetched: { ...state.lastFetched, [productId]: now },
+              abortController: null
+            }));
+          }
         } catch (error) {
-          set({ error: error instanceof Error ? error.message : 'Failed to fetch reviews', loading: false });
+           if (error instanceof Error && error.name === 'AbortError') {
+            return;
+          }
+          set({ error: error instanceof Error ? error.message : 'Failed to fetch reviews', loading: false, abortController: null });
         }
       },
 

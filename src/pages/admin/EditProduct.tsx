@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Upload, Plus } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,11 +13,13 @@ import { useAdminStore } from "@/stores/adminStore";
 
 const sizes = ["S", "M", "L", "XL", "XXL"];
 
-const AddProduct = () => {
+const EditProduct = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { categories, fetchCategories, addProduct } = useProductsStore();
+  const { categories, fetchCategories, updateProduct } = useProductsStore();
   const { categories: masterCategories, fetchCategories: fetchMasterCategories } = useAdminStore();
+  const [loading, setLoading] = useState(true);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -31,19 +33,38 @@ const AddProduct = () => {
     image: "",
   });
 
-  const [isManualSubcategory, setIsManualSubcategory] = useState(false);
-
   useEffect(() => {
-    fetchCategories();
-    fetchMasterCategories();
-  }, [fetchCategories, fetchMasterCategories]);
+    const fetchData = async () => {
+        try {
+            await Promise.all([fetchCategories(), fetchMasterCategories()]);
+            if (id) {
+                const product = await productsAPI.getById(id);
+                setFormData({
+                    name: product.name,
+                    description: product.description || "",
+                    price: product.price.toString(),
+                    category: product.category,
+                    subcategory: product.subcategory,
+                    sizes: product.sizes || [],
+                    inStock: product.inStock !== undefined ? product.inStock : true,
+                    material: product.material || "Cotton",
+                    image: product.image || "",
+                });
+            }
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to fetch product details",
+                variant: "destructive",
+            });
+            navigate("/admin/products");
+        } finally {
+            setLoading(false);
+        }
+    };
+    fetchData();
+  }, [id, fetchCategories, fetchMasterCategories, navigate, toast]);
 
-  // Reset manual mode when category changes
-  useEffect(() => {
-    setIsManualSubcategory(false);
-  }, [formData.category]);
-
-  // Merge derived categories with master categories to ensure we show all options
   const categoryList = Array.from(new Set([
     ...Object.keys(categories),
     ...(masterCategories || []).map((c: any) => c.name)
@@ -73,7 +94,9 @@ const AddProduct = () => {
     }
 
     try {
-      await addProduct({
+      if (!id) return;
+      
+      await updateProduct(id, {
         name: formData.name,
         description: formData.description,
         price: parseFloat(formData.price),
@@ -88,17 +111,21 @@ const AddProduct = () => {
 
       toast({
         title: "Success",
-        description: "Product has been added successfully",
+        description: "Product has been updated successfully",
       });
       navigate("/admin/products");
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to add product",
+        description: error.message || "Failed to update product",
         variant: "destructive",
       });
     }
   };
+
+  if (loading) {
+      return <div className="p-8 text-center">Loading product details...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -107,8 +134,8 @@ const AddProduct = () => {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Add New Product</h2>
-          <p className="text-muted-foreground">Create a new product listing</p>
+          <h2 className="text-2xl font-bold text-foreground">Edit Product</h2>
+          <p className="text-muted-foreground">Update existing product listing</p>
         </div>
       </div>
 
@@ -152,7 +179,23 @@ const AddProduct = () => {
                     required
                   />
                 </div>
-                <div className="hidden"></div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="inStock" className="text-base">Available in Stock</Label>
+                      <p className="text-xs text-muted-foreground">Disable to mark as Out of Stock</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        id="inStock"
+                        type="checkbox"
+                        checked={formData.inStock}
+                        onChange={(e) => setFormData({ ...formData, inStock: e.target.checked })}
+                        className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="material">Material</Label>
@@ -199,44 +242,20 @@ const AddProduct = () => {
               </div>
               {formData.category && (
                 <div className="space-y-2 mt-4">
-                  <div className="flex justify-between items-center">
-                    <Label>Subcategory *</Label>
-                    {subcategoryList.length > 0 && (
-                      <button 
-                        type="button"
-                        onClick={() => {
-                            setIsManualSubcategory(!isManualSubcategory);
-                            setFormData(prev => ({ ...prev, subcategory: '' }));
-                        }}
-                        className="text-xs text-primary hover:underline"
-                      >
-                        {isManualSubcategory ? "Select existing" : "Add new"}
-                      </button>
-                    )}
-                  </div>
-
-                  {subcategoryList.length > 0 && !isManualSubcategory ? (
-                    <select
-                      value={formData.subcategory}
-                      onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
-                      className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      required
-                    >
-                      <option value="">Select Subcategory</option>
-                      {subcategoryList.map((sub) => (
-                        <option key={sub} value={sub}>
-                          {sub}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <Input 
-                        placeholder="Enter subcategory" 
-                        value={formData.subcategory}
-                        onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
-                        required
-                    />
-                  )}
+                  <Label>Subcategory *</Label>
+                  <select
+                    value={formData.subcategory}
+                    onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    required
+                  >
+                    <option value="">Select Subcategory</option>
+                    {subcategoryList.map((sub) => (
+                      <option key={sub} value={sub}>
+                        {sub}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               )}
             </CardContent>
@@ -274,7 +293,7 @@ const AddProduct = () => {
               Cancel
             </Button>
             <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">
-              Add Product
+              Update Product
             </Button>
           </div>
         </div>
@@ -283,4 +302,4 @@ const AddProduct = () => {
   );
 };
 
-export default AddProduct;
+export default EditProduct;

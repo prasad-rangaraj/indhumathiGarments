@@ -12,6 +12,7 @@ import {
   ChevronDown,
   LogOut,
   TrendingUp,
+  Database,
 } from "lucide-react";
 import {
   Sidebar,
@@ -55,6 +56,7 @@ const mainNavItems = [
   { title: "Coupons", url: "/admin/coupons", icon: Ticket },
   { title: "Reports", url: "/admin/reports", icon: TrendingUp },
   { title: "Settings", url: "/admin/settings", icon: Settings },
+  { title: "Seed Data", url: "/admin/seed-data", icon: Database },
 ];
 
 export function AdminSidebar() {

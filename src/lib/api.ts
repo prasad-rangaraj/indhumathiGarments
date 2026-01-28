@@ -2,12 +2,12 @@ import { useAuthStore } from '@/stores/authStore';
 
 const API_BASE_URL = '/api';
 
-// Helper function to get auth headers
+// Helper function to get auth headers (Optional now with Cookies)
 const getAuthHeaders = () => {
-  const { user } = useAuthStore.getState();
+  const { token } = useAuthStore.getState();
   return {
     'Content-Type': 'application/json',
-    ...(user ? {} : {}), // Add token if needed in future
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 };
 
@@ -25,6 +25,7 @@ const apiRequest = async <T>(
   const response = await fetch(url, {
     ...options,
     headers,
+    credentials: 'include', // Important for cookies
   });
 
   if (!response.ok) {
@@ -33,6 +34,26 @@ const apiRequest = async <T>(
   }
 
   return response.json();
+};
+
+// Auth API
+export const authAPI = {
+  login: (data: any) => apiRequest<any>('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
+  register: (data: any) => apiRequest<any>('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
+  verifyOtp: (data: { email: string; otp: string }) => 
+    apiRequest<any>('/auth/verify-otp', { method: 'POST', body: JSON.stringify(data) }),
+  forgotPassword: (email: string) =>
+    apiRequest<{ message: string }>('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
+  logout: () => apiRequest<{ message: string }>('/auth/logout', { method: 'POST' }),
+  resetPassword: (token: string, password: string) =>
+    apiRequest<{ message: string; token: string }>('/auth/reset-password/' + token, { method: 'POST', body: JSON.stringify({ password }) }),
+};
+
+// User API
+export const userAPI = {
+  getProfile: (id: string) => apiRequest<any>(`/users/${id}`),
+  updateProfile: (data: any) => 
+    apiRequest<any>('/users/profile', { method: 'PATCH', body: JSON.stringify(data) }),
 };
 
 // Products API
@@ -56,13 +77,13 @@ export const productsAPI = {
 
 // Cart API
 export const cartAPI = {
-  get: (userId: string) => apiRequest<any[]>(`/cart/${userId}`),
-  add: (data: { userId: string; productId: string; quantity: number; size: string; color?: string }) =>
+  get: () => apiRequest<any[]>('/cart'),
+  add: (data: { productId: string; quantity: number; size: string; color?: string }) =>
     apiRequest<any>('/cart', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, quantity: number) =>
     apiRequest<any>(`/cart/${id}`, { method: 'PATCH', body: JSON.stringify({ quantity }) }),
   remove: (id: string) => apiRequest<{ message: string }>(`/cart/${id}`, { method: 'DELETE' }),
-  clear: (userId: string) => apiRequest<{ message: string }>(`/cart/user/${userId}`, { method: 'DELETE' }),
+  clear: () => apiRequest<{ message: string }>(`/cart`, { method: 'DELETE' }),
 };
 
 // Orders API
@@ -81,11 +102,11 @@ export const ordersAPI = {
 
 // Wishlist API
 export const wishlistAPI = {
-  get: (userId: string) => apiRequest<any[]>(`/wishlist/${userId}`),
-  add: (data: { userId: string; productId: string }) =>
+  get: () => apiRequest<any[]>('/wishlist'),
+  add: (data: { productId: string }) =>
     apiRequest<any>('/wishlist', { method: 'POST', body: JSON.stringify(data) }),
-  remove: (userId: string, productId: string) =>
-    apiRequest<{ message: string }>(`/wishlist/${userId}/${productId}`, { method: 'DELETE' }),
+  remove: (productId: string) =>
+    apiRequest<{ message: string }>(`/wishlist/${productId}`, { method: 'DELETE' }),
 };
 
 // Reviews API
@@ -97,6 +118,9 @@ export const reviewsAPI = {
 // Admin API
 export const adminAPI = {
   getDashboard: () => apiRequest<any>('/admin/dashboard'),
+  getCategories: () => apiRequest<any[]>('/admin/categories'),
+  createCategory: (data: any) => apiRequest<any>('/admin/categories', { method: 'POST', body: JSON.stringify(data) }),
+  deleteCategory: (id: string) => apiRequest<{ message: string }>(`/admin/categories/${id}`, { method: 'DELETE' }),
   getCustomers: () => apiRequest<any[]>('/admin/customers'),
   updateCustomer: (id: string, data: { isActive: boolean }) =>
     apiRequest<any>(`/admin/customers/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),

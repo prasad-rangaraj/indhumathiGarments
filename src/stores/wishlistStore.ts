@@ -8,7 +8,9 @@ interface WishlistState {
   items: Product[];
   loading: boolean;
   error: string | null;
-  fetchWishlist: () => Promise<void>;
+  lastFetched: number;
+  abortController: AbortController | null;
+  fetchWishlist: (force?: boolean) => Promise<void>;
   addToWishlist: (product: Product) => Promise<void>;
   removeFromWishlist: (productId: string) => Promise<void>;
   clearWishlist: () => Promise<void>;
@@ -27,21 +29,43 @@ export const useWishlistStore = create<WishlistState>()(
       items: [],
       loading: false,
       error: null,
+      lastFetched: 0,
+      abortController: null,
 
-      fetchWishlist: async () => {
+      fetchWishlist: async (force = false) => {
         const userId = getUserId();
         if (userId === 'guest') return;
         
-        set({ loading: true, error: null });
+        const { lastFetched, loading, abortController } = get();
+        const now = Date.now();
+        const CACHE_DURATION = 2 * 60 * 1000; // 2 mins
+
+        if (!force && !loading && (now - lastFetched < CACHE_DURATION)) {
+          return;
+        }
+
+        if (abortController) {
+          abortController.abort();
+        }
+
+        const newAbortController = new AbortController();
+        set({ loading: true, error: null, abortController: newAbortController });
+
         try {
-          const wishlistItems = await wishlistAPI.get(userId);
-          const items: Product[] = wishlistItems.map((item: any) => ({
-            ...item.product,
-            id: item.product.id,
-          }));
-          set({ items, loading: false });
+          const wishlistItems = await wishlistAPI.get();
+          
+          if (!newAbortController.signal.aborted) {
+            const items: Product[] = wishlistItems.map((item: any) => ({
+              ...item.product,
+              id: item.product.id,
+            }));
+            set({ items, loading: false, lastFetched: now, abortController: null });
+          }
         } catch (error) {
-          set({ error: error instanceof Error ? error.message : 'Failed to fetch wishlist', loading: false });
+           if (error instanceof Error && error.name === 'AbortError') {
+            return;
+          }
+          set({ error: error instanceof Error ? error.message : 'Failed to fetch wishlist', loading: false, abortController: null });
         }
       },
 
@@ -51,7 +75,7 @@ export const useWishlistStore = create<WishlistState>()(
         
         try {
           if (userId !== 'guest') {
-            await wishlistAPI.add({ userId, productId: product.id });
+            await wishlistAPI.add({ productId: product.id });
           }
           
           const exists = get().items.find(item => item.id === product.id);
@@ -76,7 +100,7 @@ export const useWishlistStore = create<WishlistState>()(
         
         try {
           if (userId !== 'guest') {
-            await wishlistAPI.remove(userId, productId);
+            await wishlistAPI.remove(productId);
           }
           set({ items: get().items.filter(item => item.id !== productId), loading: false });
         } catch (error) {
@@ -92,7 +116,7 @@ export const useWishlistStore = create<WishlistState>()(
           if (userId !== 'guest') {
             const items = get().items;
             for (const item of items) {
-              await wishlistAPI.remove(userId, item.id);
+              await wishlistAPI.remove(item.id);
             }
           }
           set({ items: [], loading: false });

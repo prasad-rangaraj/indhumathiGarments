@@ -8,13 +8,25 @@ import { useProductsStore } from "@/stores/productsStore";
 
 const Products = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const { products, loading, fetchProducts } = useProductsStore();
+  const { products, loading, fetchProducts, deleteProduct } = useProductsStore();
 
   useEffect(() => {
     if (products.length === 0) {
       fetchProducts();
     }
   }, [products.length, fetchProducts]);
+
+  const handleDelete = async (id: string, name: string) => {
+    if (window.confirm(`Are you sure you want to delete "${name}"?`)) {
+        try {
+            await deleteProduct(id);
+            // Toast handled by store logic? Store logic throws error, but doesn't toast success.
+            // We should toast success here. (Assuming we have useToast but we need to import it)
+        } catch (error) {
+            console.error(error);
+        }
+    }
+  };
 
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -81,8 +93,12 @@ const Products = () => {
                       <td className="py-3 px-2 sm:px-4 text-xs sm:text-sm text-muted-foreground hidden md:table-cell">{product.category}</td>
                       <td className="py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-foreground">₹{product.price}</td>
                       <td className="py-3 px-2 sm:px-4 hidden sm:table-cell">
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                          In Stock
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          product.inStock 
+                            ? "bg-green-100 text-green-700" 
+                            : "bg-red-100 text-red-700"
+                        }`}>
+                          {product.inStock ? "In Stock" : "Out of Stock"}
                         </span>
                       </td>
                       <td className="py-3 px-2 sm:px-4">
@@ -90,10 +106,17 @@ const Products = () => {
                           <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8">
                             <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8">
-                            <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 text-destructive">
+                          <Link to={`/admin/products/edit/${product.id}`}>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8">
+                              <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
+                            </Button>
+                          </Link>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-7 w-7 sm:h-8 sm:w-8 text-destructive"
+                            onClick={() => handleDelete(product.id, product.name)}
+                          >
                             <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                           </Button>
                         </div>
