@@ -108,41 +108,41 @@ const Signup = () => {
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-pink-100/80 via-pink-50/70 to-pink-100/80 backdrop-blur-sm" />
       
       {/* Signup Card */}
-      <div className="relative z-10 w-full max-w-sm mx-4 px-4 sm:px-0">
+      <div className="relative z-10 w-full max-w-xl mx-4 px-4 sm:px-0 my-8">
         <img 
           src={logoImg} 
           alt="Indhumathi" 
-          className="h-16 mx-auto mb-2 drop-shadow-lg"
+          className="h-16 mx-auto mb-6 drop-shadow-xl transition-transform hover:scale-105"
         />
         
         <div className="bg-card/95 backdrop-blur-md rounded-2xl shadow-2xl border border-border/50 overflow-hidden">
           {step === "details" ? (
-            <form onSubmit={handleRegister} className="p-4 space-y-3">
-              <div className="text-center mb-2">
-                <h2 className="text-xl font-semibold text-pink-900">Create Account</h2>
-                <p className="text-xs text-muted-foreground">Join us for premium innerwear</p>
+            <form onSubmit={handleRegister} className="p-6 sm:p-10 space-y-6">
+              <div className="text-center mb-6">
+                <h2 className="text-3xl font-bold text-pink-900 tracking-tight">Create Account</h2>
+                <p className="text-sm text-muted-foreground mt-2">Join us for premium innerwear</p>
               </div>
               
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <Label htmlFor="name" className="text-xs">Full Name *</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="space-y-1.5 sm:col-span-1">
+                  <Label htmlFor="name" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Full Name <span className="text-red-500">*</span></Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70" />
                     <Input 
                       id="name" 
                       value={formData.name} 
                       onChange={handleInputChange} 
                       placeholder="Jane Doe" 
                       required 
-                      className="pl-9 h-9 bg-background/50 border-border/50 focus:border-pink-300 transition-all text-sm"
+                      className="pl-10 h-11 bg-background/60 border-border/60 hover:border-pink-200 focus:border-pink-400 focus:ring-pink-400/20 transition-all text-sm rounded-xl"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <Label htmlFor="email" className="text-xs">Email Address *</Label>
+                <div className="space-y-1.5 sm:col-span-1">
+                  <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email Address <span className="text-red-500">*</span></Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70" />
                     <Input 
                       id="email" 
                       type="email" 
@@ -150,44 +150,28 @@ const Signup = () => {
                       onChange={handleInputChange} 
                       placeholder="jane@example.com" 
                       required 
-                      className="pl-9 h-9 bg-background/50 border-border/50 focus:border-pink-300 transition-all text-sm"
+                      className="pl-10 h-11 bg-background/60 border-border/60 hover:border-pink-200 focus:border-pink-400 focus:ring-pink-400/20 transition-all text-sm rounded-xl"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label htmlFor="phone" className="text-xs">Phone *</Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                      <Input 
-                        id="phone" 
-                        value={formData.phone} 
-                        onChange={handleInputChange} 
-                        placeholder="9876543210" 
-                        required 
-                        className="pl-9 h-9 bg-background/50 border-border/50 focus:border-pink-300 transition-all text-sm"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <Label htmlFor="address" className="text-xs">Address</Label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                      <Input 
-                        id="address" 
-                        value={formData.address} 
-                        onChange={handleInputChange} 
-                        placeholder="City, State" 
-                        className="pl-9 h-9 bg-background/50 border-border/50 focus:border-pink-300 transition-all text-sm"
-                      />
-                    </div>
+                <div className="space-y-1.5 sm:col-span-1">
+                  <Label htmlFor="phone" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Phone <span className="text-red-500">*</span></Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70" />
+                    <Input 
+                      id="phone" 
+                      value={formData.phone} 
+                      onChange={handleInputChange} 
+                      placeholder="9876543210" 
+                      required 
+                      className="pl-10 h-11 bg-background/60 border-border/60 hover:border-pink-200 focus:border-pink-400 focus:ring-pink-400/20 transition-all text-sm rounded-xl"
+                    />
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <Label htmlFor="password" className="text-xs">Password *</Label>
+                <div className="space-y-1.5 sm:col-span-1">
+                  <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Password <span className="text-red-500">*</span></Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -196,15 +180,29 @@ const Signup = () => {
                       onChange={handleInputChange}
                       placeholder="••••••••"
                       required
-                      className="h-9 bg-background/50 border-border/50 focus:border-pink-300 transition-all pr-10 text-sm"
+                      className="pl-3 pr-10 h-11 bg-background/60 border-border/60 hover:border-pink-200 focus:border-pink-400 focus:ring-pink-400/20 transition-all text-sm rounded-xl"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-foreground transition-colors"
                     >
-                      {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 sm:col-span-2">
+                  <Label htmlFor="address" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Address</Label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70" />
+                    <Input 
+                      id="address" 
+                      value={formData.address} 
+                      onChange={handleInputChange} 
+                      placeholder="City, State" 
+                      className="pl-10 h-11 bg-background/60 border-border/60 hover:border-pink-200 focus:border-pink-400 focus:ring-pink-400/20 transition-all text-sm rounded-xl"
+                    />
                   </div>
                 </div>
               </div>
@@ -212,22 +210,22 @@ const Signup = () => {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-10 mt-4 bg-gradient-to-r from-pink-200 to-pink-300 hover:from-pink-300 hover:to-pink-400 text-pink-900 font-semibold text-sm shadow-lg transition-all hover:scale-[1.02]"
+                className="w-full h-12 mt-8 bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white font-semibold text-base shadow-lg transition-all hover:scale-[1.01] active:scale-[0.99] rounded-xl group"
               >
                 {isLoading ? (
                   <span className="flex items-center gap-2">Processing...</span>
                 ) : (
-                  <span className="flex items-center gap-2">Get OTP <ArrowRight className="w-4 h-4" /></span>
+                  <span className="flex items-center gap-2">Get OTP <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></span>
                 )}
               </Button>
 
-              <div className="text-center pt-2 border-t border-border/50 mt-4">
+              <div className="text-center pt-6 mt-6 border-t border-border/50">
                 <p className="text-sm text-muted-foreground">
                   Already have an account?{" "}
                   <button 
                     type="button" 
                     onClick={() => navigate("/login")} 
-                    className="text-pink-500 hover:text-pink-600 font-medium hover:underline transition-all"
+                    className="text-pink-600 hover:text-pink-700 font-semibold hover:underline transition-all"
                   >
                     Sign In
                   </button>
@@ -235,18 +233,18 @@ const Signup = () => {
               </div>
             </form>
           ) : (
-            <form onSubmit={handleVerifyOtp} className="p-6 sm:p-8 space-y-6">
+            <form onSubmit={handleVerifyOtp} className="p-6 sm:p-10 space-y-8 max-w-lg mx-auto">
               <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-pink-100 mb-4 animate-pulse">
-                  <Mail className="w-8 h-8 text-pink-500" />
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-pink-100 mb-6 shadow-inner animate-pulse">
+                  <Mail className="w-10 h-10 text-pink-500" />
                 </div>
-                <h2 className="text-2xl font-semibold text-pink-900">Verify Email</h2>
-                <p className="text-muted-foreground text-sm mt-2 max-w-[280px] mx-auto">
-                  We've sent a 6-digit code to <br/> <span className="font-medium text-foreground">{formData.email}</span>
+                <h2 className="text-3xl font-bold text-pink-900 tracking-tight">Verify Email</h2>
+                <p className="text-muted-foreground text-sm mt-3">
+                  We've sent a 6-digit code to <br/> <span className="font-semibold text-foreground">{formData.email}</span>
                 </p>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div className="space-y-2">
                   <Label htmlFor="otp" className="sr-only">One-Time Password</Label>
                   <Input 
@@ -254,22 +252,22 @@ const Signup = () => {
                     value={otp} 
                     onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))} 
                     placeholder="• • • • • •" 
-                    className="text-center text-3xl tracking-[1em] font-mono h-16 bg-background/50 border-pink-200 focus:border-pink-400 focus:ring-pink-400/20 transition-all placeholder:tracking-widest"
+                    className="text-center text-3xl tracking-[1em] font-mono h-16 bg-background/60 border-border/60 hover:border-pink-200 focus:border-pink-400 focus:ring-pink-400/20 transition-all placeholder:tracking-widest rounded-xl shadow-sm mx-auto w-full max-w-sm"
                     maxLength={6}
                     autoFocus
                   />
                 </div>
                 
-                <p className="text-center text-xs text-muted-foreground">
-                  Didn't receive the code? <button type="button" className="text-pink-500 hover:underline">Resend</button>
+                <p className="text-center text-sm text-muted-foreground">
+                  Didn't receive the code? <button type="button" className="text-pink-600 hover:text-pink-700 font-semibold hover:underline">Resend</button>
                 </p>
               </div>
 
-              <div className="space-y-3 pt-4">
+              <div className="space-y-4 pt-4">
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-12 bg-gradient-to-r from-pink-200 to-pink-300 hover:from-pink-300 hover:to-pink-400 text-pink-900 font-semibold shadow-lg transition-all hover:scale-[1.02]"
+                  className="w-full h-12 bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white font-semibold text-base shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] rounded-xl"
                 >
                   {isLoading ? "Verifying..." : "Verify & Create Account"}
                 </Button>
@@ -277,7 +275,7 @@ const Signup = () => {
                 <button 
                   type="button" 
                   onClick={() => setStep("details")}
-                  className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+                  className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground font-medium transition-colors py-2"
                 >
                   <ArrowLeft className="w-4 h-4" /> Change Email
                 </button>
