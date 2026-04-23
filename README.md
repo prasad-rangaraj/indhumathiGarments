@@ -1,73 +1,78 @@
-# Welcome to your Lovable project
+# 👕 Indhumathi Garments - Frontend
 
-## Project info
+A premium, high-performance e-commerce frontend for **Indhumathi Garments**, specializing in pure cotton women's innerwear. Built with React, TypeScript, and Tailwind CSS for a seamless, elite shopping experience.
 
-**URL**: https://lovable.dev/projects/65d1d3dd-e792-4436-807f-d111124ea022
+---
 
-## How can I edit this code?
+## 🎨 Product Highlights
+Indhumathi Garments has been a trusted name for over two decades, delivering comfort and elegance through natural fabrics.
+- **100% Pure Cotton**: Breathable, soft, and skin-friendly garments tailored for all-day comfort.
+- **Premium Quality**: Each piece is crafted with handcrafted care and attention to detail.
+- **Skin Safe**: Naturally hypoallergenic materials, safe for sensitive skin.
+- **Diverse Collection**: From slips and camisoles to high-quality bloomers and essentials.
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+## 🚀 Getting Started
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/65d1d3dd-e792-4436-807f-d111124ea022) and start prompting.
+### 1. Prerequisites
+- **Node.js** (v18 or higher)
+- **npm** (v9 or higher)
+- **Backend API**: Ensure the [Backend Services](../indhumathiGarments-backend) are running.
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+### 2. Environment Setup
+Create a `.env` file in the root directory and add the backend API URL:
+```env
+VITE_API_URL=http://localhost:5001
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
 ```
 
-**Edit a file directly in GitHub**
+### 3. Installation
+```bash
+# Install dependencies
+npm install
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### 4. Run Development Server
+```bash
+# Start the development server
+npm run dev
+```
+The application will be available at `http://localhost:8080`.
 
-**Use GitHub Codespaces**
+---
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🛠 Tech Stack
+- **Framework**: [React 18](https://reactjs.org/)
+- **Build Tool**: [Vite](https://vitejs.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Components**: [shadcn/ui](https://ui.shadcn.com/)
+- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
 
-## What technologies are used for this project?
+---
 
-This project is built with:
+## ✨ Features
+- **Elite UI/UX**: Premium "lite pink" theme with smooth transitions and backdrop-blur effects.
+- **Amazon/Flipkart-Style Checkout**: A streamlined 4-step accordion checkout process.
+- **Responsive Profile**: Multi-tab user dashboard for orders, addresses, and wishlist.
+- **Real-time Synchronization**: Seamless integration with the backend for live stock and order tracking.
+- **Secure Payments**: Integration with Razorpay for safe transactions.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
+## 📂 Project Structure
+- `src/components`: Reusable UI elements and layout components.
+- `src/pages`: Main application pages (Home, Products, Profile, Checkout, etc.).
+- `src/stores`: Zustand stores for global state management (Auth, Cart, Orders).
+- `src/hooks`: Custom React hooks for data fetching and site settings.
+- `src/assets`: Images, logos, and global design assets.
 
-Simply open [Lovable](https://lovable.dev/projects/65d1d3dd-e792-4436-807f-d111124ea022) and click on Share -> Publish.
+---
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## 🔒 Security
+- **JWT Protection**: Secure authentication handled via cookies.
+- **Google OAuth**: One-tap sign-in for user convenience.
+- **Zod Validation**: Robust frontend validation for all user inputs.
