@@ -9,8 +9,8 @@ import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 
 const colorPalettes: string[][] = [
   ['bg-rose-500', 'bg-pink-400', 'bg-fuchsia-500'],
-  ['bg-sky-500', 'bg-cyan-400', 'bg-blue-500'],
-  ['bg-emerald-500', 'bg-lime-400', 'bg-green-500'],
+  ['bg-pink-600', 'bg-rose-700', 'bg-pink-300'],
+  ['bg-orange-300', 'bg-rose-100', 'bg-pink-200'],
 ];
 
 const getColorsForProduct = (id: string) => {

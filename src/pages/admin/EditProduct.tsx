@@ -29,6 +29,7 @@ const EditProduct = () => {
     subcategory: "",
     sizes: [] as string[],
     inStock: true,
+    stock: "0",
     material: "Cotton",
     image: "",
   });
@@ -47,6 +48,7 @@ const EditProduct = () => {
                     subcategory: product.subcategory,
                     sizes: product.sizes || [],
                     inStock: product.inStock !== undefined ? product.inStock : true,
+                    stock: (product.stock || 0).toString(),
                     material: product.material || "Cotton",
                     image: product.image || "",
                 });
@@ -104,6 +106,7 @@ const EditProduct = () => {
         subcategory: formData.subcategory,
         sizes: formData.sizes,
         inStock: formData.inStock,
+        stock: parseInt(formData.stock) || 0,
         material: formData.material,
         image: formData.image || null,
         isActive: true,
@@ -180,21 +183,15 @@ const EditProduct = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="inStock" className="text-base">Available in Stock</Label>
-                      <p className="text-xs text-muted-foreground">Disable to mark as Out of Stock</p>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        id="inStock"
-                        type="checkbox"
-                        checked={formData.inStock}
-                        onChange={(e) => setFormData({ ...formData, inStock: e.target.checked })}
-                        className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
-                      />
-                    </div>
-                  </div>
+                  <Label htmlFor="stock">Stock Quantity *</Label>
+                  <Input
+                    id="stock"
+                    type="number"
+                    value={formData.stock}
+                    onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                    placeholder="0"
+                    required
+                  />
                 </div>
               </div>
               <div className="space-y-2">

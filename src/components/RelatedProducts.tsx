@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useProductsStore } from '@/stores/productsStore';
-import { Product } from '@/contexts/CartContext';
+import { Product } from '@/types';
 
 interface RelatedProductsProps {
   currentProduct: Product;

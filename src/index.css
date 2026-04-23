@@ -51,10 +51,10 @@
     --gradient-primary: linear-gradient(135deg, hsl(340 70% 60%), hsl(350 60% 70%));
     --gradient-secondary: linear-gradient(45deg, hsl(340 40% 95%), hsl(350 35% 90%));
     --gradient-hero: linear-gradient(135deg, hsl(340 50% 80%) 0%, hsl(350 40% 85%) 100%);
-    
+
     /* Texture and pattern variables */
     --cotton-texture: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='hsl(340 30% 85%)' fill-opacity='0.08'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='1'/%3E%3Ccircle cx='33' cy='5' r='1'/%3E%3Ccircle cx='3' cy='23' r='2'/%3E%3Ccircle cx='25' cy='25' r='2'/%3E%3Ccircle cx='45' cy='25' r='1'/%3E%3Ccircle cx='15' cy='35' r='1'/%3E%3Ccircle cx='35' cy='35' r='2'/%3E%3Ccircle cx='55' cy='35' r='1'/%3E%3Ccircle cx='25' cy='45' r='1'/%3E%3Ccircle cx='45' cy='45' r='2'/%3E%3Ccircle cx='5' cy='55' r='1'/%3E%3Ccircle cx='25' cy='55' r='1'/%3E%3Ccircle cx='45' cy='55' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    
+
     /* Animation variables */
     --animation-smooth: cubic-bezier(0.4, 0, 0.2, 1);
     --animation-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -135,20 +135,23 @@
   /* Hide side scrollbars while keeping scroll behavior */
   html,
   body {
-    scrollbar-width: none; /* Firefox */
+    scrollbar-width: none;
+    /* Firefox */
   }
 
   body::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Edge */
+    display: none;
+    /* Chrome, Safari, Edge */
   }
 }
 
 @layer components {
+
   /* Button variants for the brand */
   .btn-primary {
     @apply bg-gradient-to-r from-primary to-secondary text-primary-foreground px-6 py-3 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:scale-105;
   }
-  
+
   .btn-secondary {
     @apply bg-accent text-accent-foreground border border-primary/20 px-6 py-3 rounded-lg font-medium transition-all duration-300 hover:bg-gradient-to-r hover:from-primary/10 hover:to-secondary/10 hover:shadow-md;
   }
@@ -169,19 +172,47 @@
 
   /* Background Slideshow Animation */
   @keyframes bgSlide1 {
-    0%, 33.33% { opacity: 1; }
-    33.34%, 100% { opacity: 0; }
+
+    0%,
+    33.33% {
+      opacity: 1;
+    }
+
+    33.34%,
+    100% {
+      opacity: 0;
+    }
   }
 
   @keyframes bgSlide2 {
-    0%, 33.33% { opacity: 0; }
-    33.34%, 66.66% { opacity: 1; }
-    66.67%, 100% { opacity: 0; }
+
+    0%,
+    33.33% {
+      opacity: 0;
+    }
+
+    33.34%,
+    66.66% {
+      opacity: 1;
+    }
+
+    66.67%,
+    100% {
+      opacity: 0;
+    }
   }
 
   @keyframes bgSlide3 {
-    0%, 66.66% { opacity: 0; }
-    66.67%, 100% { opacity: 1; }
+
+    0%,
+    66.66% {
+      opacity: 0;
+    }
+
+    66.67%,
+    100% {
+      opacity: 1;
+    }
   }
 
   .animate-bg-slide-1 {
@@ -201,6 +232,7 @@
       opacity: 0;
       transform: translateY(20px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -212,6 +244,7 @@
       opacity: 0;
       transform: translateY(30px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -223,6 +256,7 @@
       transform: scale(0.9);
       opacity: 0;
     }
+
     to {
       transform: scale(1);
       opacity: 1;
@@ -252,11 +286,14 @@
 
   /* Hide scrollbar but keep scrolling */
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
   }
 
   .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
+    display: none;
+    /* Chrome, Safari and Opera */
   }
 }

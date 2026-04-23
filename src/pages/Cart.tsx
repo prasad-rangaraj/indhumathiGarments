@@ -2,10 +2,29 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
+import { useToast } from '@/hooks/use-toast';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 
 const Cart = () => {
   const { items, total, updateQuantity, removeItem, fetchCart } = useCartStore();
+  const { toast } = useToast();
+
+  const handleUpdateQuantity = async (id: string, quantity: number) => {
+    try {
+      await updateQuantity(id, quantity);
+    } catch {
+      toast({ title: 'Failed to update quantity', variant: 'destructive' });
+    }
+  };
+
+  const handleRemoveItem = async (id: string) => {
+    try {
+      await removeItem(id);
+    } catch {
+      toast({ title: 'Failed to remove item', variant: 'destructive' });
+    }
+  };
+
 
   useEffect(() => {
     fetchCart();
@@ -59,19 +78,19 @@ const Cart = () => {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{item.name}</h3>
                     <p className="text-xs sm:text-sm text-muted-foreground">Size: {item.selectedSize}</p>
-                    <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">{item.material}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">{item.category}</p>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-3 sm:mt-4 gap-3">
                       <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-start">
                         <div className="flex items-center gap-2 sm:gap-3">
                           <button
-                            onClick={() => updateQuantity(`${item.id}-${item.selectedSize}`, item.quantity - 1)}
+                            onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
                             className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-border hover:border-primary transition-colors flex items-center justify-center flex-shrink-0"
                           >
                             <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
                           </button>
                           <span className="w-8 sm:w-10 text-center font-medium text-sm sm:text-base">{item.quantity}</span>
                           <button
-                            onClick={() => updateQuantity(`${item.id}-${item.selectedSize}`, item.quantity + 1)}
+                            onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
                             className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-border hover:border-primary transition-colors flex items-center justify-center flex-shrink-0"
                           >
                             <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -81,7 +100,7 @@ const Cart = () => {
                       </div>
                       <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-end">
                         <button
-                          onClick={() => removeItem(`${item.id}-${item.selectedSize}`)}
+                          onClick={() => handleRemoveItem(item.id)}
                           className="text-destructive hover:text-destructive/80 transition-colors p-2"
                         >
                           <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />

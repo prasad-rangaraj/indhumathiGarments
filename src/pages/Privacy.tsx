@@ -56,8 +56,8 @@ const Privacy = () => {
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">4. Data Security</h2>
                 <p>
-                  We implement appropriate security measures to protect your personal information. However, no method 
-                  of transmission over the internet is 100% secure. While we strive to protect your data, we cannot 
+                  We implement appropriate security measures to protect your personal information. However, no method
+                  of transmission over the internet is 100% secure. While we strive to protect your data, we cannot
                   guarantee absolute security.
                 </p>
               </section>
@@ -65,7 +65,7 @@ const Privacy = () => {
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">5. Cookies and Tracking</h2>
                 <p>
-                  We use cookies and similar tracking technologies to enhance your browsing experience, analyze website 
+                  We use cookies and similar tracking technologies to enhance your browsing experience, analyze website
                   traffic, and personalize content. You can control cookies through your browser settings.
                 </p>
               </section>
@@ -85,7 +85,7 @@ const Privacy = () => {
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">7. Children's Privacy</h2>
                 <p>
-                  Our services are not intended for children under 18. We do not knowingly collect personal information 
+                  Our services are not intended for children under 18. We do not knowingly collect personal information
                   from children. If you believe we have collected information from a child, please contact us immediately.
                 </p>
               </section>
@@ -93,7 +93,7 @@ const Privacy = () => {
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">8. Changes to This Policy</h2>
                 <p>
-                  We may update this Privacy Policy from time to time. We will notify you of any changes by posting the 
+                  We may update this Privacy Policy from time to time. We will notify you of any changes by posting the
                   new Privacy Policy on this page and updating the "Last updated" date.
                 </p>
               </section>
@@ -105,7 +105,7 @@ const Privacy = () => {
                 </p>
                 <p className="mt-2">
                   Email: privacy@indhumathi.com<br />
-                  Phone: +91 98765 43210<br />
+                  Phone: +91 87546 09226<br />
                   Address: 123 Cotton Street, Textile District, Coimbatore, Tamil Nadu 641001
                 </p>
               </section>

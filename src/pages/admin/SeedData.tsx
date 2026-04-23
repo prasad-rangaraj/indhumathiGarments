@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { products } from "@/data/products";
-import { Product } from "@/contexts/CartContext";
+import { Product } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { Database, CheckCircle, AlertTriangle } from "lucide-react";
 
@@ -14,19 +14,8 @@ const SeedData = () => {
   const handleSeed = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/seed-products', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(products),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to seed data');
-      }
+      const { adminAPI } = await import('@/lib/api');
+      const data = await adminAPI.seedProducts(products);
 
       toast({
         title: "Seed Successful",

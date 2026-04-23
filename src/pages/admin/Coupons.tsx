@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Copy, CheckCircle } from "lucide-react";
+import { Plus, Trash2, Copy, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,10 +8,17 @@ import { useToast } from "@/hooks/use-toast";
 import { useAdminStore } from "@/stores/adminStore";
 import { adminAPI } from "@/lib/api";
 
+const generateCouponCode = () => {
+  const prefix = ['SAVE', 'FLAT', 'GET', 'OFF', 'DEAL', 'IND'][Math.floor(Math.random() * 6)];
+  const suffix = Math.random().toString(36).toUpperCase().slice(2, 8);
+  return `${prefix}${suffix}`;
+};
+
 const Coupons = () => {
   const [coupons, setCoupons] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [couponCode, setCouponCode] = useState(generateCouponCode());
   const { toast } = useToast();
   const { fetchCoupons } = useAdminStore();
 
@@ -65,7 +72,7 @@ const Coupons = () => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const data = {
-      code: formData.get('code') as string,
+      code: couponCode.toUpperCase().trim(),
       discount: parseFloat(formData.get('discount') as string),
       minAmount: formData.get('minAmount') ? parseFloat(formData.get('minAmount') as string) : null,
       maxDiscount: formData.get('maxDiscount') ? parseFloat(formData.get('maxDiscount') as string) : null,
@@ -79,7 +86,7 @@ const Coupons = () => {
       await adminAPI.createCoupon(data);
       await loadCoupons();
       setShowForm(false);
-      (e.target as HTMLFormElement).reset();
+      setCouponCode(generateCouponCode()); // reset to a fresh code
       toast({ title: "Success", description: "Coupon created successfully" });
     } catch (error: any) {
       toast({ title: "Error", description: error.message || "Failed to create coupon", variant: "destructive" });
@@ -108,7 +115,25 @@ const Coupons = () => {
             <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Coupon Code</Label>
-                <Input name="code" placeholder="e.g., SAVE20" className="uppercase" required />
+                <div className="flex gap-2">
+                  <Input
+                    name="code"
+                    value={couponCode}
+                    onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                    placeholder="e.g., SAVE20"
+                    className="uppercase font-mono tracking-widest font-semibold"
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    title="Auto-generate code"
+                    onClick={() => setCouponCode(generateCouponCode())}
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label>Discount (%)</Label>

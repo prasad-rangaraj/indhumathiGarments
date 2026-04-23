@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, Mail } from 'lucide-react';
 import indhumathiLogo from '@/assets/logo-new.png';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 const Footer = () => {
+  const { settings } = useSiteSettings();
   return (
     <footer className="bg-card border-t border-border/50 mt-auto">
       <div className="container mx-auto px-4 py-8 sm:py-12">
@@ -104,7 +106,7 @@ const Footer = () => {
 
         <div className="border-t border-border/50 mt-8 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground text-center sm:text-left">
-            © 2025 Indhumathi. All rights reserved.
+          © {new Date().getFullYear()} {settings.siteName}. All rights reserved.
           </p>
           <div className="flex gap-6 text-sm text-muted-foreground">
             <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>

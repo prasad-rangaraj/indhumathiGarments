@@ -8,6 +8,7 @@ import { Eye, EyeOff, User, Mail, Phone, MapPin, ArrowRight, ArrowLeft } from "l
 import logoImg from "@/assets/logo-new.png";
 import bgCotton from "@/assets/bg-cotton-1.jpg";
 import { useAuthStore } from "@/stores/authStore";
+import { GoogleLogin } from '@react-oauth/google';
 
 const Signup = () => {
   const [step, setStep] = useState<"details" | "otp">("details");
@@ -24,7 +25,27 @@ const Signup = () => {
   
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { register, verifyOtp } = useAuthStore();
+  const { register, verifyOtp, googleLogin } = useAuthStore();
+
+  const handleGoogleSignup = async (token: string) => {
+    setIsLoading(true);
+    try {
+      await googleLogin(token);
+      setIsLoading(false);
+      toast({
+        title: "Success",
+        description: "Welcome to Indhumathi Garments!",
+      });
+      navigate("/about");
+    } catch (error) {
+      setIsLoading(false);
+      toast({
+        title: "Signup Failed",
+        description: error instanceof Error ? error.message : "Google signup failed",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -218,6 +239,32 @@ const Signup = () => {
                   <span className="flex items-center gap-2">Get OTP <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></span>
                 )}
               </Button>
+
+              <div className="relative my-6 text-center">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border/50"></span>
+                </div>
+                <div className="relative flex justify-center text-xs uppercase px-2">
+                  <span className="bg-card text-muted-foreground bg-white px-2">Or continue with</span>
+                </div>
+              </div>
+
+              <div className="flex justify-center">
+                <GoogleLogin
+                  onSuccess={credentialResponse => {
+                    if (credentialResponse.credential) {
+                      handleGoogleSignup(credentialResponse.credential);
+                    }
+                  }}
+                  onError={() => {
+                    toast({
+                      title: "Signup Failed",
+                      description: "Google signup was unsuccessful",
+                      variant: "destructive",
+                    });
+                  }}
+                />
+              </div>
 
               <div className="text-center pt-6 mt-6 border-t border-border/50">
                 <p className="text-sm text-muted-foreground">

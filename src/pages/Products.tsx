@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useProductsStore } from '@/stores/productsStore';
+import CouponBanner from '@/components/CouponBanner';
 import bgProductsHero from '@/assets/bg-products-hero.jpg';
 
 const Products = () => {
@@ -108,6 +109,9 @@ const Products = () => {
         />
         <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
       </div>
+
+      {/* Coupon Ticker Banner */}
+      <CouponBanner />
 
       <div className="py-8 sm:py-12 px-0 sm:px-6 relative z-10">
         <div className="container mx-auto">

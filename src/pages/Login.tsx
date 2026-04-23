@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from "lucide-react";
 import logoImg from "@/assets/logo-new.png";
 import bgCotton from "@/assets/bg-cotton-1.jpg";
+import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -40,7 +41,7 @@ const Login = () => {
       
       setIsLoading(false);
       
-      if (user?.role === "admin") {
+      if (user?.role === "admin" || user?.role === "super_admin") {
         navigate("/admin");
         toast({
           title: "Welcome Admin",
@@ -58,6 +59,35 @@ const Login = () => {
       toast({
         title: "Login Failed",
         description: error instanceof Error ? error.message : "Invalid email or password",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleGoogleLogin = async (token: string) => {
+    setIsLoading(true);
+    try {
+      const { useAuthStore } = await import('@/stores/authStore');
+      const { googleLogin } = useAuthStore.getState();
+      await googleLogin(token);
+      
+      const { user } = useAuthStore.getState();
+      setIsLoading(false);
+      
+      if (user?.role === "admin" || user?.role === "super_admin") {
+        navigate("/admin");
+      } else {
+        navigate("/about");
+      }
+      toast({
+        title: "Welcome",
+        description: "Logged in with Google successfully",
+      });
+    } catch (error) {
+      setIsLoading(false);
+      toast({
+        title: "Login Failed",
+        description: error instanceof Error ? error.message : "Google login failed",
         variant: "destructive",
       });
     }
@@ -140,6 +170,32 @@ const Login = () => {
             >
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
+
+            <div className="relative my-6 text-center">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border/50"></span>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase px-2">
+                <span className="bg-card text-muted-foreground bg-white px-2">Or continue with</span>
+              </div>
+            </div>
+
+            <div className="flex justify-center">
+              <GoogleLogin
+                onSuccess={credentialResponse => {
+                  if (credentialResponse.credential) {
+                    handleGoogleLogin(credentialResponse.credential);
+                  }
+                }}
+                onError={() => {
+                  toast({
+                    title: "Login Failed",
+                    description: "Google login was unsuccessful",
+                    variant: "destructive",
+                  });
+                }}
+              />
+            </div>
 
             <p className="text-center text-sm text-muted-foreground">
               Don't have an account?{" "}

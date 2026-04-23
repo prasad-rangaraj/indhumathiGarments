@@ -34,7 +34,7 @@ const faqs = [
       },
       {
         q: 'How do I initiate a return?',
-        a: 'Contact our support team with your Order ID and product details. You can reach us at support@indhumathi.com or call +91 98765 43210.'
+        a: 'Contact our support team with your Order ID and product details. You can reach us at support@indhumathi.com or call +91 87546 09226.'
       },
       {
         q: 'Will I get a full refund?',
@@ -97,7 +97,7 @@ const faqs = [
       },
       {
         q: 'How can I contact customer support?',
-        a: 'You can reach us via email at support@indhumathi.com, call us at +91 98765 43210, or use the contact form on our website. Our support team is available Monday-Friday, 9 AM to 6 PM.'
+        a: 'You can reach us via email at support@indhumathi.com, call us at +91 87546 09226, or use the contact form on our website. Our support team is available Monday-Friday, 9 AM to 6 PM.'
       },
       {
         q: 'Do you have a physical store?',
@@ -140,7 +140,7 @@ const FAQ = () => {
                   {category.questions.map((faq) => {
                     const currentIndex = questionIndex++;
                     const isOpen = openIndex === currentIndex;
-                    
+
                     return (
                       <div
                         key={faq.q}
@@ -152,9 +152,8 @@ const FAQ = () => {
                         >
                           <span className="font-medium text-foreground pr-4">{faq.q}</span>
                           <ChevronDown
-                            className={`w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform ${
-                              isOpen ? 'rotate-180' : ''
-                            }`}
+                            className={`w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''
+                              }`}
                           />
                         </button>
                         {isOpen && (

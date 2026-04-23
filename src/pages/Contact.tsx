@@ -1,26 +1,37 @@
 import { useState } from 'react';
 import { Mail, Phone, MapPin, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { enquiryAPI } from '@/lib/api';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 
 const Contact = () => {
+  const { settings } = useSiteSettings();
   const { toast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
+    subject: '',
     message: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Simulate form submission
-    toast({
-      title: "Message sent!",
-      description: "Thank you for contacting us. We'll get back to you soon.",
-    });
-    
-    setFormData({ name: '', email: '', message: '' });
+    setSubmitting(true);
+    try {
+      await enquiryAPI.create(formData);
+      toast({
+        title: "Message sent!",
+        description: "Thank you for contacting us. We'll get back to you soon.",
+      });
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+    } catch (err) {
+      toast({ title: "Error", description: "Could not send your message. Please try again.", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -85,10 +96,41 @@ const Contact = () => {
                   placeholder="your.email@example.com"
                 />
               </div>
+
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
+                  Phone <span className="text-muted-foreground text-xs">(optional)</span>
+                </label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                  placeholder="Your phone number"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="subject" className="block text-sm font-medium text-foreground mb-2">
+                  Subject <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="subject"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                  placeholder="What is this regarding?"
+                />
+              </div>
               
               <div>
                 <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
-                  Message
+                  Message <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   id="message"
@@ -102,8 +144,8 @@ const Contact = () => {
                 />
               </div>
               
-              <button type="submit" className="btn-primary w-full hover-glow">
-                Send Message
+              <button type="submit" disabled={submitting} className="btn-primary w-full hover-glow disabled:opacity-60 disabled:cursor-not-allowed">
+                {submitting ? 'Sending...' : 'Send Message'}
               </button>
             </form>
           </div>
@@ -117,8 +159,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground mb-2">Email Us</h3>
-                  <p className="text-muted-foreground">info@indhumathi.com</p>
-                  <p className="text-muted-foreground">support@indhumathi.com</p>
+                  <p className="text-muted-foreground">{settings.email}</p>
                 </div>
               </div>
             </div>
@@ -130,8 +171,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground mb-2">Call Us</h3>
-                  <p className="text-muted-foreground">+91 98765 43210</p>
-                  <p className="text-muted-foreground">+91 87654 32109</p>
+                  <p className="text-muted-foreground">{settings.phone}</p>
                 </div>
               </div>
             </div>
@@ -143,11 +183,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground mb-2">Visit Us</h3>
-                  <p className="text-muted-foreground">
-                    123 Cotton Street,<br />
-                    Textile District,<br />
-                    Coimbatore, Tamil Nadu 641001
-                  </p>
+                  <p className="text-muted-foreground whitespace-pre-line">{settings.address}</p>
                 </div>
               </div>
             </div>

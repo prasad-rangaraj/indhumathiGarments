@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Product } from '@/contexts/CartContext';
+import { Product } from '@/types';
 import { wishlistAPI } from '@/lib/api';
 import { useAuthStore } from './authStore';
 

@@ -13,6 +13,7 @@ import {
   LogOut,
   TrendingUp,
   Database,
+  FileEdit,
 } from "lucide-react";
 import {
   Sidebar,
@@ -35,8 +36,9 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import logoImg from "@/assets/logo-new.png";
+import { useAuthStore } from "@/stores/authStore";
 
-const mainNavItems = [
+const allNavItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   {
     title: "Products",
@@ -45,22 +47,31 @@ const mainNavItems = [
       { title: "All Products", url: "/admin/products" },
       { title: "Add Product", url: "/admin/products/add" },
       { title: "Categories", url: "/admin/products/categories" },
-      { title: "Inventory", url: "/admin/products/inventory" },
     ],
   },
+  { title: "Inventory", url: "/admin/products/inventory", icon: Package },
   { title: "Orders", url: "/admin/orders", icon: ShoppingCart },
+  { title: "Returns", url: "/admin/returns", icon: Package },
   { title: "Customers", url: "/admin/customers", icon: Users },
   { title: "Enquiries", url: "/admin/enquiries", icon: MessageSquare },
-  { title: "Banners", url: "/admin/banners", icon: Image },
   { title: "Reviews", url: "/admin/reviews", icon: Star },
   { title: "Coupons", url: "/admin/coupons", icon: Ticket },
-  { title: "Reports", url: "/admin/reports", icon: TrendingUp },
-  { title: "Settings", url: "/admin/settings", icon: Settings },
-  { title: "Seed Data", url: "/admin/seed-data", icon: Database },
+  // Super Admin only items:
+  { title: "Admin Staff", url: "/admin/staff", icon: Users, superAdminOnly: true },
+  { title: "Audit Logs", url: "/admin/audit-logs", icon: FileEdit, superAdminOnly: true },
+
+  { title: "Reports", url: "/admin/reports", icon: TrendingUp, superAdminOnly: true },
+  { title: "Settings", url: "/admin/settings", icon: Settings, superAdminOnly: true },
+  { title: "Seed Data", url: "/admin/seed-data", icon: Database, superAdminOnly: true },
 ];
 
 export function AdminSidebar() {
   const location = useLocation();
+  const { user } = useAuthStore();
+  const isSuperAdmin = user?.role === 'super_admin';
+
+  const mainNavItems = allNavItems.filter(item => !item.superAdminOnly || isSuperAdmin);
+
   const isActive = (path: string) => location.pathname === path;
   const isProductsActive = location.pathname.startsWith("/admin/products");
 

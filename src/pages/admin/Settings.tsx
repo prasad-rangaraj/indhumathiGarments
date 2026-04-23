@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/stores/authStore";
 import { useNavigate } from "react-router-dom";
+import { clearSettingsCache } from "@/hooks/useSiteSettings";
 import logoImg from "@/assets/logo-new.png";
 
 // Password strength checker
@@ -83,13 +84,13 @@ const Settings = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showRazorpaySecret, setShowRazorpaySecret] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<{ strength: 'weak' | 'medium' | 'strong'; score: number; feedback: string[] } | null>(null);
-  
+
   const [settings, setSettings] = useState({
     siteName: "Indhumathi",
     tagline: "Pure Cotton Women's Innerwear",
-    email: "contact@indhumathi.com",
-    phone: "+91 98765 43210",
-    address: "123, Textile Street, Tirupur, Tamil Nadu - 641604",
+    email: "indhumathi.img@gmail.com",
+    phone: "+91 87546 09226",
+    address: "Teachers colony 2nd street, Pandian nagar, Tiruppur,Tamilnadu . - 641604",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
@@ -99,11 +100,31 @@ const Settings = () => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Check authentication
+  // Check authentication and load settings from backend
   useEffect(() => {
-    if (!isAuthenticated || user?.role !== 'admin') {
+    if (!isAuthenticated || !['admin', 'super_admin'].includes(user?.role || '')) {
       navigate('/admin');
+      return;
     }
+    // Load current settings from backend
+    const loadSettings = async () => {
+      try {
+        const { settingsAPI } = await import('@/lib/api');
+        const data = await settingsAPI.get();
+        setSettings(prev => ({
+          ...prev,
+          siteName: data.siteName || prev.siteName,
+          tagline: data.tagline || prev.tagline,
+          email: data.email || prev.email,
+          phone: data.phone || prev.phone,
+          address: data.address || prev.address,
+          razorpayKey: data.razorpayKey || prev.razorpayKey,
+        }));
+      } catch (err) {
+        console.error('Failed to load settings:', err);
+      }
+    };
+    loadSettings();
   }, [isAuthenticated, user, navigate]);
 
   // Validate password strength
@@ -164,10 +185,12 @@ const Settings = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const PASSWORD_FIELDS = ['currentPassword', 'newPassword', 'confirmPassword'];
+
   const handleInputChange = (field: string, value: string) => {
-    // Sanitize input
-    const sanitized = sanitizeInput(value);
-    setSettings({ ...settings, [field]: sanitized });
+    // Don't sanitize password fields — sanitizing strips valid special characters
+    const processed = PASSWORD_FIELDS.includes(field) ? value : sanitizeInput(value);
+    setSettings({ ...settings, [field]: processed });
     // Clear error for this field
     if (errors[field]) {
       setErrors({ ...errors, [field]: '' });
@@ -215,6 +238,9 @@ const Settings = () => {
           newPassword: settings.newPassword,
         });
       }
+
+      // Clear public settings cache so the customer site shows new values
+      clearSettingsCache();
 
       // Clear password fields after successful save
       setSettings({
@@ -417,10 +443,9 @@ const Settings = () => {
                   <div className="flex items-center gap-2">
                     <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                       <div
-                        className={`h-full transition-all ${
-                          passwordStrength.strength === 'strong' ? 'bg-green-500' :
+                        className={`h-full transition-all ${passwordStrength.strength === 'strong' ? 'bg-green-500' :
                           passwordStrength.strength === 'medium' ? 'bg-yellow-500' : 'bg-red-500'
-                        }`}
+                          }`}
                         style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
                       />
                     </div>
@@ -556,9 +581,9 @@ const Settings = () => {
             setSettings({
               siteName: "Indhumathi",
               tagline: "Pure Cotton Women's Innerwear",
-              email: "contact@indhumathi.com",
-              phone: "+91 98765 43210",
-              address: "123, Textile Street, Tirupur, Tamil Nadu - 641604",
+              email: "indhumathi.img@gmail.com",
+              phone: "+91 87546 09226",
+              address: "Teachers colony 2nd street, Pandian nagar, Tiruppur,Tamilnadu . - 641604",
               currentPassword: "",
               newPassword: "",
               confirmPassword: "",

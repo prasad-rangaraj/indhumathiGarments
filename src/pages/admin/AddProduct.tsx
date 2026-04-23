@@ -27,6 +27,7 @@ const AddProduct = () => {
     subcategory: "",
     sizes: [] as string[],
     inStock: true,
+    stock: "50",
     material: "Cotton",
     image: "",
   });
@@ -81,6 +82,7 @@ const AddProduct = () => {
         subcategory: formData.subcategory,
         sizes: formData.sizes,
         inStock: formData.inStock,
+        stock: parseInt(formData.stock) || 0,
         material: formData.material,
         image: formData.image || null,
         isActive: true,
@@ -152,7 +154,17 @@ const AddProduct = () => {
                     required
                   />
                 </div>
-                <div className="hidden"></div>
+                <div className="space-y-2">
+                  <Label htmlFor="stock">Stock Quantity *</Label>
+                  <Input
+                    id="stock"
+                    type="number"
+                    value={formData.stock}
+                    onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                    placeholder="0"
+                    required
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="material">Material</Label>

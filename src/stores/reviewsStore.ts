@@ -9,6 +9,7 @@ export interface Review {
   content: string;
   date: string;
   productId: string;
+  images?: string[];
 }
 
 interface ReviewsState {
@@ -84,15 +85,12 @@ export const useReviewsStore = create<ReviewsState>()(
       addReview: async (productId: string, reviewData: Omit<Review, 'id' | 'date' | 'productId'>) => {
         set({ loading: true, error: null });
         try {
-          const { user } = await import('@/stores/authStore').then(m => m.useAuthStore.getState());
-          
           const newReview = await import('@/lib/api').then(m => m.reviewsAPI.create({
             productId,
-            userId: user?.id || null,
-            name: reviewData.name,
             rating: reviewData.rating,
             title: reviewData.title,
             content: reviewData.content,
+            images: reviewData.images || [],
           }));
           
           const review: Review = {
@@ -103,6 +101,7 @@ export const useReviewsStore = create<ReviewsState>()(
             content: newReview.content,
             date: new Date(newReview.createdAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
             productId: newReview.productId,
+            images: newReview.images || [],
           };
 
           const currentReviews = get().reviews[productId] || [];
@@ -114,6 +113,7 @@ export const useReviewsStore = create<ReviewsState>()(
           }));
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to add review', loading: false });
+          throw error; // re-throw so ReviewForm can catch it
         }
       },
 

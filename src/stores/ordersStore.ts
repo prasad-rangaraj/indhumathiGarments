@@ -20,6 +20,9 @@ export interface Order {
   orderDate: string;
   status: 'Pending' | 'Packed' | 'Shipped' | 'Delivered' | 'Cancelled';
   trackingNumber?: string;
+  delayedDeliveryDate?: string | null;
+  delayReason?: string | null;
+  cancelReason?: string | null;
 }
 
 interface OrdersState {
@@ -31,10 +34,13 @@ interface OrdersState {
   fetchOrders: (userId?: string, force?: boolean) => Promise<void>;
   getOrderById: (orderId: string) => Order | undefined;
   createOrder: (order: Order) => Promise<void>;
+  cancelOrder: (orderId: string, reason?: string) => Promise<void>;
   updateOrderStatus: (orderId: string, status: Order['status']) => Promise<void>;
+  updateOrderDelay: (orderId: string, data: { delayedDeliveryDate: string | null; delayReason: string | null }) => Promise<void>;
   getOrdersByStatus: (status: Order['status']) => Order[];
 }
 
+import { ordersAPI } from '@/lib/api';
 export const useOrdersStore = create<OrdersState>()(
   persist(
     (set, get) => ({
@@ -51,7 +57,7 @@ export const useOrdersStore = create<OrdersState>()(
         
         const { lastFetched, loading, abortController } = get();
         const now = Date.now();
-        const CACHE_DURATION = 5 * 60 * 1000;
+        const CACHE_DURATION = 30 * 1000; // 30 seconds for more responsive status updates
 
         if (!force && !loading && (now - lastFetched < CACHE_DURATION)) {
           return;
@@ -69,7 +75,10 @@ export const useOrdersStore = create<OrdersState>()(
           let targetUserId = userId;
           if (userId === undefined) {
             const { user } = await import('@/stores/authStore').then(m => m.useAuthStore.getState());
-            targetUserId = user?.id;
+            // Only force customer filter if the user is a customer. Admins fetch all orders.
+            if (user && user.role === 'customer') {
+              targetUserId = user.id;
+            }
           }
           
           // Pass signal if API supports it (assuming we updated API, or we ignore signal for now but handle state)
@@ -107,6 +116,9 @@ export const useOrdersStore = create<OrdersState>()(
               orderDate: order.orderDate,
               status: order.status,
               trackingNumber: order.trackingNumber,
+              delayedDeliveryDate: order.delayedDeliveryDate,
+              delayReason: order.delayReason,
+              cancelReason: order.cancelReason,
             }));
             
             set({ orders, loading: false, lastFetched: now, abortController: null });
@@ -131,7 +143,7 @@ export const useOrdersStore = create<OrdersState>()(
           const orderData = {
             userId: user?.id || null,
             items: order.items.map(item => ({
-              productId: item.id,
+              productId: item.productId,
               quantity: item.quantity,
               size: item.selectedSize,
               color: item.selectedColor,
@@ -180,6 +192,38 @@ export const useOrdersStore = create<OrdersState>()(
           set({ orders: updatedOrders, loading: false });
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to update order', loading: false });
+        }
+      },
+
+      cancelOrder: async (orderId: string, reason?: string) => {
+        set({ loading: true, error: null });
+        try {
+          await import('@/lib/api').then(m => m.ordersAPI.cancelOrder(orderId, reason));
+          
+          const updatedOrders = get().orders.map(order =>
+            order.orderId === orderId ? { ...order, status: 'Cancelled' as Order['status'], cancelReason: reason } : order
+          );
+          set({ orders: updatedOrders, loading: false });
+        } catch (error) {
+          set({ error: error instanceof Error ? error.message : 'Failed to cancel order', loading: false });
+          throw error;
+        }
+      },
+
+      updateOrderDelay: async (orderId: string, data: { delayedDeliveryDate: string | null; delayReason: string | null }) => {
+        set({ loading: true, error: null });
+        try {
+          await import('@/lib/api').then(m => m.ordersAPI.updateDelay(orderId, data));
+          
+          const updatedOrders = get().orders.map(order =>
+            order.orderId === orderId 
+              ? { ...order, delayedDeliveryDate: data.delayedDeliveryDate, delayReason: data.delayReason } 
+              : order
+          );
+          set({ orders: updatedOrders, loading: false });
+        } catch (error) {
+          set({ error: error instanceof Error ? error.message : 'Failed to update order delay', loading: false });
+          throw error;
         }
       },
 

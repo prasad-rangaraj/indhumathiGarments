@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Product } from '@/contexts/CartContext';
+import { Product } from '@/types';
 import { productsAPI } from '@/lib/api';
 
 interface ProductsState {

@@ -5,6 +5,7 @@ import { authAPI } from '../lib/api';
 import { useToast } from '../components/ui/use-toast';
 import Navigation from '../components/Navigation';
 import Footer from '../components/Footer';
+import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 
 const ResetPassword = () => {
   const { token } = useParams<{ token: string }>();
@@ -58,10 +59,15 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col relative">
+      <div className="fixed inset-0 -z-10">
+        <img src={bgCotton1} alt="" className="w-full h-full object-cover opacity-30" />
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
+      </div>
+
       <Navigation />
-      <div className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-md space-y-8 bg-card p-8 rounded-xl shadow-lg border border-border/50">
+      <div className="flex-1 flex items-center justify-center p-4 relative z-10">
+        <div className="w-full max-w-md space-y-8 card-elegant p-8 rounded-xl shadow-lg border border-border/50">
           <div className="text-center">
             <h2 className="text-3xl font-bold tracking-tight">Reset Password</h2>
             <p className="mt-2 text-muted-foreground">Enter your new password below</p>

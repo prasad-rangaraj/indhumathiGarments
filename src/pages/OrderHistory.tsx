@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Package, Eye, Truck, CheckCircle } from 'lucide-react';
-import { useOrdersStore, Order } from '@/stores/ordersStore';
+import { useOrdersStore } from '@/stores/ordersStore';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 
 const OrderHistory = () => {
@@ -16,7 +16,7 @@ const OrderHistory = () => {
       case 'Delivered':
         return { bg: 'bg-green-100', text: 'text-green-700', icon: CheckCircle };
       case 'Shipped':
-        return { bg: 'bg-blue-100', text: 'text-blue-700', icon: Truck };
+        return { bg: 'bg-pink-100', text: 'text-pink-700', icon: Truck };
       case 'Packed':
         return { bg: 'bg-purple-100', text: 'text-purple-700', icon: Package };
       case 'Pending':
@@ -34,7 +34,7 @@ const OrderHistory = () => {
     });
   };
 
-  if (orders.length === 0) {
+  if (orders.length === 0 && !loading) {
     return (
       <div className="min-h-screen relative">
         <div className="fixed inset-0 -z-10">
@@ -64,80 +64,91 @@ const OrderHistory = () => {
 
       <div className="py-6 sm:py-8 px-4 sm:px-6 relative z-10">
         <div className="container mx-auto max-w-4xl">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-foreground animate-fade-in">
-            My Orders
-          </h1>
+          <div className="flex items-center justify-between mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+              My Orders
+            </h1>
+            {loading && (
+              <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            )}
+          </div>
 
           <div className="space-y-4">
             {orders.map((order) => {
               const statusConfig = getStatusConfig(order.status);
               const StatusIcon = statusConfig.icon;
-              
-              return (
-                <div
-                  key={order.orderId}
-                  className="card-elegant p-4 sm:p-6 animate-slide-up"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-foreground">{order.orderId}</h3>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusConfig.bg} ${statusConfig.text} flex items-center gap-1`}>
-                          <StatusIcon className="w-3 h-3" />
-                          {order.status}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Placed on {formatDate(order.orderDate)}
-                      </p>
-                      {order.trackingNumber && (
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Tracking: {order.trackingNumber}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xl font-bold text-primary">₹{order.total}</p>
-                      <p className="text-xs text-muted-foreground">{order.items.length} {order.items.length === 1 ? 'item' : 'items'}</p>
-                    </div>
-                  </div>
 
-                  <div className="border-t border-border/50 pt-4">
-                    <div className="flex flex-wrap gap-2 mb-4">
+              return (
+                <div key={order.orderId} className="card-elegant overflow-hidden group">
+                  {/* Clickable block — top section goes to track page */}
+                  <Link 
+                    to={`/track/${order.orderId}`} 
+                    className="block p-4 sm:p-6 border-b border-border/50 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                      <div>
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-lg font-semibold text-foreground">{order.orderId}</h3>
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusConfig.bg} ${statusConfig.text} flex items-center gap-1`}>
+                            <StatusIcon className="w-3 h-3" />
+                            {order.status}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Placed on {formatDate(order.orderDate)}
+                        </p>
+                        {order.trackingNumber && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Tracking: {order.trackingNumber}
+                          </p>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xl font-bold text-primary">₹{order.total}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3">
                       {order.items.slice(0, 3).map((item: any, idx: number) => (
                         <div key={idx} className="flex items-center gap-2 text-sm">
                           <div className="w-10 h-10 rounded bg-accent/70 flex items-center justify-center text-xs text-muted-foreground">
-                            No Image
+                            IMG
                           </div>
                           <div>
                             <p className="font-medium text-foreground text-xs">{item.name}</p>
-                            <p className="text-xs text-muted-foreground">Size: {item.selectedSize} × {item.quantity}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Size: {item.selectedSize} × {item.quantity}
+                            </p>
                           </div>
                         </div>
                       ))}
                       {order.items.length > 3 && (
-                        <p className="text-sm text-muted-foreground">+{order.items.length - 3} more</p>
+                        <p className="text-sm text-muted-foreground self-center">
+                          +{order.items.length - 3} more
+                        </p>
                       )}
                     </div>
+                  </Link>
 
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <Link
-                        to={`/order/${order.orderId}`}
-                        className="btn-secondary flex items-center justify-center gap-2 text-xs sm:text-sm py-2.5"
-                      >
-                        <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
-                        View Details
-                      </Link>
-                      {order.trackingNumber && (
-                        <Link
-                          to={`/track/${order.trackingNumber}`}
-                          className="btn-primary flex items-center justify-center gap-2 text-xs sm:text-sm py-2.5"
-                        >
-                          <Truck className="w-3 h-3 sm:w-4 sm:h-4" />
-                          Track Order
-                        </Link>
-                      )}
-                    </div>
+                  {/* Action buttons (bottom part) */}
+                  <div className="p-4 sm:p-6 py-4 flex flex-col sm:flex-row gap-2">
+                    <Link
+                      to={`/order/${order.orderId}`}
+                      className="btn-secondary flex items-center justify-center gap-2 text-xs sm:text-sm py-2.5 flex-1"
+                    >
+                      <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                      View Details
+                    </Link>
+                    <Link
+                      to={`/track/${order.orderId}`}
+                      className="btn-primary flex items-center justify-center gap-2 text-xs sm:text-sm py-2.5 flex-1"
+                    >
+                      <Truck className="w-3 h-3 sm:w-4 sm:h-4" />
+                      Track Order
+                    </Link>
                   </div>
                 </div>
               );

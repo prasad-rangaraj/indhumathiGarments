@@ -17,10 +17,18 @@ const apiRequest = async <T>(
   options: RequestInit = {}
 ): Promise<T> => {
   const url = `${API_BASE_URL}${endpoint}`;
-  const headers = {
+  const headers: Record<string, string> = {
     ...getAuthHeaders(),
-    ...options.headers,
+    ...(options.headers as Record<string, string>),
   };
+
+  // Only add Content-Type if there's a body
+  if (options.body) {
+    headers['Content-Type'] = 'application/json';
+  } else {
+    // Remove if it was added by getAuthHeaders
+    delete headers['Content-Type'];
+  }
 
   const response = await fetch(url, {
     ...options,
@@ -54,6 +62,11 @@ export const userAPI = {
   getProfile: (id: string) => apiRequest<any>(`/users/${id}`),
   updateProfile: (data: any) => 
     apiRequest<any>('/users/profile', { method: 'PATCH', body: JSON.stringify(data) }),
+};
+
+// Public Coupons API
+export const couponsAPI = {
+  getActive: () => apiRequest<any[]>('/coupons'),
 };
 
 // Products API
@@ -98,6 +111,14 @@ export const ordersAPI = {
   create: (order: any) => apiRequest<any>('/orders', { method: 'POST', body: JSON.stringify(order) }),
   updateStatus: (orderId: string, status: string) =>
     apiRequest<any>(`/orders/${orderId}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  updateDelay: (orderId: string, data: { delayedDeliveryDate: string | null; delayReason: string | null }) =>
+    apiRequest<any>(`/orders/${orderId}/delay`, { method: 'PATCH', body: JSON.stringify(data) }),
+  cancelOrder: (orderId: string, reason?: string) =>
+    apiRequest<any>(`/orders/${orderId}/cancel`, { method: 'POST', body: JSON.stringify({ reason }) }),
+  requestReturn: (orderId: string, data: { reason: string; images?: string[] }) =>
+    apiRequest<any>(`/orders/${orderId}/return`, { method: 'POST', body: JSON.stringify(data) }),
+  trackOrder: (trackingNumber: string) =>
+    apiRequest<any>(`/public/track/${trackingNumber}`),
 };
 
 // Wishlist API
@@ -122,8 +143,21 @@ export const adminAPI = {
   createCategory: (data: any) => apiRequest<any>('/admin/categories', { method: 'POST', body: JSON.stringify(data) }),
   deleteCategory: (id: string) => apiRequest<{ message: string }>(`/admin/categories/${id}`, { method: 'DELETE' }),
   getCustomers: () => apiRequest<any[]>('/admin/customers'),
+  getStaff: () => apiRequest<any[]>('/admin/staff'),
+  getAuditLogs: () => apiRequest<any[]>('/admin/audit-log'),
+  getNotifications: () => apiRequest<any[]>('/admin/notifications'),
+  markNotificationRead: (id: string) => apiRequest<any>(`/admin/notifications/${id}/read`, { method: 'PATCH' }),
+  getReturns: () => apiRequest<any[]>('/admin/returns'),
+  updateReturnStatus: (id: string, data: { status: string, adminNotes?: string }) => 
+    apiRequest<any>(`/admin/returns/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  getDashboardStats: (range: string) => apiRequest<any>(`/admin/dashboard?range=${range}`),
+  seedProducts: (data: any) => apiRequest<any>('/admin/seed-products', { method: 'POST', body: JSON.stringify(data) }),
   updateCustomer: (id: string, data: { isActive: boolean }) =>
     apiRequest<any>(`/admin/customers/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  changeUserRole: (id: string, data: { role: 'admin' | 'customer' }) =>
+    apiRequest<any>(`/admin/customers/${id}/role`, { method: 'PATCH', body: JSON.stringify(data) }),
+  deleteCustomer: (id: string) =>
+    apiRequest<{ message: string }>(`/admin/customers/${id}`, { method: 'DELETE' }),
   getEnquiries: () => apiRequest<any[]>('/admin/enquiries'),
   updateEnquiry: (id: string, data: { status: string }) =>
     apiRequest<any>(`/admin/enquiries/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
@@ -144,6 +178,7 @@ export const adminAPI = {
   getReviews: () => apiRequest<any[]>('/admin/reviews'),
   updateReview: (id: string, data: { isApproved: boolean }) =>
     apiRequest<any>(`/admin/reviews/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  getOrders: () => apiRequest<any[]>('/admin/orders'),
 };
 
 // Customer API
@@ -181,3 +216,21 @@ export const settingsAPI = {
     apiRequest<any>('/admin/settings/change-password', { method: 'POST', body: JSON.stringify(data) }),
 };
 
+// Payments (Razorpay) API
+export const paymentsAPI = {
+  // Server calculates actual price from DB — we send items, not a raw amount
+  createOrder: (items: any[], couponDiscount?: number) =>
+    apiRequest<{ razorpayOrderId: string; amount: number; currency: string; serverTotal: number; keyId: string }>(
+      '/payments/create-order',
+      { method: 'POST', body: JSON.stringify({ items, couponDiscount }) }
+    ),
+  verify: (data: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+    orderData: any;
+  }) => apiRequest<{ success: boolean; orderId: string; trackingNumber: string }>(
+    '/payments/verify',
+    { method: 'POST', body: JSON.stringify(data) }
+  ),
+};

@@ -9,6 +9,7 @@ export interface Customer {
   totalSpent: number;
   lastOrderDate: string;
   status: 'active' | 'inactive';
+  role: 'customer' | 'admin' | 'super_admin';
 }
 
 interface CustomersState {
@@ -20,6 +21,8 @@ interface CustomersState {
   fetchCustomers: (force?: boolean) => Promise<void>;
   getCustomerById: (id: string) => Customer | undefined;
   updateCustomer: (id: string, data: Partial<Customer>) => Promise<void>;
+  changeUserRole: (id: string, role: 'admin' | 'customer') => Promise<void>;
+  deleteCustomer: (id: string) => Promise<void>;
 }
 
 export const useCustomersStore = create<CustomersState>((set, get) => ({
@@ -58,6 +61,7 @@ export const useCustomersStore = create<CustomersState>((set, get) => ({
           totalSpent: c.totalSpent || 0,
           lastOrderDate: c.lastOrderDate || '',
           status: c.status || 'active',
+          role: c.role || 'customer',
         }));
         
         set({ customers, loading: false, lastFetched: now, abortController: null });
@@ -87,6 +91,35 @@ export const useCustomersStore = create<CustomersState>((set, get) => ({
       set({ customers: updatedCustomers, loading: false });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Failed to update customer', loading: false });
+    }
+  },
+
+  changeUserRole: async (id: string, role: 'admin' | 'customer') => {
+    set({ loading: true, error: null });
+    try {
+      const updated = await import('@/lib/api').then(m => 
+        m.adminAPI.changeUserRole(id, { role })
+      );
+      
+      const updatedCustomers = get().customers.map(customer =>
+        customer.id === id ? { ...customer, role: updated.role } : customer
+      );
+      set({ customers: updatedCustomers, loading: false });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Failed to change user role', loading: false });
+      throw error;
+    }
+  },
+
+  deleteCustomer: async (id: string) => {
+    set({ loading: true, error: null });
+    try {
+      await import('@/lib/api').then(m => m.adminAPI.deleteCustomer(id));
+      const filteredCustomers = get().customers.filter(c => c.id !== id);
+      set({ customers: filteredCustomers, loading: false });
+    } catch (error) {
+       set({ error: error instanceof Error ? error.message : 'Failed to delete customer', loading: false });
+       throw error;
     }
   },
 }));

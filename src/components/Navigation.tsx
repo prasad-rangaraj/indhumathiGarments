@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Menu, X, Search, Heart } from 'lucide-react';
+import { ShoppingBag, Menu, X, Search, Heart, User } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 import { useWishlistStore } from '@/stores/wishlistStore';
 import { Input } from '@/components/ui/input';
@@ -128,6 +128,14 @@ const Navigation = () => {
               )}
             </Link>
 
+            {/* Profile Icon */}
+            <Link
+              to="/profile"
+              className="relative p-2 hover:bg-accent rounded-lg transition-colors"
+            >
+              <User className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
+            </Link>
+
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -183,13 +191,22 @@ const Navigation = () => {
                 FAQ
               </Link>
               <Link
-                to="/orders"
+                to="/profile?tab=orders"
                 onClick={() => setMobileMenuOpen(false)}
                 className={`text-base font-medium transition-colors hover:text-primary py-2 ${
-                  isActive('/orders') ? 'text-primary' : 'text-muted-foreground'
+                  isActive('/orders') || (location.pathname === '/profile' && new URLSearchParams(location.search).get('tab') === 'orders') ? 'text-primary' : 'text-muted-foreground'
                 }`}
               >
                 My Orders
+              </Link>
+              <Link
+                to="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`text-base font-medium transition-colors hover:text-primary py-2 ${
+                  isActive('/profile') ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              >
+                Profile / Dashboard
               </Link>
             </div>
           </div>

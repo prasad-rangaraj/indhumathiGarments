@@ -1,10 +1,19 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Product, CartItem as BaseCartItem } from '@/contexts/CartContext';
+import { Product } from '@/types';
 import { cartAPI } from '@/lib/api';
 import { useAuthStore } from './authStore';
 
-interface CartItem extends BaseCartItem {
+export interface CartItem {
+  id: string; // Composite ID: `${productId}-${size}`
+  productId: string; // Raw database ID
+  name: string;
+  price: number;
+  quantity: number;
+  selectedSize: string;
+  selectedColor?: string;
+  image?: string;
+  category?: string;
   cartItemId?: string;
 }
 
@@ -16,7 +25,7 @@ interface CartState {
   lastFetchedCart: number;
   abortController: AbortController | null;
   fetchCart: (force?: boolean) => Promise<void>;
-  addItem: (product: Product, size: string) => Promise<void>;
+  addItem: (product: Product, size: string, quantity?: number) => Promise<void>;
   removeItem: (id: string) => Promise<void>;
   updateQuantity: (id: string, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
@@ -64,11 +73,12 @@ export const useCartStore = create<CartState>()(
         set({ loading: true, error: null, abortController: newAbortController });
 
         try {
-          const cartItems = await cartAPI.get(newAbortController.signal);
+          const cartItems = await cartAPI.get();
           
           if (!newAbortController.signal.aborted) {
             const items: CartItem[] = cartItems.map((item: any) => ({
               ...item.product,
+              productId: item.product.id,
               quantity: item.quantity,
               selectedSize: item.size,
               id: `${item.product.id}-${item.size}`,
@@ -85,110 +95,111 @@ export const useCartStore = create<CartState>()(
         }
       },
 
-      addItem: async (product: Product, size: string) => {
+      addItem: async (product: Product, size: string, quantity: number = 1) => {
         const userId = getUserId();
-        set({ loading: true, error: null });
-        
-        try {
-          const existingItem = get().items.find(
-            item => item.id === product.id && item.selectedSize === size
-          );
+        const compositeId = `${product.id}-${size}`;
+        const previousItems = get().items;
+        const existingItem = previousItems.find(item => item.id === compositeId);
 
+        let updatedItems: CartItem[];
+        
+        if (existingItem) {
+          updatedItems = previousItems.map(item =>
+            item.id === compositeId
+              ? { ...item, quantity: item.quantity + quantity }
+              : item
+          );
+        } else {
+          updatedItems = [
+            ...previousItems,
+            {
+              ...product,
+              productId: product.id,
+              id: compositeId,
+              quantity: quantity,
+              selectedSize: size,
+            }
+          ];
+        }
+
+        // Optimistic Update
+        const total = updatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        set({ items: updatedItems, total, error: null });
+
+        try {
           if (userId !== 'guest') {
             if (existingItem && existingItem.cartItemId) {
-              const newQuantity = existingItem.quantity + 1;
-              await cartAPI.update(existingItem.cartItemId, newQuantity);
-              
-              const updatedItems = get().items.map(item =>
-                item.id === product.id && item.selectedSize === size
-                  ? { ...item, quantity: newQuantity }
-                  : item
-              );
-              const total = updatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-              set({ items: updatedItems, total, loading: false });
+              await cartAPI.update(existingItem.cartItemId, existingItem.quantity + quantity);
             } else {
               const result = await cartAPI.add({
                 productId: product.id,
-                quantity: 1,
+                quantity,
                 size,
               });
-              
-              const newItem: CartItem = {
-                ...product,
-                quantity: 1,
-                selectedSize: size,
-                cartItemId: result.id,
-              };
-              const updatedItems = [...get().items, newItem];
-              const total = updatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-              set({ items: updatedItems, total, loading: false });
-            }
-          } else {
-            let updatedItems: CartItem[];
-            if (existingItem) {
-              updatedItems = get().items.map(item =>
-                item.id === product.id && item.selectedSize === size
-                  ? { ...item, quantity: item.quantity + 1 }
-                  : item
+              // Update the store with the newly assigned database cartItemId
+              const mappedItems = get().items.map(i => 
+                i.id === compositeId && !i.cartItemId ? { ...i, cartItemId: result.id } : i
               );
-            } else {
-              const newItem: CartItem = {
-                ...product,
-                quantity: 1,
-                selectedSize: size,
-              };
-              updatedItems = [...get().items, newItem];
+              set({ items: mappedItems });
             }
-            const total = updatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-            set({ items: updatedItems, total, loading: false });
           }
         } catch (error) {
-          set({ error: error instanceof Error ? error.message : 'Failed to add item', loading: false });
+          set({ error: error instanceof Error ? error.message : 'Failed to add item to backend' });
+          console.error("Failed to add item to backend", error);
+          // Assuming failure, we could revert if strict consistency is needed, but typically logging is fine
         }
       },
 
       removeItem: async (id: string) => {
         const userId = getUserId();
-        set({ loading: true, error: null });
+        const previousItems = get().items;
         
+        // Optimistic Update
+        const updatedItems = previousItems.filter(item => item.id !== id);
+        const total = updatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        set({ items: updatedItems, total, error: null });
+
         try {
           if (userId !== 'guest') {
-            const item = get().items.find(item => item.id === id);
-            if (item && item.cartItemId) {
-              await cartAPI.remove(item.cartItemId);
+            const targetItem = previousItems.find(i => i.id === id);
+            if (targetItem?.cartItemId) {
+              await cartAPI.remove(targetItem.cartItemId);
             }
           }
-          
-          const updatedItems = get().items.filter(item => item.id !== id);
-          const total = updatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-          set({ items: updatedItems, total, loading: false });
         } catch (error) {
-          set({ error: error instanceof Error ? error.message : 'Failed to remove item', loading: false });
+          set({ error: error instanceof Error ? error.message : 'Failed to remove item' });
+          console.error('Failed to remove item from backend', error);
         }
       },
 
       updateQuantity: async (id: string, quantity: number) => {
+        if (quantity <= 0) {
+          return get().removeItem(id);
+        }
+
         const userId = getUserId();
-        set({ loading: true, error: null });
+        const previousItems = get().items;
+
+        // Optimistic Update
+        const updatedItems = previousItems
+          .map(item =>
+            item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item
+          )
+          .filter(item => item.quantity > 0);
         
+        const total = updatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        set({ items: updatedItems, total, error: null });
+
         try {
-          if (userId !== 'guest' && quantity > 0) {
-            const item = get().items.find(item => item.id === id);
-            if (item && item.cartItemId) {
-              await cartAPI.update(item.cartItemId, quantity);
+          if (userId !== 'guest') {
+            const targetItem = previousItems.find(i => i.id === id);
+            if (targetItem?.cartItemId) {
+              await cartAPI.update(targetItem.cartItemId, quantity);
             }
           }
-          
-          const updatedItems = get().items
-            .map(item =>
-              item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item
-            )
-            .filter(item => item.quantity > 0);
-          
-          const total = updatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-          set({ items: updatedItems, total, loading: false });
         } catch (error) {
-          set({ error: error instanceof Error ? error.message : 'Failed to update quantity', loading: false });
+          set({ error: error instanceof Error ? error.message : 'Failed to update quantity' });
+          console.error("Failed to update quantity", error);
         }
       },
 
@@ -198,7 +209,7 @@ export const useCartStore = create<CartState>()(
         
         try {
           if (userId !== 'guest') {
-            await cartAPI.clear(userId);
+            await cartAPI.clear();
           }
           set({ items: [], total: 0, loading: false });
         } catch (error) {
@@ -211,7 +222,7 @@ export const useCartStore = create<CartState>()(
       },
     }),
     {
-      name: 'cart-storage',
+      name: 'cart-storage-v3',
     }
   )
 );

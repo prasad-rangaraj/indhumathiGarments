@@ -8,13 +8,13 @@ import { useReviewsStore } from '@/stores/reviewsStore';
 import { useToast } from '@/hooks/use-toast';
 import ReviewForm from '@/components/ReviewForm';
 import RelatedProducts from '@/components/RelatedProducts';
-import RecentlyViewed from '@/components/RecentlyViewed';
+import StarRating from '@/components/StarRating';
 import bgInnerwear from '@/assets/bg-innerwear-model.jpg';
 
 const colorPalettes: string[][] = [
   ['bg-rose-500', 'bg-pink-400', 'bg-fuchsia-500'],
-  ['bg-sky-500', 'bg-cyan-400', 'bg-blue-500'],
-  ['bg-emerald-500', 'bg-lime-400', 'bg-green-500'],
+  ['bg-pink-600', 'bg-rose-700', 'bg-pink-300'],
+  ['bg-orange-300', 'bg-rose-100', 'bg-pink-200'],
 ];
 
 const getColorsForProduct = (id: string) => {
@@ -31,7 +31,7 @@ const ProductDetail = () => {
   const { products, loading: productsLoading, fetchProducts, getProductById } = useProductsStore();
   const { addItem } = useCartStore();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistStore();
-  const { fetchReviews, getReviewsByProductId, addReview } = useReviewsStore();
+  const { fetchReviews, getReviewsByProductId, getAverageRating } = useReviewsStore();
   
   const product = id ? getProductById(id) : undefined;
   const [selectedSize, setSelectedSize] = useState('');
@@ -46,21 +46,13 @@ const ProductDetail = () => {
 
   useEffect(() => {
     if (product?.id) {
-      fetchReviews(product.id);
+      fetchReviews(product.id, true); // Force fetch on mount
     }
   }, [product?.id, fetchReviews]);
 
   const reviews = product ? getReviewsByProductId(product.id) : [];
+  const averageRating = product ? getAverageRating(product.id) : 0;
 
-  // Track recently viewed
-  useEffect(() => {
-    if (product) {
-      const recent = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
-      const filtered = recent.filter((id: string) => id !== product.id);
-      filtered.unshift(product.id);
-      localStorage.setItem('recentlyViewed', JSON.stringify(filtered.slice(0, 10)));
-    }
-  }, [product]);
 
   if (!product) {
     return (
@@ -75,7 +67,7 @@ const ProductDetail = () => {
     );
   }
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
     
     if (!selectedSize) {
@@ -87,17 +79,22 @@ const ProductDetail = () => {
       return;
     }
 
-    for (let i = 0; i < quantity; i++) {
-      addItem(product, selectedSize);
+    try {
+      await addItem(product, selectedSize, quantity);
+      toast({
+        title: "Added to cart!",
+        description: `${quantity} x ${product.name} (Size: ${selectedSize}${selectedColor ? `, Color: ${selectedColor}` : ''}) added to cart`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Failed to add to cart",
+        description: error?.message || "Please try again",
+        variant: "destructive"
+      });
     }
-
-    toast({
-      title: "Added to cart!",
-      description: `${quantity} x ${product.name} (Size: ${selectedSize}${selectedColor ? `, Color: ${selectedColor}` : ''}) added to cart`,
-    });
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (!selectedSize) {
       toast({
         title: "Please select a size",
@@ -107,7 +104,7 @@ const ProductDetail = () => {
       return;
     }
 
-    handleAddToCart();
+    await handleAddToCart();
     navigate('/cart');
   };
 
@@ -143,25 +140,6 @@ const ProductDetail = () => {
     }
   };
 
-  // Default reviews if none exist
-  const displayReviews = reviews.length > 0 ? reviews : [
-    {
-      id: 1,
-      name: 'Priya K.',
-      rating: 5,
-      title: 'Super soft & comfortable',
-      content: 'The cotton quality is amazing and the fit is perfect for daily wear.',
-      date: 'Feb 2025',
-    },
-    {
-      id: 2,
-      name: 'Anitha R.',
-      rating: 4,
-      title: 'Great support',
-      content: 'Good support without feeling tight. I will definitely order again.',
-      date: 'Jan 2025',
-    },
-  ];
 
   return (
     <div className="min-h-screen relative">
@@ -205,6 +183,17 @@ const ProductDetail = () => {
           {/* Product Details */}
           <div className="animate-slide-up">
             <h1 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 text-foreground">{product.name}</h1>
+            
+            <StarRating 
+              rating={averageRating} 
+              totalReviews={reviews.length} 
+              showText={reviews.length > 0} 
+              className="flex items-center gap-2 mb-4" 
+            />
+            {reviews.length === 0 && (
+              <p className="text-xs text-muted-foreground -mt-3 mb-4 italic">Not yet rated</p>
+            )}
+
             <p className="text-muted-foreground text-base sm:text-lg mb-4 sm:mb-6 leading-relaxed">
               {product.description}
             </p>
@@ -256,7 +245,7 @@ const ProductDetail = () => {
             <div className="mb-6">
               <h3 className="font-semibold text-foreground mb-3">Select Size</h3>
               <div className="flex gap-3">
-                {product.sizes.map((size) => (
+                {(product.sizes ?? ['S', 'M', 'L', 'XL']).map((size) => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
@@ -328,20 +317,20 @@ const ProductDetail = () => {
               <div>
                 <h2 className="text-xl font-semibold text-foreground">Customer Reviews</h2>
                 <p className="text-sm text-muted-foreground">
-                  {displayReviews.length} review{displayReviews.length !== 1 && 's'} for this product
+                  {reviews.length} review{reviews.length !== 1 && 's'} for this product
                 </p>
               </div>
 
-              <div className="hidden sm:flex items-center gap-1 text-primary">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-primary text-primary" />
-                ))}
-              </div>
+              <StarRating rating={averageRating} showText />
             </div>
 
-            {/* Vertical Scrollable Reviews */}
-            <div className="max-h-80 overflow-y-auto pr-2 space-y-4 custom-scrollbar">
-              {displayReviews.map((review) => (
+            {reviews.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground text-sm">
+                No reviews yet. Be the first to review this product!
+              </div>
+            ) : (
+              <div className="max-h-80 overflow-y-auto pr-2 space-y-4 custom-scrollbar">
+                {reviews.map((review) => (
                 <div
                   key={review.id}
                   className="rounded-xl border border-border/60 bg-background/80 p-4"
@@ -353,43 +342,38 @@ const ProductDetail = () => {
                     <span className="text-xs text-muted-foreground">{review.date}</span>
                   </div>
 
-                  <div className="flex items-center gap-1 mb-2">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 ${
-                          i < review.rating
-                            ? 'fill-primary text-primary'
-                            : 'text-muted-foreground/30'
-                        }`}
-                      />
-                    ))}
-                  </div>
+                  <StarRating rating={review.rating} />
 
                   <p className="text-sm font-medium text-foreground mb-1">{review.title}</p>
 
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     {review.content}
                   </p>
+
+                  {review.images && review.images.length > 0 && (
+                    <div className="flex gap-2 flex-wrap mt-3">
+                      {review.images.map((img, i) => (
+                        <img
+                          key={i}
+                          src={img}
+                          alt={`review-photo-${i + 1}`}
+                          className="w-16 h-16 object-cover rounded-lg border border-border cursor-pointer hover:opacity-90 transition-opacity"
+                          onClick={() => window.open(img, '_blank')}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             {/* Review Form */}
-            <ReviewForm 
-              productId={product.id} 
-              onSubmit={async (reviewData) => {
-                await addReview(product.id, reviewData);
-              }}
-            />
+            <ReviewForm productId={product.id} />
           </div>
         </div>
 
-        {/* Related Products */}
         <RelatedProducts currentProduct={product} />
-
-        {/* Recently Viewed */}
-        <RecentlyViewed />
       </div>
     </div>
     </div>
