@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { settingsAPI } from '@/lib/api';
 
 export interface SiteSettings {
   siteName: string;
@@ -21,8 +22,7 @@ export const useSiteSettings = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/public/settings')
-      .then(res => res.json())
+    settingsAPI.getPublic()
       .then(data => {
         setSettings({ ...DEFAULT_SETTINGS, ...data });
         setLoading(false);

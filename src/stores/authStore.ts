@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { authAPI } from '@/lib/api';
 
 export interface User {
   id: string;
@@ -34,22 +35,11 @@ export const useAuthStore = create<AuthState>()(
       loading: false,
 
       login: async (email: string, password: string) => {
-        if (get().loading) return; // Prevent double submit
+        if (get().loading) return; 
         set({ loading: true });
 
         try {
-          const response = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-          });
-
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Login failed');
-          }
-
-          const data = await response.json();
+          const data = await authAPI.login({ email, password });
           set({ user: data, token: data.token, isAuthenticated: true, loading: false });
         } catch (error) {
           set({ loading: false });
@@ -62,18 +52,7 @@ export const useAuthStore = create<AuthState>()(
         set({ loading: true });
 
         try {
-          const response = await fetch('/api/auth/google', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token }),
-          });
-
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Google login failed');
-          }
-
-          const data = await response.json();
+          const data = await authAPI.googleLogin(token);
           set({ user: data, token: data.token, isAuthenticated: true, loading: false });
         } catch (error) {
           set({ loading: false });
@@ -82,23 +61,13 @@ export const useAuthStore = create<AuthState>()(
       },
 
       register: async (data) => {
-        if (get().loading) throw new Error('Request in progress'); // Prevent double submit
+        if (get().loading) throw new Error('Request in progress'); 
         set({ loading: true });
 
         try {
-          const response = await fetch('/api/auth/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-          });
-
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Registration failed');
-          }
-
+          const result = await authAPI.register(data);
           set({ loading: false });
-          return await response.json();
+          return result;
         } catch (error) {
           set({ loading: false });
           throw error;
@@ -106,24 +75,13 @@ export const useAuthStore = create<AuthState>()(
       },
 
       verifyOtp: async (email: string, otp: string) => {
-        const response = await fetch('/api/auth/verify-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, otp }),
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'OTP verification failed');
-        }
-
-        const data = await response.json();
+        const data = await authAPI.verifyOtp({ email, otp });
         set({ user: data.user, token: data.token, isAuthenticated: true });
       },
 
       logout: async () => {
         try {
-          await fetch('/api/auth/logout', { method: 'POST' });
+          await authAPI.logout();
         } catch (error) {
           console.error('Logout failed', error);
         }

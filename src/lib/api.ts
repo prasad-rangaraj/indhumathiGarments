@@ -1,6 +1,6 @@
 import { useAuthStore } from '@/stores/authStore';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Helper function to get auth headers (Optional now with Cookies)
 const getAuthHeaders = () => {
@@ -53,6 +53,7 @@ export const authAPI = {
   forgotPassword: (email: string) =>
     apiRequest<{ message: string }>('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
   logout: () => apiRequest<{ message: string }>('/auth/logout', { method: 'POST' }),
+  googleLogin: (token: string) => apiRequest<any>('/auth/google', { method: 'POST', body: JSON.stringify({ token }) }),
   resetPassword: (token: string, password: string) =>
     apiRequest<{ message: string; token: string }>('/auth/reset-password/' + token, { method: 'POST', body: JSON.stringify({ password }) }),
 };
@@ -211,6 +212,7 @@ export const reviewAPI = {
 // Settings API
 export const settingsAPI = {
   get: () => apiRequest<any>('/admin/settings'),
+  getPublic: () => apiRequest<any>('/public/settings'),
   save: (data: any) => apiRequest<any>('/admin/settings', { method: 'POST', body: JSON.stringify(data) }),
   changePassword: (data: { currentPassword: string; newPassword: string }) =>
     apiRequest<any>('/admin/settings/change-password', { method: 'POST', body: JSON.stringify(data) }),

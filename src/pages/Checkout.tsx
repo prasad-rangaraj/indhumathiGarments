@@ -186,9 +186,21 @@ const Checkout = () => {
           prefill: {
             name: customerInfo.name,
             email: customerInfo.email,
-            contact: customerInfo.phone,
+            contact: (customerInfo.phone || '').replace(/\D/g, '').slice(-10),
           },
           theme: { color: '#f472b6' }, // Light pink theme
+          config: {
+            display: {
+              blocks: {
+                upi: {
+                  name: 'UPI / Google Pay / PhonePe',
+                  instruments: [{ method: 'upi' }],
+                },
+              },
+              sequence: ['block.upi', 'block.card', 'block.netbanking'],
+              preferences: { show_default_blocks: true },
+            },
+          },
           handler: async (response: any) => {
             try {
               // Verify payment server-side and create order
