@@ -4,19 +4,9 @@ import { ArrowLeft, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 import { useProductsStore } from '@/stores/productsStore';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import bgSlips from '@/assets/bg-category-slips.jpg';
-import bgPadded from '@/assets/bg-type-padded.jpg';
-import bgNonPadded from '@/assets/bg-category-nonpadded.jpg';
-import bgSports from '@/assets/bg-category-sports.jpg';
-import bgInnerwear from '@/assets/bg-innerwear-model.jpg';
+import bgProductsHero from '@/assets/bg-products-hero.jpg';
 
-const categoryBackgrounds: Record<string, string> = {
-  'Slips & Bottoms': bgSlips,
-  'Bras - Padded': bgPadded,
-  'Bras - Non-Padded': bgNonPadded,
-  'Bras - Sports': bgSports,
-  'Bras - Moulded Cup': bgInnerwear,
-};
+
 
 const colorPalettes: string[][] = [
   ['bg-rose-500', 'bg-pink-400', 'bg-fuchsia-500'],
@@ -98,18 +88,16 @@ const CategoryProducts = () => {
   const productCount = categoryProducts.length;
   const subcategories = categories[decodedCategory as keyof typeof categories] || [];
 
-  const backgroundImage = categoryBackgrounds[decodedCategory] || bgSlips;
-  const isNonPadded = decodedCategory === 'Bras - Non-Padded';
+
 
   return (
     <div className="min-h-screen relative">
       {/* Background with blur - Fixed */}
       <div className="fixed inset-0 -z-10">
         <img
-          src={backgroundImage}
+          src={bgProductsHero}
           alt=""
-          className="w-full h-full object-cover"
-          style={isNonPadded ? { objectPosition: 'center 40%' } : {}}
+          className="w-full h-full object-cover transition-opacity duration-500"
         />
         <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
       </div>
