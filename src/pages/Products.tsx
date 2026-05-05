@@ -21,9 +21,9 @@ const Products = () => {
     return (
       <div className="min-h-screen relative">
         <div className="fixed inset-0 -z-10">
-          <img 
+          <img
             src={bgProductsHero}
-            alt="" 
+            alt=""
             className="w-full h-full object-cover transition-opacity duration-500"
           />
           <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
@@ -42,9 +42,9 @@ const Products = () => {
     return (
       <div className="min-h-screen relative">
         <div className="fixed inset-0 -z-10">
-          <img 
+          <img
             src={bgProductsHero}
-            alt="" 
+            alt=""
             className="w-full h-full object-cover transition-opacity duration-500"
           />
           <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
@@ -67,9 +67,9 @@ const Products = () => {
     return (
       <div className="min-h-screen relative">
         <div className="fixed inset-0 -z-10">
-          <img 
+          <img
             src={bgProductsHero}
-            alt="" 
+            alt=""
             className="w-full h-full object-cover transition-opacity duration-500"
           />
           <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
@@ -102,9 +102,9 @@ const Products = () => {
     <div className="min-h-screen relative">
       {/* Background with blur - Fixed */}
       <div className="fixed inset-0 -z-10">
-        <img 
+        <img
           src={bgProductsHero}
-          alt="" 
+          alt=""
           className="w-full h-full object-cover transition-opacity duration-500"
         />
         <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />

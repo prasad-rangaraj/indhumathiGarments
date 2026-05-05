@@ -99,6 +99,11 @@ export const useOrdersStore = create<OrdersState>()(
                 quantity: item.quantity,
                 selectedSize: item.size,
                 selectedColor: item.color,
+                image: item.product?.image || item.image,
+                product: item.product ? {
+                  images: item.product.images || [],
+                  image: item.product.image,
+                } : undefined,
               })),
               total: order.total,
               originalTotal: order.originalTotal,

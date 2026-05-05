@@ -1,77 +1,29 @@
 import { useState, useEffect } from "react";
-import { Save, Upload, Eye, EyeOff, Shield, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Save, Eye, EyeOff, Shield, AlertCircle, CheckCircle2, User, Mail, Phone, MapPin, Lock, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/stores/authStore";
 import { useNavigate } from "react-router-dom";
 import { clearSettingsCache } from "@/hooks/useSiteSettings";
-import logoImg from "@/assets/logo-new.png";
 
-// Password strength checker
-const checkPasswordStrength = (password: string): { strength: 'weak' | 'medium' | 'strong'; score: number; feedback: string[] } => {
+const checkPasswordStrength = (password: string) => {
   const feedback: string[] = [];
   let score = 0;
-
-  if (password.length < 8) {
-    feedback.push('At least 8 characters');
-  } else {
-    score += 1;
-  }
-
-  if (!/[a-z]/.test(password)) {
-    feedback.push('One lowercase letter');
-  } else {
-    score += 1;
-  }
-
-  if (!/[A-Z]/.test(password)) {
-    feedback.push('One uppercase letter');
-  } else {
-    score += 1;
-  }
-
-  if (!/[0-9]/.test(password)) {
-    feedback.push('One number');
-  } else {
-    score += 1;
-  }
-
-  if (!/[^a-zA-Z0-9]/.test(password)) {
-    feedback.push('One special character');
-  } else {
-    score += 1;
-  }
-
+  if (password.length >= 8) score++; else feedback.push('At least 8 characters');
+  if (/[a-z]/.test(password)) score++; else feedback.push('One lowercase letter');
+  if (/[A-Z]/.test(password)) score++; else feedback.push('One uppercase letter');
+  if (/[0-9]/.test(password)) score++; else feedback.push('One number');
+  if (/[^a-zA-Z0-9]/.test(password)) score++; else feedback.push('One special character');
+  
   let strength: 'weak' | 'medium' | 'strong' = 'weak';
   if (score >= 4) strength = 'strong';
   else if (score >= 3) strength = 'medium';
-
   return { strength, score, feedback };
-};
-
-// Input sanitization
-const sanitizeInput = (input: string): string => {
-  return input
-    .replace(/[<>]/g, '') // Remove potential HTML tags
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+=/gi, '') // Remove event handlers
-    .trim();
-};
-
-// Email validation
-const isValidEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
-
-// Phone validation
-const isValidPhone = (phone: string): boolean => {
-  const phoneRegex = /^[\d\s\+\-\(\)]+$/;
-  return phoneRegex.test(phone) && phone.replace(/\D/g, '').length >= 10;
 };
 
 const Settings = () => {
@@ -79,12 +31,12 @@ const Settings = () => {
   const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("general");
+  
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [showRazorpaySecret, setShowRazorpaySecret] = useState(false);
-  const [passwordStrength, setPasswordStrength] = useState<{ strength: 'weak' | 'medium' | 'strong'; score: number; feedback: string[] } | null>(null);
-
+  
   const [settings, setSettings] = useState({
     siteName: "Indhumathi",
     tagline: "Pure Cotton Women's Innerwear",
@@ -94,19 +46,13 @@ const Settings = () => {
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
-    razorpayKey: "",
-    razorpaySecret: "",
   });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // Check authentication and load settings from backend
   useEffect(() => {
     if (!isAuthenticated || !['admin', 'super_admin'].includes(user?.role || '')) {
       navigate('/admin');
       return;
     }
-    // Load current settings from backend
     const loadSettings = async () => {
       try {
         const { settingsAPI } = await import('@/lib/api');
@@ -118,7 +64,6 @@ const Settings = () => {
           email: data.email || prev.email,
           phone: data.phone || prev.phone,
           address: data.address || prev.address,
-          razorpayKey: data.razorpayKey || prev.razorpayKey,
         }));
       } catch (err) {
         console.error('Failed to load settings:', err);
@@ -127,494 +72,259 @@ const Settings = () => {
     loadSettings();
   }, [isAuthenticated, user, navigate]);
 
-  // Validate password strength
-  useEffect(() => {
-    if (settings.newPassword) {
-      setPasswordStrength(checkPasswordStrength(settings.newPassword));
-    } else {
-      setPasswordStrength(null);
-    }
-  }, [settings.newPassword]);
-
-  // Validate inputs
-  const validateInputs = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    // Site name validation
-    if (!settings.siteName || settings.siteName.length < 2) {
-      newErrors.siteName = 'Site name must be at least 2 characters';
-    }
-
-    // Email validation
-    if (!isValidEmail(settings.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-
-    // Phone validation
-    if (settings.phone && !isValidPhone(settings.phone)) {
-      newErrors.phone = 'Please enter a valid phone number';
-    }
-
-    // Password validation (if changing password)
-    if (settings.currentPassword || settings.newPassword || settings.confirmPassword) {
-      if (!settings.currentPassword) {
-        newErrors.currentPassword = 'Current password is required';
-      }
-      if (!settings.newPassword) {
-        newErrors.newPassword = 'New password is required';
-      } else if (passwordStrength && passwordStrength.strength === 'weak') {
-        newErrors.newPassword = 'Password is too weak. Please use a stronger password.';
-      }
-      if (settings.newPassword !== settings.confirmPassword) {
-        newErrors.confirmPassword = 'Passwords do not match';
-      }
-      if (settings.currentPassword === settings.newPassword) {
-        newErrors.newPassword = 'New password must be different from current password';
-      }
-    }
-
-    // Razorpay validation
-    if (settings.razorpayKey && !settings.razorpayKey.startsWith('rzp_')) {
-      newErrors.razorpayKey = 'Invalid Razorpay Key ID format';
-    }
-    if (settings.razorpaySecret && settings.razorpaySecret.length < 20) {
-      newErrors.razorpaySecret = 'Invalid Razorpay Secret format';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const PASSWORD_FIELDS = ['currentPassword', 'newPassword', 'confirmPassword'];
-
-  const handleInputChange = (field: string, value: string) => {
-    // Don't sanitize password fields — sanitizing strips valid special characters
-    const processed = PASSWORD_FIELDS.includes(field) ? value : sanitizeInput(value);
-    setSettings({ ...settings, [field]: processed });
-    // Clear error for this field
-    if (errors[field]) {
-      setErrors({ ...errors, [field]: '' });
-    }
-  };
-
-  const handleSave = async () => {
-    // Validate all inputs
-    if (!validateInputs()) {
-      toast({
-        title: "Validation Error",
-        description: "Please fix the errors before saving",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleSave = async (type: 'general' | 'password') => {
     setLoading(true);
     try {
-      // Separate password change from other settings
-      const settingsData: any = {
-        siteName: settings.siteName,
-        tagline: settings.tagline,
-        email: settings.email,
-        phone: settings.phone,
-        address: settings.address,
-      };
-
-      // Only include payment settings if they're being updated
-      if (settings.razorpayKey || settings.razorpaySecret) {
-        settingsData.razorpayKey = settings.razorpayKey;
-        settingsData.razorpaySecret = settings.razorpaySecret;
-      }
-
-      // Import settings API
       const { settingsAPI } = await import('@/lib/api');
-
-      // Call API to save settings (password change should be separate endpoint)
-      await settingsAPI.save(settingsData);
-
-      // Handle password change separately if provided
-      if (settings.currentPassword && settings.newPassword) {
+      
+      if (type === 'general') {
+        await settingsAPI.save({
+          siteName: settings.siteName,
+          tagline: settings.tagline,
+          email: settings.email,
+          phone: settings.phone,
+          address: settings.address,
+        });
+        clearSettingsCache();
+        toast({ title: "Settings Saved", description: "General settings updated successfully" });
+      } else {
+        if (settings.newPassword !== settings.confirmPassword) {
+           throw new Error("New passwords do not match");
+        }
         await settingsAPI.changePassword({
           currentPassword: settings.currentPassword,
           newPassword: settings.newPassword,
         });
+        setSettings(prev => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }));
+        toast({ title: "Password Updated", description: "Security settings updated successfully" });
       }
-
-      // Clear public settings cache so the customer site shows new values
-      clearSettingsCache();
-
-      // Clear password fields after successful save
-      setSettings({
-        ...settings,
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-      });
-      setPasswordStrength(null);
-
-      toast({
-        title: "Settings Saved",
-        description: "Your settings have been updated successfully",
-      });
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save settings",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error.message || "Action failed", variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
-  const getPasswordStrengthColor = () => {
-    if (!passwordStrength) return '';
-    switch (passwordStrength.strength) {
-      case 'strong': return 'text-green-600';
-      case 'medium': return 'text-yellow-600';
-      case 'weak': return 'text-red-600';
-    }
-  };
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Settings</h2>
-          <p className="text-muted-foreground">Manage website and admin settings</p>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Shield className="w-4 h-4 text-green-600" />
-          <span>Secure Connection</span>
-        </div>
+    <div className="max-w-6xl mx-auto space-y-8">
+      <div>
+        <h2 className="text-3xl font-bold tracking-tight">Admin Settings</h2>
+        <p className="text-muted-foreground">Manage your store configuration and security preferences.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Site Settings */}
-        <Card className="bg-card border-border/50">
-          <CardHeader>
-            <CardTitle className="text-lg">Site Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Site Logo</Label>
-              <div className="flex items-center gap-4">
-                <img src={logoImg} alt="Logo" className="h-12 object-contain" />
-                <Button variant="outline" size="sm" type="button" disabled>
-                  <Upload className="w-4 h-4 mr-2" />
-                  Change Logo
-                </Button>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="siteName">Site Name *</Label>
-              <Input
-                id="siteName"
-                value={settings.siteName}
-                onChange={(e) => handleInputChange('siteName', e.target.value)}
-                maxLength={100}
-                required
-              />
-              {errors.siteName && (
-                <p className="text-xs text-red-600 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" />
-                  {errors.siteName}
-                </p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="tagline">Tagline</Label>
-              <Input
-                id="tagline"
-                value={settings.tagline}
-                onChange={(e) => handleInputChange('tagline', e.target.value)}
-                maxLength={200}
-              />
-            </div>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="general" className="space-y-6" onValueChange={setActiveTab}>
+        <div className="flex flex-col md:flex-row gap-8">
+          <TabsList className="flex md:flex-col h-auto bg-transparent border-none space-x-2 md:space-x-0 md:space-y-1 w-full md:w-64 p-0">
+            <TabsTrigger value="general" className="justify-start px-4 py-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-lg transition-all w-full">
+              <Globe className="w-4 h-4 mr-3" />
+              General
+            </TabsTrigger>
+            <TabsTrigger value="contact" className="justify-start px-4 py-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-lg transition-all w-full">
+              <Mail className="w-4 h-4 mr-3" />
+              Contact
+            </TabsTrigger>
+            <TabsTrigger value="security" className="justify-start px-4 py-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-lg transition-all w-full">
+              <Shield className="w-4 h-4 mr-3" />
+              Security
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Contact Settings */}
-        <Card className="bg-card border-border/50">
-          <CardHeader>
-            <CardTitle className="text-lg">Contact Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Contact Email *</Label>
-              <Input
-                id="email"
-                type="email"
-                value={settings.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                maxLength={255}
-                required
-              />
-              {errors.email && (
-                <p className="text-xs text-red-600 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" />
-                  {errors.email}
-                </p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Contact Phone</Label>
-              <Input
-                id="phone"
-                value={settings.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
-                maxLength={20}
-              />
-              {errors.phone && (
-                <p className="text-xs text-red-600 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" />
-                  {errors.phone}
-                </p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
-              <Textarea
-                id="address"
-                value={settings.address}
-                onChange={(e) => handleInputChange('address', e.target.value)}
-                rows={3}
-                maxLength={500}
-              />
-            </div>
-          </CardContent>
-        </Card>
+          <div className="flex-1">
+            <TabsContent value="general" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+              <Card className="border-none shadow-sm bg-card/50 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle>General Settings</CardTitle>
+                  <CardDescription>Configure your store's identity and branding.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                    <div className="space-y-1">
+                      <Label className="text-base">Store Name</Label>
+                      <p className="text-sm text-muted-foreground">The name of your store shown in emails and title tags.</p>
+                    </div>
+                    <Input 
+                      value={settings.siteName} 
+                      onChange={(e) => setSettings({...settings, siteName: e.target.value})}
+                      className="bg-background"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                    <div className="space-y-1">
+                      <Label className="text-base">Store Tagline</Label>
+                      <p className="text-sm text-muted-foreground">A short slogan or description displayed in the footer.</p>
+                    </div>
+                    <Input 
+                      value={settings.tagline} 
+                      onChange={(e) => setSettings({...settings, tagline: e.target.value})}
+                      className="bg-background"
+                    />
+                  </div>
+                  <div className="flex justify-end pt-4">
+                    <Button onClick={() => handleSave('general')} disabled={loading}>
+                      <Save className="w-4 h-4 mr-2" /> Save Changes
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-        {/* Password Settings */}
-        <Card className="bg-card border-border/50">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Shield className="w-5 h-5 text-primary" />
-              Change Password
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="currentPassword">Current Password</Label>
-              <div className="relative">
-                <Input
-                  id="currentPassword"
-                  type={showPassword ? "text" : "password"}
-                  value={settings.currentPassword}
-                  onChange={(e) => handleInputChange('currentPassword', e.target.value)}
-                  autoComplete="current-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  aria-label="Toggle password visibility"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-              {errors.currentPassword && (
-                <p className="text-xs text-red-600 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" />
-                  {errors.currentPassword}
-                </p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="newPassword">New Password</Label>
-              <div className="relative">
-                <Input
-                  id="newPassword"
-                  type={showNewPassword ? "text" : "password"}
-                  value={settings.newPassword}
-                  onChange={(e) => handleInputChange('newPassword', e.target.value)}
-                  autoComplete="new-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  aria-label="Toggle password visibility"
-                >
-                  {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-              {passwordStrength && (
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all ${passwordStrength.strength === 'strong' ? 'bg-green-500' :
-                          passwordStrength.strength === 'medium' ? 'bg-yellow-500' : 'bg-red-500'
-                          }`}
-                        style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+            <TabsContent value="contact" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+              <Card className="border-none shadow-sm bg-card/50 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle>Contact Details</CardTitle>
+                  <CardDescription>How customers can reach your business.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                    <div className="space-y-1">
+                      <Label className="text-base">Support Email</Label>
+                      <p className="text-sm text-muted-foreground">Public email address for customer inquiries.</p>
+                    </div>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                      <Input 
+                        value={settings.email} 
+                        onChange={(e) => setSettings({...settings, email: e.target.value})}
+                        className="pl-10 bg-background"
                       />
                     </div>
-                    <span className={`text-xs font-medium ${getPasswordStrengthColor()}`}>
-                      {passwordStrength.strength.toUpperCase()}
-                    </span>
                   </div>
-                  {passwordStrength.feedback.length > 0 && (
-                    <ul className="text-xs text-muted-foreground space-y-1">
-                      {passwordStrength.feedback.map((item, idx) => (
-                        <li key={idx} className="flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  {passwordStrength.strength === 'strong' && (
-                    <p className="text-xs text-green-600 flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" />
-                      Strong password!
-                    </p>
-                  )}
-                </div>
-              )}
-              {errors.newPassword && (
-                <p className="text-xs text-red-600 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" />
-                  {errors.newPassword}
-                </p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={settings.confirmPassword}
-                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                  autoComplete="new-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  aria-label="Toggle password visibility"
-                >
-                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-              {errors.confirmPassword && (
-                <p className="text-xs text-red-600 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" />
-                  {errors.confirmPassword}
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                    <div className="space-y-1">
+                      <Label className="text-base">Phone Number</Label>
+                      <p className="text-sm text-muted-foreground">Business contact number.</p>
+                    </div>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                      <Input 
+                        value={settings.phone} 
+                        onChange={(e) => setSettings({...settings, phone: e.target.value})}
+                        className="pl-10 bg-background"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                    <div className="space-y-1">
+                      <Label className="text-base">Store Address</Label>
+                      <p className="text-sm text-muted-foreground">Physical location for returns and business registration.</p>
+                    </div>
+                    <Textarea 
+                      value={settings.address} 
+                      onChange={(e) => setSettings({...settings, address: e.target.value})}
+                      className="min-h-[100px] bg-background"
+                    />
+                  </div>
+                  <div className="flex justify-end pt-4">
+                    <Button onClick={() => handleSave('general')} disabled={loading}>
+                      <Save className="w-4 h-4 mr-2" /> Save Changes
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-        {/* Payment Settings */}
-        <Card className="bg-card border-border/50">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Shield className="w-5 h-5 text-primary" />
-              Payment Settings
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-xs text-yellow-800 flex items-start gap-2">
-                <Shield className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>Payment credentials are encrypted and stored securely. Never share these keys.</span>
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="razorpayKey">Razorpay Key ID</Label>
-              <Input
-                id="razorpayKey"
-                value={settings.razorpayKey}
-                onChange={(e) => handleInputChange('razorpayKey', e.target.value)}
-                placeholder="rzp_live_xxxxxxxx"
-                maxLength={50}
-                autoComplete="off"
-              />
-              {errors.razorpayKey && (
-                <p className="text-xs text-red-600 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" />
-                  {errors.razorpayKey}
-                </p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="razorpaySecret">Razorpay Secret</Label>
-              <div className="relative">
-                <Input
-                  id="razorpaySecret"
-                  type={showRazorpaySecret ? "text" : "password"}
-                  value={settings.razorpaySecret}
-                  onChange={(e) => handleInputChange('razorpaySecret', e.target.value)}
-                  placeholder="••••••••••••"
-                  maxLength={100}
-                  autoComplete="off"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowRazorpaySecret(!showRazorpaySecret)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  aria-label="Toggle secret visibility"
-                >
-                  {showRazorpaySecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-              {errors.razorpaySecret && (
-                <p className="text-xs text-red-600 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" />
-                  {errors.razorpaySecret}
-                </p>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Enter your Razorpay API keys to enable online payments. Get your keys from the Razorpay Dashboard.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+            <TabsContent value="security" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+              <Card className="border-none shadow-sm bg-card/50 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle>Security & Password</CardTitle>
+                  <CardDescription>Keep your administrative account secure.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start border-b pb-6 border-border/50">
+                    <div className="space-y-1">
+                      <Label className="text-base">Current Password</Label>
+                    </div>
+                    <div className="relative">
+                      <Input 
+                        type={showPassword ? "text" : "password"}
+                        value={settings.currentPassword} 
+                        onChange={(e) => setSettings({...settings, currentPassword: e.target.value})}
+                        className="bg-background pr-10"
+                      />
+                      <button onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-muted-foreground">
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                    <div className="space-y-1">
+                      <Label className="text-base">New Password</Label>
+                      <p className="text-sm text-muted-foreground">Choose a strong, unique password.</p>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="relative">
+                        <Input 
+                          type={showNewPassword ? "text" : "password"}
+                          value={settings.newPassword} 
+                          onChange={(e) => setSettings({...settings, newPassword: e.target.value})}
+                          className="bg-background pr-10"
+                        />
+                        <button onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-3 top-3 text-muted-foreground">
+                          {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                      {settings.newPassword && (
+                        <div className="p-3 bg-muted/50 rounded-lg space-y-2 text-xs">
+                           <div className="flex justify-between items-center">
+                             <span>Password Strength</span>
+                             <span className={checkPasswordStrength(settings.newPassword).strength === 'strong' ? 'text-green-600' : 'text-yellow-600'}>
+                               {checkPasswordStrength(settings.newPassword).strength.toUpperCase()}
+                             </span>
+                           </div>
+                           <div className="h-1 bg-border rounded-full overflow-hidden">
+                             <div className={`h-full ${checkPasswordStrength(settings.newPassword).strength === 'strong' ? 'bg-green-500' : 'bg-yellow-500'}`} style={{width: `${(checkPasswordStrength(settings.newPassword).score / 5) * 100}%`}}></div>
+                           </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-      <div className="flex justify-end gap-3">
-        <Button
-          variant="outline"
-          onClick={() => {
-            setSettings({
-              siteName: "Indhumathi",
-              tagline: "Pure Cotton Women's Innerwear",
-              email: "indhumathi.img@gmail.com",
-              phone: "+91 87546 09226",
-              address: "Teachers colony 2nd street, Pandian nagar, Tiruppur,Tamilnadu . - 641604",
-              currentPassword: "",
-              newPassword: "",
-              confirmPassword: "",
-              razorpayKey: "",
-              razorpaySecret: "",
-            });
-            setErrors({});
-            setPasswordStrength(null);
-          }}
-          disabled={loading}
-        >
-          Reset
-        </Button>
-        <Button
-          className="bg-primary hover:bg-primary/90"
-          onClick={handleSave}
-          disabled={loading}
-        >
-          {loading ? (
-            <>
-              <span className="animate-spin mr-2">⏳</span>
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4 mr-2" />
-              Save All Settings
-            </>
-          )}
-        </Button>
-      </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                    <div className="space-y-1">
+                      <Label className="text-base">Confirm Password</Label>
+                    </div>
+                    <div className="relative">
+                      <Input 
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={settings.confirmPassword} 
+                        onChange={(e) => setSettings({...settings, confirmPassword: e.target.value})}
+                        className="bg-background pr-10"
+                      />
+                      <button onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-3 text-muted-foreground">
+                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-4">
+                    <Button onClick={() => handleSave('password')} disabled={loading || !settings.newPassword}>
+                      <Lock className="w-4 h-4 mr-2" /> Update Password
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="mt-6 border-dashed bg-muted/30">
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-4">
+                    <div className="p-2 bg-primary/10 rounded-full">
+                      <Shield className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="font-medium">Developer Mode: Payment Keys</p>
+                      <p className="text-sm text-muted-foreground">
+                        Payment credentials (Razorpay) are now strictly managed via the server environment (`.env`) for maximum security. 
+                        To change keys, please update the `RAZORPAY_KEY_ID` in your backend configuration.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </div>
+        </div>
+      </Tabs>
     </div>
   );
 };

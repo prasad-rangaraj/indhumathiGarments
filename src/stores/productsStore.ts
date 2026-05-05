@@ -4,7 +4,13 @@ import { productsAPI } from '@/lib/api';
 
 interface ProductsState {
   products: Product[];
-  categories: Record<string, string[]>;
+  categories: Record<string, {
+    name: string;
+    image?: string;
+    metaTitle?: string;
+    metaDescription?: string;
+    subcategories: string[];
+  }>;
   loading: boolean;
   error: string | null;
   lastFetchedProducts: number;

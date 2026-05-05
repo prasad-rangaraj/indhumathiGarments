@@ -62,7 +62,6 @@ const allNavItems = [
 
   { title: "Reports", url: "/admin/reports", icon: TrendingUp, superAdminOnly: true },
   { title: "Settings", url: "/admin/settings", icon: Settings, superAdminOnly: true },
-  { title: "Seed Data", url: "/admin/seed-data", icon: Database, superAdminOnly: true },
 ];
 
 export function AdminSidebar() {
@@ -95,7 +94,7 @@ export function AdminSidebar() {
             <SidebarMenu>
               {mainNavItems.map((item) =>
                 item.subItems ? (
-                  <Collapsible key={item.title} defaultOpen={isProductsActive}>
+                  <Collapsible key={item.title} defaultOpen={item.title === 'Products' || isProductsActive}>
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
                         <SidebarMenuButton className="w-full justify-between hover:bg-primary/10">

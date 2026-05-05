@@ -72,8 +72,16 @@ const Cart = () => {
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="flex gap-3 sm:gap-4">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg flex-shrink-0 bg-accent/70 border border-border flex items-center justify-center text-[10px] sm:text-xs text-muted-foreground">
-                    No Image
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg flex-shrink-0 bg-accent/70 border border-border flex items-center justify-center text-[10px] sm:text-xs text-muted-foreground overflow-hidden">
+                    {item.image ? (
+                      <img 
+                        src={item.image.startsWith('http') ? item.image : `${import.meta.env.VITE_API_URL.replace('/api', '')}${item.image}`}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      "No Image"
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{item.name}</h3>

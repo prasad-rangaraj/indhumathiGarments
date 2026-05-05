@@ -114,8 +114,16 @@ const OrderHistory = () => {
                     <div className="flex flex-wrap gap-3">
                       {order.items.slice(0, 3).map((item: any, idx: number) => (
                         <div key={idx} className="flex items-center gap-2 text-sm">
-                          <div className="w-10 h-10 rounded bg-accent/70 flex items-center justify-center text-xs text-muted-foreground">
-                            IMG
+                          <div className="w-10 h-10 rounded bg-accent/70 flex items-center justify-center text-xs text-muted-foreground overflow-hidden">
+                            {item.image ? (
+                              <img 
+                                src={item.image.startsWith('http') ? item.image : `${import.meta.env.VITE_API_URL.replace('/api', '')}${item.image}`}
+                                alt={item.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              "IMG"
+                            )}
                           </div>
                           <div>
                             <p className="font-medium text-foreground text-xs">{item.name}</p>

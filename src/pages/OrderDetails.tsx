@@ -38,6 +38,10 @@ const OrderDetails = () => {
     }
 
     Array.from(files).forEach(file => {
+      if (file.size > 2 * 1024 * 1024) {
+        toast({ title: "File too large", description: `"${file.name}" exceeds 2MB. Please compress the image.`, variant: "destructive" });
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         setReturnImages(prev => [...prev, reader.result as string]);
@@ -262,8 +266,20 @@ const OrderDetails = () => {
               <div className="space-y-4">
                 {order.items.map((item: any, index: number) => (
                   <div key={`${item.id}-${index}`} className="flex flex-col sm:flex-row gap-4 p-4 bg-white border border-border/60 hover:border-pink-200 transition-colors rounded-xl group">
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-lg flex items-center justify-center text-xs text-muted-foreground flex-shrink-0 group-hover:bg-pink-50/50 transition-colors">
-                      {item.product?.images?.[0] ? <img src={item.product.images[0]} alt={item.name} className="w-full h-full object-cover rounded-lg" /> : <Package className="w-8 h-8 text-pink-200" />}
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-lg flex items-center justify-center text-xs text-muted-foreground flex-shrink-0 group-hover:bg-pink-50/50 transition-colors overflow-hidden">
+                      {(() => {
+                        const imgSrc = item.product?.image || item.product?.images?.[0] || item.image;
+                        if (imgSrc) {
+                          return (
+                            <img 
+                              src={imgSrc.startsWith('http') ? imgSrc : `${import.meta.env.VITE_API_URL.replace('/api', '')}${imgSrc}`}
+                              alt={item.name} 
+                              className="w-full h-full object-cover rounded-lg" 
+                            />
+                          );
+                        }
+                        return <Package className="w-8 h-8 text-pink-200" />;
+                      })()}
                     </div>
                     <div className="flex-1">
                       <h3 className="font-bold text-foreground">{item.name}</h3>
@@ -340,10 +356,12 @@ const OrderDetails = () => {
                   <label className="w-20 h-20 border-2 border-dashed border-pink-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-pink-50 transition-colors group">
                     <Camera className="w-6 h-6 text-pink-300 group-hover:text-pink-500" />
                     <span className="text-[10px] text-pink-400 mt-1">Add Photo</span>
+                    <span className="text-[9px] text-pink-300 mt-0.5">Max 2MB</span>
                     <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
                   </label>
                 )}
               </div>
+              <p className="text-xs text-muted-foreground mt-1">Each photo must be under 2MB.</p>
             </div>
           </div>
           <DialogFooter>

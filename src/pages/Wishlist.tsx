@@ -93,12 +93,22 @@ const Wishlist = () => {
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="relative overflow-hidden aspect-[4/5] bg-accent/60 flex items-center justify-center">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-background/40" />
-                  <div className="relative z-10 text-center">
-                    <p className="text-xs sm:text-sm font-medium text-muted-foreground tracking-wide uppercase">
-                      Indhumathi Collection
-                    </p>
-                  </div>
+                  {product.image ? (
+                    <img
+                      src={product.image.startsWith('http') ? product.image : `${import.meta.env.VITE_API_URL.replace('/api', '')}${product.image}`}
+                      alt={product.name}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                  ) : (
+                    <>
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-background/40" />
+                      <div className="relative z-10 text-center">
+                        <p className="text-xs sm:text-sm font-medium text-muted-foreground tracking-wide uppercase">
+                          Indhumathi Collection
+                        </p>
+                      </div>
+                    </>
+                  )}
                   <div className="absolute top-4 right-4 z-20">
                     <span className="px-3 py-1 text-sm font-bold bg-primary text-primary-foreground rounded-full">
                       ₹{product.price}

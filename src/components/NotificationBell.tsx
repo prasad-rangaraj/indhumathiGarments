@@ -26,8 +26,9 @@ export const NotificationBell = () => {
   const fetchNotifications = async () => {
     try {
       const data = await adminAPI.getNotifications();
-      setNotifications(data);
-      setUnreadCount(data.filter((n: any) => !n.isRead).length);
+      const unreadData = data.filter((n: any) => !n.isRead);
+      setNotifications(unreadData);
+      setUnreadCount(unreadData.length);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
     }
@@ -38,7 +39,7 @@ export const NotificationBell = () => {
     e.stopPropagation();
     try {
       await adminAPI.markNotificationRead(id);
-      setNotifications(notifications.map(n => n.id === id ? { ...n, isRead: true } : n));
+      setNotifications(notifications.filter(n => n.id !== id));
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
       console.error("Failed to mark as read:", error);
@@ -60,7 +61,7 @@ export const NotificationBell = () => {
           )}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] h-full sm:h-[80vh] flex flex-col p-0">
+      <DialogContent className="sm:max-w-[700px] h-full sm:h-[80vh] flex flex-col p-0">
         <DialogHeader className="px-6 py-4 border-b">
           <div className="flex items-center justify-between">
             <DialogTitle>Admin Notifications</DialogTitle>
@@ -68,7 +69,7 @@ export const NotificationBell = () => {
               <button 
                 onClick={async () => {
                   const unreadIds = notifications.filter(n => !n.isRead).map(n => n.id);
-                  setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+                  setNotifications([]);
                   setUnreadCount(0);
                   Promise.all(unreadIds.map(id => adminAPI.markNotificationRead(id))).catch(console.error);
                 }}

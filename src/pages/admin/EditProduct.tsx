@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,8 +10,10 @@ import { useToast } from "@/hooks/use-toast";
 import { productsAPI } from "@/lib/api";
 import { useProductsStore } from "@/stores/productsStore";
 import { useAdminStore } from "@/stores/adminStore";
+import { ImageUploader } from "@/components/admin/ImageUploader";
 
-const sizes = ["S", "M", "L", "XL", "XXL"];
+// Default sizes
+const DEFAULT_SIZES = ["S", "M", "L", "XL", "XXL"];
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -32,7 +34,13 @@ const EditProduct = () => {
     stock: "0",
     material: "Cotton",
     image: "",
+    images: [] as string[],
+    metaTitle: "",
+    metaDescription: "",
   });
+
+  const [availableSizes, setAvailableSizes] = useState<string[]>(DEFAULT_SIZES);
+  const [customSize, setCustomSize] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,7 +59,11 @@ const EditProduct = () => {
                     stock: (product.stock || 0).toString(),
                     material: product.material || "Cotton",
                     image: product.image || "",
+                    images: product.images || [],
+                    metaTitle: product.metaTitle || "",
+                    metaDescription: product.metaDescription || "",
                 });
+                setAvailableSizes(Array.from(new Set([...DEFAULT_SIZES, ...(product.sizes || [])])));
             }
         } catch (error) {
             toast({
@@ -83,6 +95,24 @@ const EditProduct = () => {
     }));
   };
 
+  const handleAddCustomSize = () => {
+    if (!customSize.trim()) return;
+    const formattedSize = customSize.trim().toUpperCase();
+    
+    if (!availableSizes.includes(formattedSize)) {
+      setAvailableSizes([...availableSizes, formattedSize]);
+    }
+    
+    if (!formData.sizes.includes(formattedSize)) {
+      setFormData((prev) => ({
+        ...prev,
+        sizes: [...prev.sizes, formattedSize],
+      }));
+    }
+    
+    setCustomSize("");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -109,7 +139,10 @@ const EditProduct = () => {
         stock: parseInt(formData.stock) || 0,
         material: formData.material,
         image: formData.image || null,
+        images: formData.images || [],
         isActive: true,
+        metaTitle: formData.metaTitle,
+        metaDescription: formData.metaDescription,
       });
 
       toast({
@@ -204,12 +237,46 @@ const EditProduct = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="image">Image URL</Label>
+                <Label htmlFor="image">Primary Image</Label>
+                <ImageUploader 
+                  value={formData.image} 
+                  onChange={(val) => setFormData({ ...formData, image: val })} 
+                  multiple={false} 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="images">Additional Images</Label>
+                <ImageUploader 
+                  value={formData.images} 
+                  onChange={(val) => setFormData({ ...formData, images: val })} 
+                  multiple={true} 
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border/50">
+            <CardHeader>
+              <CardTitle className="text-lg">SEO Configuration</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="metaTitle">Meta Title</Label>
                 <Input
-                  id="image"
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  placeholder="https://example.com/image.jpg"
+                  id="metaTitle"
+                  value={formData.metaTitle}
+                  onChange={(e) => setFormData({ ...formData, metaTitle: e.target.value })}
+                  placeholder="SEO Title (e.g., Buy Premium Shorts)"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="metaDescription">Meta Description</Label>
+                <Textarea
+                  id="metaDescription"
+                  value={formData.metaDescription}
+                  onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })}
+                  placeholder="Short description for search engine results..."
+                  rows={2}
                 />
               </div>
             </CardContent>
@@ -263,8 +330,8 @@ const EditProduct = () => {
               <CardTitle className="text-lg">Sizes *</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {sizes.map((size) => (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {availableSizes.map((size) => (
                   <button
                     key={size}
                     type="button"
@@ -278,6 +345,27 @@ const EditProduct = () => {
                     {size}
                   </button>
                 ))}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Custom size (e.g., 32, 34, 3XL)"
+                  value={customSize}
+                  onChange={(e) => setCustomSize(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddCustomSize();
+                    }
+                  }}
+                  className="flex-1"
+                />
+                <Button 
+                  type="button" 
+                  variant="secondary"
+                  onClick={handleAddCustomSize}
+                >
+                  <Plus className="w-4 h-4 mr-2" /> Add
+                </Button>
               </div>
               {formData.sizes.length === 0 && (
                 <p className="text-xs text-muted-foreground mt-2">Select at least one size</p>

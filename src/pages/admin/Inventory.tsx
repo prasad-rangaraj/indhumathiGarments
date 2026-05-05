@@ -4,11 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useProductsStore } from "@/stores/productsStore";
-import { productsAPI } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 
 const Inventory = () => {
-  const { products, fetchProducts, loading } = useProductsStore();
+  const { products, fetchProducts, updateProduct, loading } = useProductsStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editStock, setEditStock] = useState<number>(0);
@@ -35,9 +34,8 @@ const Inventory = () => {
 
   const handleSave = async (id: string) => {
     try {
-      // Update product stock via API
-      await productsAPI.update(id, { stock: editStock });
-      await fetchProducts(); // Refresh products
+      // Use the store's updateProduct — it updates the API and the local store state immediately
+      await updateProduct(id, { stock: editStock, inStock: editStock > 0 });
       setEditingId(null);
       toast({ title: "Success", description: "Stock updated successfully!" });
     } catch (error: any) {
@@ -157,13 +155,13 @@ const Inventory = () => {
                       <tr key={item.id} className="border-b border-border/30 hover:bg-muted/30">
                         <td className="py-3 px-2 sm:px-4">
                           <div className="flex items-center gap-2 sm:gap-3">
-                            {item.image && (
+                            {/* {item.image && (
                               <img
                                 src={item.image}
                                 alt={item.name}
                                 className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
                               />
-                            )}
+                            )} */}
                             <div className="min-w-0">
                               <span className="text-xs sm:text-sm font-medium text-foreground block truncate">{item.name}</span>
                               <span className="text-xs text-muted-foreground md:hidden">{item.category}</span>

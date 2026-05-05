@@ -56,7 +56,6 @@ const Reviews = lazy(() => import("./pages/admin/Reviews"));
 const Coupons = lazy(() => import("./pages/admin/Coupons"));
 const Reports = lazy(() => import("./pages/admin/Reports"));
 const Settings = lazy(() => import("./pages/admin/Settings"));
-const SeedData = lazy(() => import("./pages/admin/SeedData"));
 
 const queryClient = new QueryClient();
 
@@ -138,7 +137,6 @@ const App = () => (
                   <Route path="coupons" element={<Coupons />} />
                   <Route path="reports" element={<Reports />} />
                   <Route path="settings" element={<Settings />} />
-                  <Route path="seed-data" element={<SeedData />} />
                 </Route>
               </Route>
 

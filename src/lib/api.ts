@@ -139,6 +139,22 @@ export const reviewsAPI = {
 
 // Admin API
 export const adminAPI = {
+  uploadImage: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { token } = useAuthStore.getState();
+    const response = await fetch(`${API_BASE_URL}/admin/upload`, {
+      method: 'POST',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: formData,
+    });
+    if (!response.ok) {
+      throw new Error('Upload failed');
+    }
+    return response.json();
+  },
   getDashboard: () => apiRequest<any>('/admin/dashboard'),
   getCategories: () => apiRequest<any[]>('/admin/categories'),
   createCategory: (data: any) => apiRequest<any>('/admin/categories', { method: 'POST', body: JSON.stringify(data) }),

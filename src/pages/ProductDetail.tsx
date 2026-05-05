@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Minus, ShoppingCart, CreditCard, Star, Heart } from 'lucide-react';
+import { ArrowLeft, Plus, Minus, ShoppingCart, CreditCard, Star, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useProductsStore } from '@/stores/productsStore';
 import { useCartStore } from '@/stores/cartStore';
 import { useWishlistStore } from '@/stores/wishlistStore';
@@ -37,6 +37,7 @@ const ProductDetail = () => {
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     if (products.length === 0 && !productsLoading) {
@@ -49,6 +50,19 @@ const ProductDetail = () => {
       fetchReviews(product.id, true); // Force fetch on mount
     }
   }, [product?.id, fetchReviews]);
+
+  useEffect(() => {
+    if (product) {
+      document.title = product.metaTitle || `${product.name} | Indhumathi Garments`;
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) {
+        metaDesc.setAttribute('content', product.metaDescription || product.description || '');
+      }
+    }
+    return () => {
+      document.title = 'Indhumathi Garments';
+    };
+  }, [product]);
 
   const reviews = product ? getReviewsByProductId(product.id) : [];
   const averageRating = product ? getAverageRating(product.id) : 0;
@@ -165,19 +179,117 @@ const ProductDetail = () => {
         </button>
 
         <div className="grid md:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-12">
-          {/* Product Placeholder instead of image */}
+          {/* Product Image Carousel */}
           <div className="animate-fade-in">
-            <div className="relative overflow-hidden rounded-xl bg-accent/70 flex items-center justify-center aspect-[4/5]">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-secondary/15 to-background/40" />
-              <div className="relative z-10 text-center px-6">
-                <p className="text-xs sm:text-sm font-medium tracking-[0.15em] uppercase text-muted-foreground mb-2">
-                  Product Preview
-                </p>
-                <p className="text-lg sm:text-xl font-semibold text-foreground">
-                  Premium Cotton Lingerie
-                </p>
-              </div>
-            </div>
+            {(() => {
+              const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
+              const toUrl = (src: string) =>
+                src.startsWith('http') ? src : `${BASE}${src}`;
+              // Build image list: prefer images[], fallback to [image]
+              const imgList: string[] = (
+                product.images && product.images.length > 0
+                  ? product.images
+                  : product.image
+                  ? [product.image]
+                  : []
+              );
+
+              const hasPrev = currentImageIndex > 0;
+              const hasNext = currentImageIndex < imgList.length - 1;
+
+              return (
+                <div className="space-y-3">
+                  {/* Main image */}
+                  <div className="relative overflow-hidden rounded-xl bg-accent/40 aspect-square sm:aspect-[4/5] group">
+                    {imgList.length > 0 ? (
+                      <img
+                        key={currentImageIndex}
+                        src={toUrl(imgList[currentImageIndex])}
+                        alt={`${product.name} ${currentImageIndex + 1}`}
+                        className="absolute inset-0 w-full h-full object-contain p-2 transition-opacity duration-300"
+                      />
+                    ) : (
+                      <>
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-secondary/15 to-background/40" />
+                        <div className="relative z-10 h-full flex items-center justify-center text-center px-6">
+                          <p className="text-lg sm:text-xl font-semibold text-foreground">Premium Cotton Lingerie</p>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Left arrow */}
+                    {hasPrev && (
+                      <button
+                        onClick={() => setCurrentImageIndex(i => i - 1)}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm border border-border/60 flex items-center justify-center hover:bg-background transition-colors shadow-md"
+                        aria-label="Previous image"
+                      >
+                        <ChevronLeft className="w-5 h-5 text-foreground" />
+                      </button>
+                    )}
+
+                    {/* Right arrow */}
+                    {hasNext && (
+                      <button
+                        onClick={() => setCurrentImageIndex(i => i + 1)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm border border-border/60 flex items-center justify-center hover:bg-background transition-colors shadow-md"
+                        aria-label="Next image"
+                      >
+                        <ChevronRight className="w-5 h-5 text-foreground" />
+                      </button>
+                    )}
+
+                    {/* Image counter badge */}
+                    {imgList.length > 1 && (
+                      <div className="absolute bottom-3 right-3 z-20 bg-background/70 backdrop-blur-sm text-xs font-medium px-2 py-1 rounded-full">
+                        {currentImageIndex + 1} / {imgList.length}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Dot indicators */}
+                  {imgList.length > 1 && (
+                    <div className="flex justify-center gap-2">
+                      {imgList.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setCurrentImageIndex(idx)}
+                          className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                            idx === currentImageIndex
+                              ? 'bg-primary scale-125'
+                              : 'bg-muted-foreground/40 hover:bg-muted-foreground/70'
+                          }`}
+                          aria-label={`Go to image ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Thumbnail strip */}
+                  {imgList.length > 1 && (
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                      {imgList.map((img, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setCurrentImageIndex(idx)}
+                          className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                            idx === currentImageIndex
+                              ? 'border-primary ring-2 ring-primary/30'
+                              : 'border-border/50 hover:border-primary/50'
+                          }`}
+                        >
+                          <img
+                            src={toUrl(img)}
+                            alt={`Thumbnail ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Product Details */}

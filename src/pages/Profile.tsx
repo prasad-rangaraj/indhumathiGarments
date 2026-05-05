@@ -17,9 +17,21 @@ const OrderCard = ({ order, navigate }: { order: any; navigate: any }) => (
   >
     <div className="flex gap-4 items-center flex-1">
       <div className="w-16 h-16 bg-gray-200 rounded-md flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-100 group-hover:border-pink-200 transition-colors">
-        {order.items && order.items[0]?.product?.images?.[0] ? (
-          <img src={order.items[0].product.images[0]} alt="product" className="w-full h-full object-cover" />
-        ) : <Package className="text-gray-400"/>}
+        {(() => {
+          const firstItem = order.items?.[0];
+          if (!firstItem) return <Package className="text-gray-400"/>;
+          const imgSrc = firstItem.product?.image || firstItem.product?.images?.[0] || firstItem.image;
+          if (imgSrc) {
+            return (
+              <img 
+                src={imgSrc.startsWith('http') ? imgSrc : `${import.meta.env.VITE_API_URL.replace('/api', '')}${imgSrc}`}
+                alt="product" 
+                className="w-full h-full object-cover" 
+              />
+            );
+          }
+          return <Package className="text-gray-400"/>;
+        })()}
       </div>
       <div className="min-w-0">
          <p className="font-semibold text-gray-800 group-hover:text-pink-600 transition-colors truncate">Order #{order.orderId}</p>
