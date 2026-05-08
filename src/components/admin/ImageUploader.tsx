@@ -11,6 +11,8 @@ interface ImageUploaderProps {
 
 export const ImageUploader: React.FC<ImageUploaderProps> = ({ value, onChange, multiple = false }) => {
   const [isUploading, setIsUploading] = useState(false);
+  // Maps S3 key → temporary pre-signed preview URL (only for newly uploaded images)
+  const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -20,24 +22,28 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ value, onChange, m
     try {
       if (multiple) {
         const currentImages = Array.isArray(value) ? value : [];
-        const newUrls = [...currentImages];
-        
+        const newKeys = [...currentImages];
+        const newPreviews: Record<string, string> = {};
+
         for (let i = 0; i < files.length; i++) {
           if (files[i].size > 2 * 1024 * 1024) {
             alert(`"${files[i].name}" is too large. Please keep images under 2MB.`);
             continue;
           }
           const res = await adminAPI.uploadImage(files[i]);
-          newUrls.push(res.url);
+          newKeys.push(res.key);           // store S3 key in DB
+          newPreviews[res.key] = res.url;  // keep signed URL for preview
         }
-        onChange(newUrls);
+        setPreviewUrls(prev => ({ ...prev, ...newPreviews }));
+        onChange(newKeys);
       } else {
         if (files[0].size > 2 * 1024 * 1024) {
           alert(`"${files[0].name}" is too large. Please keep images under 2MB.`);
           return;
         }
         const res = await adminAPI.uploadImage(files[0]);
-        onChange(res.url);
+        setPreviewUrls(prev => ({ ...prev, [res.key]: res.url }));
+        onChange(res.key);  // store S3 key in DB
       }
     } catch (error) {
       console.error('Image upload failed', error);
@@ -72,10 +78,14 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ value, onChange, m
   };
 
   const BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5001';
-  
-  const getFullUrl = (url: string) => {
-    if (url.startsWith('http')) return url;
-    return `${BASE_URL}${url}`;
+
+  // Resolve any value (S3 key, /uploads/ path, or full URL) to a displayable URL
+  const getDisplayUrl = (val: string) => {
+    if (!val) return '';
+    if (previewUrls[val]) return previewUrls[val]; // newly uploaded — use signed URL
+    if (val.startsWith('http')) return val;          // already a full URL (signed or otherwise)
+    if (val.startsWith('/uploads/')) return `${BASE_URL}${val}`; // legacy local file
+    return val; // fallback
   };
 
   return (
@@ -108,7 +118,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ value, onChange, m
       {/* Preview Area for Single Image */}
       {!multiple && typeof value === 'string' && value && (
         <div className="relative w-full max-w-sm h-[300px] rounded-md overflow-hidden border border-border/50 group bg-muted/10">
-          <img src={getFullUrl(value)} alt="Preview" className="w-full h-full object-contain p-2" />
+          <img src={getDisplayUrl(value)} alt="Preview" className="w-full h-full object-contain p-2" />
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             <Button type="button" variant="destructive" size="sm" onClick={() => removeImage()}>
               <X className="w-4 h-4 mr-2" /> Remove
@@ -147,7 +157,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ value, onChange, m
                   </Button>
                 </div>
                 <div className="h-16 w-16 rounded overflow-hidden bg-muted flex-shrink-0">
-                  <img src={getFullUrl(url)} alt={`Product ${idx}`} className="h-full w-full object-contain p-0.5" />
+                  <img src={getDisplayUrl(url)} alt={`Product ${idx}`} className="h-full w-full object-contain p-0.5" />
                 </div>
                 <div className="flex-1 truncate text-xs text-muted-foreground">
                   {url.split('/').pop()}
