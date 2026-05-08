@@ -97,7 +97,8 @@ export const useAuthStore = create<AuthState>()(
           const { token } = useAuthStore.getState();
           const headers: Record<string, string> = { 'Content-Type': 'application/json' };
           if (token) headers['Authorization'] = `Bearer ${token}`;
-          const response = await fetch('/api/auth/me', { headers, credentials: 'include' });
+          const baseUrl = import.meta.env.VITE_API_URL || '/api';
+          const response = await fetch(`${baseUrl}/auth/me`, { headers, credentials: 'include' });
           if (response.ok) {
             const data = await response.json();
             set({ user: data, isAuthenticated: true });
