@@ -41,6 +41,7 @@ const EditProduct = () => {
 
   const [availableSizes, setAvailableSizes] = useState<string[]>(DEFAULT_SIZES);
   const [customSize, setCustomSize] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -125,8 +126,27 @@ const EditProduct = () => {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       if (!id) return;
+
+      const { adminAPI } = await import('@/lib/api');
+      
+      let primaryImageKey = formData.image;
+      if (formData.image instanceof File) {
+        const res = await adminAPI.uploadImage(formData.image);
+        primaryImageKey = res.key;
+      }
+
+      const additionalImageKeys = await Promise.all(
+        formData.images.map(async (img) => {
+          if (img instanceof File) {
+            const res = await adminAPI.uploadImage(img);
+            return res.key;
+          }
+          return img;
+        })
+      );
       
       await updateProduct(id, {
         name: formData.name,
@@ -138,8 +158,8 @@ const EditProduct = () => {
         inStock: formData.inStock,
         stock: parseInt(formData.stock) || 0,
         material: formData.material,
-        image: formData.image || null,
-        images: formData.images || [],
+        image: (primaryImageKey as string) || null,
+        images: additionalImageKeys as string[] || [],
         isActive: true,
         metaTitle: formData.metaTitle,
         metaDescription: formData.metaDescription,
@@ -156,6 +176,8 @@ const EditProduct = () => {
         description: error.message || "Failed to update product",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -377,8 +399,12 @@ const EditProduct = () => {
             <Button type="button" variant="outline" className="flex-1" onClick={() => navigate(-1)}>
               Cancel
             </Button>
-            <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">
-              Update Product
+            <Button 
+              type="submit" 
+              className="flex-1 bg-primary hover:bg-primary/90"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Updating..." : "Update Product"}
             </Button>
           </div>
         </div>

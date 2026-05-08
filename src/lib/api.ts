@@ -153,7 +153,9 @@ export const adminAPI = {
     if (!response.ok) {
       throw new Error('Upload failed');
     }
-    return response.json();
+    const data = await response.json();
+    console.log("Upload response:", data);
+    return data;
   },
   getDashboard: () => apiRequest<any>('/admin/dashboard'),
   getCategories: () => apiRequest<any[]>('/admin/categories'),
@@ -211,6 +213,23 @@ export const customerAPI = {
   deleteAddress: (id: string) =>
     apiRequest<{ message: string }>(`/customers/addresses/${id}`, { method: 'DELETE' }),
   getOrders: (userId: string) => apiRequest<any[]>(`/customers/orders/${userId}`),
+  uploadImagePublic: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { token } = useAuthStore.getState();
+    const response = await fetch(`${API_BASE_URL}/public/upload`, {
+      method: 'POST',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: formData,
+    });
+    if (!response.ok) {
+      throw new Error('Upload failed');
+    }
+    const data = await response.json();
+    return data;
+  },
 };
 
 // Enquiry API (for contact form)

@@ -1,12 +1,15 @@
 import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
+import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 
 const Cart = () => {
   const { items, total, updateQuantity, removeItem, fetchCart } = useCartStore();
+  const { isAuthenticated } = useAuthStore();
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleUpdateQuantity = async (id: string, quantity: number) => {
@@ -144,12 +147,23 @@ const Cart = () => {
                 </div>
               </div>
 
-              <Link 
-                to="/checkout" 
+              <button 
+                onClick={(e) => {
+                  if (!isAuthenticated) {
+                    e.preventDefault();
+                    toast({
+                      title: "Please login",
+                      description: "You need to be logged in to proceed to checkout",
+                    });
+                    navigate('/login');
+                  } else {
+                    navigate('/checkout');
+                  }
+                }}
                 className="btn-primary w-full text-center block hover-glow"
               >
                 Proceed to Checkout
-              </Link>
+              </button>
               
               <Link 
                 to="/products" 

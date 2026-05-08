@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { adminAPI } from '@/lib/api';
 
 interface ImageUploaderProps {
-  value: string | string[];
+  value: string | File | (string | File)[];
   onChange: (value: any) => void;
   multiple?: boolean;
 }
@@ -18,11 +18,10 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ value, onChange, m
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    setIsUploading(true);
     try {
       if (multiple) {
         const currentImages = Array.isArray(value) ? value : [];
-        const newKeys = [...currentImages];
+        const newFiles = [...currentImages];
         const newPreviews: Record<string, string> = {};
 
         for (let i = 0; i < files.length; i++) {
@@ -30,26 +29,25 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ value, onChange, m
             alert(`"${files[i].name}" is too large. Please keep images under 2MB.`);
             continue;
           }
-          const res = await adminAPI.uploadImage(files[i]);
-          newKeys.push(res.key);           // store S3 key in DB
-          newPreviews[res.key] = res.url;  // keep signed URL for preview
+          newFiles.push(files[i]);
+          // We use the file object itself or its name as a key for the preview map,
+          // but better to just generate object URLs when rendering or store them here
+          newPreviews[files[i].name] = URL.createObjectURL(files[i]);
         }
         setPreviewUrls(prev => ({ ...prev, ...newPreviews }));
-        onChange(newKeys);
+        onChange(newFiles);
       } else {
         if (files[0].size > 2 * 1024 * 1024) {
           alert(`"${files[0].name}" is too large. Please keep images under 2MB.`);
           return;
         }
-        const res = await adminAPI.uploadImage(files[0]);
-        setPreviewUrls(prev => ({ ...prev, [res.key]: res.url }));
-        onChange(res.key);  // store S3 key in DB
+        setPreviewUrls(prev => ({ ...prev, [files[0].name]: URL.createObjectURL(files[0]) }));
+        onChange(files[0]);
       }
     } catch (error) {
-      console.error('Image upload failed', error);
-      alert('Failed to upload image');
+      console.error('Image selection failed', error);
+      alert('Failed to select image');
     } finally {
-      setIsUploading(false);
       if (e.target) e.target.value = ''; // Reset input
     }
   };
@@ -77,15 +75,45 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ value, onChange, m
     }
   };
 
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (!multiple || !Array.isArray(value) || draggedIndex === null || draggedIndex === targetIndex) return;
+
+    const newUrls = [...value];
+    const itemToMove = newUrls[draggedIndex];
+    newUrls.splice(draggedIndex, 1);
+    newUrls.splice(targetIndex, 0, itemToMove);
+    
+    onChange(newUrls);
+    setDraggedIndex(null);
+  };
+
   const BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5001';
 
-  // Resolve any value (S3 key, /uploads/ path, or full URL) to a displayable URL
-  const getDisplayUrl = (val: string) => {
+  // Resolve any value (S3 key, /uploads/ path, full URL, or File) to a displayable URL
+  const getDisplayUrl = (val: string | File) => {
     if (!val) return '';
-    if (previewUrls[val]) return previewUrls[val]; // newly uploaded — use signed URL
-    if (val.startsWith('http')) return val;          // already a full URL (signed or otherwise)
-    if (val.startsWith('/uploads/')) return `${BASE_URL}${val}`; // legacy local file
-    return val; // fallback
+    if (val instanceof File) {
+      return previewUrls[val.name] || URL.createObjectURL(val);
+    }
+    if (typeof val === 'string') {
+      if (previewUrls[val]) return previewUrls[val]; // legacy newly uploaded
+      if (val.startsWith('http')) return val;          // already a full URL (signed or otherwise)
+      if (val.startsWith('/uploads/')) return `${BASE_URL}${val}`; // legacy local file
+      return val; // fallback
+    }
+    return '';
   };
 
   return (
@@ -116,7 +144,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ value, onChange, m
       </div>
 
       {/* Preview Area for Single Image */}
-      {!multiple && typeof value === 'string' && value && (
+      {!multiple && value && (typeof value === 'string' || value instanceof File) && (
         <div className="relative w-full max-w-sm h-[300px] rounded-md overflow-hidden border border-border/50 group bg-muted/10">
           <img src={getDisplayUrl(value)} alt="Preview" className="w-full h-full object-contain p-2" />
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -133,34 +161,22 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ value, onChange, m
           <p className="text-sm font-medium text-muted-foreground">Reorder or remove images</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {value.map((url, idx) => (
-              <div key={`${url}-${idx}`} className="flex items-center gap-3 p-2 border border-border/50 rounded-md bg-card group">
-                <div className="flex flex-col gap-1">
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-6 w-6" 
-                    disabled={idx === 0}
-                    onClick={() => moveImage(idx, 'up')}
-                  >
-                    ↑
-                  </Button>
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-6 w-6" 
-                    disabled={idx === value.length - 1}
-                    onClick={() => moveImage(idx, 'down')}
-                  >
-                    ↓
-                  </Button>
+              <div 
+                key={`${url}-${idx}`} 
+                className={`flex items-center gap-3 p-2 border rounded-md bg-card group transition-colors ${draggedIndex === idx ? 'border-primary border-dashed opacity-50' : 'border-border/50'}`}
+                draggable
+                onDragStart={(e) => handleDragStart(e, idx)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, idx)}
+              >
+                <div className="flex flex-col gap-1 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground">
+                  <GripVertical className="w-5 h-5" />
                 </div>
                 <div className="h-16 w-16 rounded overflow-hidden bg-muted flex-shrink-0">
-                  <img src={getDisplayUrl(url)} alt={`Product ${idx}`} className="h-full w-full object-contain p-0.5" />
+                  <img src={getDisplayUrl(url)} alt={`Product ${idx}`} className="h-full w-full object-contain p-0.5 pointer-events-none" />
                 </div>
-                <div className="flex-1 truncate text-xs text-muted-foreground">
-                  {url.split('/').pop()}
+                <div className="flex-1 truncate text-xs text-muted-foreground select-none">
+                  {url instanceof File ? url.name : url.split('/').pop()}
                 </div>
                 <Button type="button" variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => removeImage(idx)}>
                   <X className="w-4 h-4" />

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { productsAPI } from "@/lib/api";
+import { productsAPI, adminAPI } from "@/lib/api";
 import { useProductsStore } from "@/stores/productsStore";
 import { useAdminStore } from "@/stores/adminStore";
 import { ImageUploader } from "@/components/admin/ImageUploader";
@@ -31,8 +31,8 @@ const AddProduct = () => {
     inStock: true,
     stock: "50",
     material: "Cotton",
-    image: "",
-    images: [] as string[],
+    image: "" as string | File,
+    images: [] as (string | File)[],
     metaTitle: "",
     metaDescription: "",
   });
@@ -40,6 +40,7 @@ const AddProduct = () => {
   const [isManualSubcategory, setIsManualSubcategory] = useState(false);
   const [availableSizes, setAvailableSizes] = useState<string[]>(DEFAULT_SIZES);
   const [customSize, setCustomSize] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -97,8 +98,24 @@ const AddProduct = () => {
       });
       return;
     }
-
+    setIsSubmitting(true);
     try {
+      let primaryImageKey = formData.image;
+      if (formData.image instanceof File) {
+        const res = await adminAPI.uploadImage(formData.image);
+        primaryImageKey = res.key;
+      }
+
+      const additionalImageKeys = await Promise.all(
+        formData.images.map(async (img) => {
+          if (img instanceof File) {
+            const res = await adminAPI.uploadImage(img);
+            return res.key;
+          }
+          return img;
+        })
+      );
+
       await addProduct({
         name: formData.name,
         description: formData.description,
@@ -109,8 +126,8 @@ const AddProduct = () => {
         inStock: formData.inStock,
         stock: parseInt(formData.stock) || 0,
         material: formData.material,
-        image: formData.image || null,
-        images: formData.images || [],
+        image: (primaryImageKey as string) || null,
+        images: additionalImageKeys as string[] || [],
         isActive: true,
         metaTitle: formData.metaTitle,
         metaDescription: formData.metaDescription,
@@ -127,6 +144,8 @@ const AddProduct = () => {
         description: error.message || "Failed to add product",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -368,8 +387,12 @@ const AddProduct = () => {
             <Button type="button" variant="outline" className="flex-1" onClick={() => navigate(-1)}>
               Cancel
             </Button>
-            <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">
-              Add Product
+            <Button 
+              type="submit" 
+              className="flex-1 bg-primary hover:bg-primary/90"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Adding..." : "Add Product"}
             </Button>
           </div>
         </div>

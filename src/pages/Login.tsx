@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +17,13 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +56,7 @@ const Login = () => {
           description: "Redirecting to admin dashboard...",
         });
       } else {
-        navigate("/about");
+        navigate("/");
         toast({
           title: "Welcome Back",
           description: "Redirecting to your account...",
@@ -77,7 +85,7 @@ const Login = () => {
       if (user?.role === "admin" || user?.role === "super_admin") {
         navigate("/admin");
       } else {
-        navigate("/about");
+        navigate("/");
       }
       toast({
         title: "Welcome",
@@ -213,7 +221,7 @@ const Login = () => {
         {/* Back to Customer Area */}
         <div className="text-center mt-6">
           <button
-            onClick={() => navigate("/about")}
+            onClick={() => navigate("/")}
             className="text-white/90 hover:text-white text-sm font-medium transition-colors"
           >
             ← Browse as Guest

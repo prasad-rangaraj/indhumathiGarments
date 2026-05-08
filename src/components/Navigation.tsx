@@ -3,7 +3,9 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Menu, X, Search, Heart, User } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 import { useWishlistStore } from '@/stores/wishlistStore';
+import { useAuthStore } from '@/stores/authStore';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import imgLogo from '@/assets/img-logo.png';
 
 const Navigation = () => {
@@ -11,6 +13,7 @@ const Navigation = () => {
   const navigate = useNavigate();
   const { getItemCount, fetchCart } = useCartStore();
   const { items: wishlistItems, fetchWishlist } = useWishlistStore();
+  const { isAuthenticated } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -45,9 +48,9 @@ const Navigation = () => {
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
             <Link
-              to="/about"
+              to="/"
               className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive('/about') ? 'text-primary' : 'text-muted-foreground'
+                isActive('/') ? 'text-primary' : 'text-muted-foreground'
               }`}
             >
               About
@@ -103,38 +106,53 @@ const Navigation = () => {
             </button>
 
             {/* Wishlist */}
-            <Link
-              to="/wishlist"
-              className="relative p-2 hover:bg-accent rounded-lg transition-colors"
-            >
-              <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
-              {wishlistItems.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                  {wishlistItems.length}
-                </span>
-              )}
-            </Link>
+            {isAuthenticated && (
+              <Link
+                to="/wishlist"
+                className="relative p-2 hover:bg-accent rounded-lg transition-colors"
+              >
+                <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
+                {wishlistItems.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                    {wishlistItems.length}
+                  </span>
+                )}
+              </Link>
+            )}
 
             {/* Cart Icon */}
-            <Link
-              to="/cart"
-              className="relative p-2 hover:bg-accent rounded-lg transition-colors"
-            >
-              <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
-              {getItemCount() > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                  {getItemCount()}
-                </span>
-              )}
-            </Link>
+            {isAuthenticated && (
+              <Link
+                to="/cart"
+                className="relative p-2 hover:bg-accent rounded-lg transition-colors"
+              >
+                <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
+                {getItemCount() > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                    {getItemCount()}
+                  </span>
+                )}
+              </Link>
+            )}
 
-            {/* Profile Icon */}
-            <Link
-              to="/profile"
-              className="relative p-2 hover:bg-accent rounded-lg transition-colors"
-            >
-              <User className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
-            </Link>
+            {/* Profile / Login Icon */}
+            {isAuthenticated ? (
+              <Link
+                to="/profile"
+                className="relative p-2 hover:bg-accent rounded-lg transition-colors"
+              >
+                <User className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
+              </Link>
+            ) : (
+              <Button 
+                variant="default" 
+                size="sm" 
+                onClick={() => navigate('/login')}
+                className="bg-primary text-primary-foreground hover:bg-primary/90 ml-2"
+              >
+                Login
+              </Button>
+            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -190,24 +208,40 @@ const Navigation = () => {
               >
                 FAQ
               </Link>
-              <Link
-                to="/profile?tab=orders"
-                onClick={() => setMobileMenuOpen(false)}
-                className={`text-base font-medium transition-colors hover:text-primary py-2 ${
-                  isActive('/orders') || (location.pathname === '/profile' && new URLSearchParams(location.search).get('tab') === 'orders') ? 'text-primary' : 'text-muted-foreground'
-                }`}
-              >
-                My Orders
-              </Link>
-              <Link
-                to="/profile"
-                onClick={() => setMobileMenuOpen(false)}
-                className={`text-base font-medium transition-colors hover:text-primary py-2 ${
-                  isActive('/profile') ? 'text-primary' : 'text-muted-foreground'
-                }`}
-              >
-                Profile / Dashboard
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    to="/profile?tab=orders"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`text-base font-medium transition-colors hover:text-primary py-2 ${
+                      isActive('/orders') || (location.pathname === '/profile' && new URLSearchParams(location.search).get('tab') === 'orders') ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    My Orders
+                  </Link>
+                  <Link
+                    to="/profile"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`text-base font-medium transition-colors hover:text-primary py-2 ${
+                      isActive('/profile') ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    Profile / Dashboard
+                  </Link>
+                </>
+              ) : (
+                <div className="pt-2">
+                  <Button 
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate('/login');
+                    }}
+                  >
+                    Login / Sign Up
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         )}

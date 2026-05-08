@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,13 @@ const Signup = () => {
   
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { register, verifyOtp, googleLogin } = useAuthStore();
+  const { register, verifyOtp, googleLogin, isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleGoogleSignup = async (token: string) => {
     setIsLoading(true);
@@ -36,7 +42,7 @@ const Signup = () => {
         title: "Success",
         description: "Welcome to Indhumathi Garments!",
       });
-      navigate("/about");
+      navigate("/");
     } catch (error) {
       setIsLoading(false);
       toast({
@@ -106,7 +112,7 @@ const Signup = () => {
         description: "Welcome to Indhumathi Garments!",
       });
       
-      navigate("/about");
+      navigate("/");
     } catch (error) {
       setIsLoading(false);
       toast({
@@ -334,7 +340,7 @@ const Signup = () => {
         {/* Back to Guest Area */}
         <div className="text-center mt-6">
           <button
-            onClick={() => navigate("/about")}
+            onClick={() => navigate("/")}
             className="text-white/90 hover:text-white text-sm font-medium transition-colors backdrop-blur-sm bg-white/10 px-4 py-2 rounded-full hover:bg-white/20"
           >
             ← Browse as Guest

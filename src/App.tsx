@@ -86,33 +86,37 @@ const App = () => (
           }>
             <Routes>
               {/* Public Auth Routes */}
-              <Route path="/" element={<Login />} />
+              <Route path="/" element={<About />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-              {/* Protected Routes (Entire App) */}
+              {/* Public Store Routes */}
+              <Route element={<StoreLayout />}>
+                <Route index element={<About />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/search" element={<SearchResults />} />
+                <Route path="/category/:category" element={<CategoryProducts />} />
+                <Route path="/category/:category/:subcategory" element={<CategoryProducts />} />
+                <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/track/:orderId" element={<OrderTracking />} />
+              </Route>
+
+              {/* Protected Store Routes */}
               <Route element={<ProtectedRoute />}>
                 <Route element={<StoreLayout />}>
-                  <Route path="/about" element={<About />} />
-                  <Route path="/products" element={<Products />} />
-                  <Route path="/search" element={<SearchResults />} />
-                  <Route path="/category/:category" element={<CategoryProducts />} />
-                  <Route path="/category/:category/:subcategory" element={<CategoryProducts />} />
-                  <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/faq" element={<FAQ />} />
-                  <Route path="/terms" element={<Terms />} />
-                  <Route path="/privacy" element={<Privacy />} />
                   <Route path="/profile" element={<Profile />} />
-                  <Route path="/cart" element={<Cart />} />
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/confirmation" element={<Confirmation />} />
                   <Route path="/wishlist" element={<Wishlist />} />
                   <Route path="/orders" element={<Navigate to="/profile?tab=orders" replace />} />
                   <Route path="/order/:orderId" element={<OrderDetails />} />
-                  <Route path="/track/:orderId" element={<OrderTracking />} />
                 </Route>
               </Route>
 

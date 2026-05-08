@@ -5,6 +5,7 @@ import { useProductsStore } from '@/stores/productsStore';
 import { useCartStore } from '@/stores/cartStore';
 import { useWishlistStore } from '@/stores/wishlistStore';
 import { useReviewsStore } from '@/stores/reviewsStore';
+import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
 import ReviewForm from '@/components/ReviewForm';
 import RelatedProducts from '@/components/RelatedProducts';
@@ -32,6 +33,7 @@ const ProductDetail = () => {
   const { addItem } = useCartStore();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistStore();
   const { fetchReviews, getReviewsByProductId, getAverageRating } = useReviewsStore();
+  const { isAuthenticated } = useAuthStore();
   
   const product = id ? getProductById(id) : undefined;
   const [selectedSize, setSelectedSize] = useState('');
@@ -83,6 +85,15 @@ const ProductDetail = () => {
 
   const handleAddToCart = async () => {
     if (!product) return;
+
+    if (!isAuthenticated) {
+      toast({
+        title: "Please login",
+        description: "You need to be logged in to add items to your cart",
+      });
+      navigate('/login');
+      return;
+    }
     
     if (!selectedSize) {
       toast({
@@ -109,6 +120,15 @@ const ProductDetail = () => {
   };
 
   const handleBuyNow = async () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Please login",
+        description: "You need to be logged in to buy products",
+      });
+      navigate('/login');
+      return;
+    }
+
     if (!selectedSize) {
       toast({
         title: "Please select a size",
@@ -139,6 +159,15 @@ const ProductDetail = () => {
   const wishlistStatus = isInWishlist(product.id);
 
   const handleWishlistToggle = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Please login",
+        description: "You need to be logged in to use the wishlist",
+      });
+      navigate('/login');
+      return;
+    }
+
     if (wishlistStatus) {
       removeFromWishlist(product.id);
       toast({
