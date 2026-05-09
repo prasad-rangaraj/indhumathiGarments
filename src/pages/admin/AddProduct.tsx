@@ -58,7 +58,7 @@ const AddProduct = () => {
     ...(masterCategories || []).map((c: any) => c.name)
   ])).sort();
 
-  const subcategoryList = formData.category ? (categories[formData.category] || []) : [];
+  const subcategoryList = formData.category ? (categories[formData.category]?.subcategories || []) : [];
 
   const toggleSize = (size: string) => {
     setFormData((prev) => ({

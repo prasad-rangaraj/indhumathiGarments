@@ -20,7 +20,7 @@ const Products = () => {
   if (loading && mainCategories.length === 0) {
     return (
       <div className="min-h-screen relative">
-        <div className="fixed inset-0 -z-10">
+        <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
           <img
             src={bgProductsHero}
             alt=""
@@ -41,7 +41,7 @@ const Products = () => {
   if (error) {
     return (
       <div className="min-h-screen relative">
-        <div className="fixed inset-0 -z-10">
+        <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
           <img
             src={bgProductsHero}
             alt=""
@@ -66,13 +66,13 @@ const Products = () => {
   if (!loading && mainCategories.length === 0) {
     return (
       <div className="min-h-screen relative">
-        <div className="fixed inset-0 -z-10">
+        <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
           <img
             src={bgProductsHero}
             alt=""
             className="w-full h-full object-cover transition-opacity duration-500"
           />
-          <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
+          <div className="absolute inset-0 bg-background/70 backdrop-blur-[4px]" />
         </div>
         <div className="py-8 sm:py-12 px-4 sm:px-6 relative z-10">
           <div className="container mx-auto text-center">
@@ -101,7 +101,7 @@ const Products = () => {
   return (
     <div className="min-h-screen relative">
       {/* Background with blur - Fixed */}
-      <div className="fixed inset-0 -z-10">
+      <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
         <img
           src={bgProductsHero}
           alt=""

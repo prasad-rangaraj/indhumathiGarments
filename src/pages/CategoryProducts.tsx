@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
-import { ArrowLeft, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
+import { ArrowLeft, SlidersHorizontal, ArrowUpDown, Heart } from 'lucide-react';
 import { useProductsStore } from '@/stores/productsStore';
+import { useWishlistStore } from '@/stores/wishlistStore';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import bgProductsHero from '@/assets/bg-products-hero.jpg';
@@ -23,6 +24,7 @@ const getColorsForProduct = (id: string) => {
 const CategoryProducts = () => {
   const { category, subcategory } = useParams<{ category: string; subcategory?: string }>();
   const { products, categories, loading, fetchProducts, getProductsByCategory, getProductsBySubcategory } = useProductsStore();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistStore();
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState('relevance');
   const [priceFilter, setPriceFilter] = useState('all');
@@ -108,7 +110,7 @@ const CategoryProducts = () => {
   return (
     <div className="min-h-screen relative">
       {/* Background with blur - Fixed */}
-      <div className="fixed inset-0 -z-10">
+      <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
         <img
           src={bgProductsHero}
           alt=""
@@ -244,6 +246,7 @@ const CategoryProducts = () => {
                       src={product.image.startsWith('http') ? product.image : `${import.meta.env.VITE_API_URL.replace('/api', '')}${product.image}`}
                       alt={product.name}
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      loading="lazy"
                     />
                   ) : (
                     <>
@@ -273,9 +276,22 @@ const CategoryProducts = () => {
 
                 {/* Product Details */}
                 <div className="p-4 sm:p-6">
-                  <h3 className="text-lg sm:text-xl font-semibold mb-2 text-foreground group-hover:text-primary transition-colors">
-                    {product.name}
-                  </h3>
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <h3 className="text-lg sm:text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
+                      {product.name}
+                    </h3>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        isInWishlist(product.id) ? removeFromWishlist(product.id) : addToWishlist(product);
+                      }}
+                      className="p-1.5 rounded-full hover:bg-accent transition-colors flex-shrink-0 sm:hidden"
+                      aria-label="Toggle wishlist"
+                    >
+                      <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
+                    </button>
+                  </div>
                   <p className="text-muted-foreground text-sm mb-4 line-clamp-2 leading-relaxed">
                     {product.description}
                   </p>

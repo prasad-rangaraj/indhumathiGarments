@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useProductsStore } from '@/stores/productsStore';
+import { useWishlistStore } from '@/stores/wishlistStore';
 import { Product } from '@/types';
+import { Heart } from 'lucide-react';
 
 interface RelatedProductsProps {
   currentProduct: Product;
@@ -9,6 +11,7 @@ interface RelatedProductsProps {
 
 const RelatedProducts = ({ currentProduct }: RelatedProductsProps) => {
   const { products, fetchProducts } = useProductsStore();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistStore();
 
   useEffect(() => {
     if (products.length === 0) {
@@ -49,9 +52,22 @@ const RelatedProducts = ({ currentProduct }: RelatedProductsProps) => {
               </div>
             </div>
             <div className="p-3">
-              <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                {product.name}
-              </h3>
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                  {product.name}
+                </h3>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    isInWishlist(product.id) ? removeFromWishlist(product.id) : addToWishlist(product);
+                  }}
+                  className="p-1 rounded-full hover:bg-accent transition-colors flex-shrink-0 sm:hidden"
+                  aria-label="Toggle wishlist"
+                >
+                  <Heart className={`w-4 h-4 ${isInWishlist(product.id) ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
+                </button>
+              </div>
             </div>
           </Link>
         ))}

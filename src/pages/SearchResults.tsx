@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { Search, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
+import { Search, SlidersHorizontal, ArrowUpDown, Heart } from 'lucide-react';
 import { useProductsStore } from '@/stores/productsStore';
+import { useWishlistStore } from '@/stores/wishlistStore';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +24,7 @@ const SearchResults = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
   const { products, loading, fetchProducts, searchProducts, categories } = useProductsStore();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistStore();
   const [searchTerm, setSearchTerm] = useState(query);
   const [sortBy, setSortBy] = useState('relevance');
   const [priceFilter, setPriceFilter] = useState('all');
@@ -92,7 +94,7 @@ const SearchResults = () => {
 
   return (
     <div className="min-h-screen relative">
-      <div className="fixed inset-0 -z-10">
+      <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
         <img src={bgCotton1} alt="" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
       </div>
@@ -203,6 +205,7 @@ const SearchResults = () => {
                         src={product.image.startsWith('http') ? product.image : `${import.meta.env.VITE_API_URL.replace('/api', '')}${product.image}`}
                         alt={product.name}
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        loading="lazy"
                       />
                     ) : (
                       <>
@@ -221,9 +224,22 @@ const SearchResults = () => {
                     </div>
                   </div>
                   <div className="p-4 sm:p-6">
-                    <h3 className="text-lg sm:text-xl font-semibold mb-2 text-foreground group-hover:text-primary transition-colors">
-                      {product.name}
-                    </h3>
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <h3 className="text-lg sm:text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
+                        {product.name}
+                      </h3>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          isInWishlist(product.id) ? removeFromWishlist(product.id) : addToWishlist(product);
+                        }}
+                        className="p-1.5 rounded-full hover:bg-accent transition-colors flex-shrink-0 sm:hidden"
+                        aria-label="Toggle wishlist"
+                      >
+                        <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
+                      </button>
+                    </div>
                     <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
                       {product.description}
                     </p>

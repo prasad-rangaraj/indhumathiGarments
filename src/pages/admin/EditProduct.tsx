@@ -52,7 +52,7 @@ const EditProduct = () => {
                 setFormData({
                     name: product.name,
                     description: product.description || "",
-                    price: product.price.toString(),
+                    price: (product.price || 0).toString(),
                     category: product.category,
                     subcategory: product.subcategory,
                     sizes: product.sizes || [],
@@ -85,7 +85,7 @@ const EditProduct = () => {
     ...(masterCategories || []).map((c: any) => c.name)
   ])).sort();
 
-  const subcategoryList = formData.category ? (categories[formData.category] || []) : [];
+  const subcategoryList = formData.category ? (categories[formData.category]?.subcategories || []) : [];
 
   const toggleSize = (size: string) => {
     setFormData((prev) => ({

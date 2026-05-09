@@ -84,7 +84,7 @@ const ProductDetail = () => {
   }
 
   const handleAddToCart = async () => {
-    if (!product) return;
+    if (!product) return false;
 
     if (!isAuthenticated) {
       toast({
@@ -92,7 +92,7 @@ const ProductDetail = () => {
         description: "You need to be logged in to add items to your cart",
       });
       navigate('/login');
-      return;
+      return false;
     }
 
     if (!selectedSize) {
@@ -101,7 +101,16 @@ const ProductDetail = () => {
         description: "Choose a size before adding to cart",
         variant: "destructive"
       });
-      return;
+      return false;
+    }
+
+    if (product.stock !== undefined && product.stock < quantity) {
+      toast({
+        title: "Insufficient Stock",
+        description: `Only ${product.stock} items left in stock`,
+        variant: "destructive"
+      });
+      return false;
     }
 
     try {
@@ -110,12 +119,14 @@ const ProductDetail = () => {
         title: "Added to cart!",
         description: `${quantity} x ${product.name} (Size: ${selectedSize}${selectedColor ? `, Color: ${selectedColor}` : ''}) added to cart`,
       });
+      return true;
     } catch (error: any) {
       toast({
         title: "Failed to add to cart",
         description: error?.message || "Please try again",
         variant: "destructive"
       });
+      return false;
     }
   };
 
@@ -138,8 +149,10 @@ const ProductDetail = () => {
       return;
     }
 
-    await handleAddToCart();
-    navigate('/cart');
+    const success = await handleAddToCart();
+    if (success) {
+        navigate('/cart');
+    }
   };
 
   if (!product) {
@@ -187,7 +200,7 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen relative">
       {/* Background with blur - Fixed */}
-      <div className="fixed inset-0 -z-10">
+      <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
         <img
           src={bgFashionModel}
           alt=""
@@ -424,19 +437,27 @@ const ProductDetail = () => {
                 <button
                   onClick={handleAddToCart}
                   disabled={!product.inStock}
-                  className={`btn-secondary flex-1 flex items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-2.5 ${!product.inStock ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`flex-1 flex items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-2.5 transition-all duration-300 ${
+                    product.inStock 
+                      ? 'btn-secondary' 
+                      : 'bg-muted text-muted-foreground border border-border rounded-lg cursor-not-allowed opacity-70 grayscale'
+                  }`}
                 >
                   <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-                  <span className="hidden sm:inline">{product.inStock ? 'Add to Cart' : 'Out of Stock'}</span>
-                  <span className="sm:hidden">{product.inStock ? 'Add' : 'Sold Out'}</span>
+                  <span className="hidden sm:inline">{product.inStock ? 'Add to Cart' : 'No Stock'}</span>
+                  <span className="sm:hidden">{product.inStock ? 'Add' : 'No Stock'}</span>
                 </button>
                 <button
                   onClick={handleBuyNow}
                   disabled={!product.inStock}
-                  className={`btn-primary flex-1 flex items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-2.5 ${!product.inStock ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`flex-1 flex items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-2.5 transition-all duration-300 ${
+                    product.inStock 
+                      ? 'btn-primary' 
+                      : 'bg-muted text-muted-foreground border border-border rounded-lg cursor-not-allowed opacity-70 grayscale'
+                  }`}
                 >
                   <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-                  <span>{product.inStock ? 'Buy Now' : 'Out of Stock'}</span>
+                  <span>{product.inStock ? 'Buy Now' : 'No Stock'}</span>
                 </button>
                 <button
                   onClick={handleWishlistToggle}
