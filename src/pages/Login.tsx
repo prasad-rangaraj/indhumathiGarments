@@ -105,24 +105,24 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Background Image - Fixed */}
       <div 
-        className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat"
+        className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 bg-cover bg-center bg-no-repeat pointer-events-none"
         style={{ backgroundImage: `url(${bgCotton})` }}
       />
       
       {/* Overlay */}
-      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-pink-100/80 via-pink-50/70 to-pink-100/80 backdrop-blur-sm" />
+      <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 bg-gradient-to-br from-pink-100/80 via-pink-50/70 to-pink-100/80 backdrop-blur-sm pointer-events-none" />
       
       {/* Login Card */}
-      <div className="relative z-10 w-full max-w-md mx-4 px-4 sm:px-0">
-      <img 
-              src={logoImg} 
-              alt="Indhumathi" 
-              className="h-20 sm:h-24 md:h-28 lg:h-32 mx-auto mb-4 drop-shadow-lg"
-            />
-        <div className="bg-card/95 backdrop-blur-md rounded-2xl shadow-2xl border border-border/50 overflow-hidden">
+      <div className="relative z-10 w-full max-w-md px-4 sm:px-6 lg:px-8 w-full mx-auto pb-8">
+        <img 
+          src={logoImg} 
+          alt="Indhumathi" 
+          className="h-24 sm:h-28 md:h-32 mx-auto mb-6 drop-shadow-lg object-contain"
+        />
+        <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl border border-pink-100/50 overflow-hidden">
           {/* Login Form */}
-          <form onSubmit={handleLogin} className="p-4 sm:p-6 space-y-4 sm:space-y-5">
-            <h2 className="text-2xl font-semibold text-center text-pink-900 mb-6">Sign In</h2>
+          <form onSubmit={handleLogin} className="p-6 sm:p-8 space-y-5">
+            <h2 className="text-2xl font-bold text-center text-pink-900 mb-6">Sign In</h2>
             
             <div className="space-y-2">
               <Label htmlFor="email" className="text-foreground font-medium">
@@ -181,10 +181,10 @@ const Login = () => {
 
             <div className="relative my-6 text-center">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border/50"></span>
+                <span className="w-full border-t border-pink-200"></span>
               </div>
               <div className="relative flex justify-center text-xs uppercase px-2">
-                <span className="bg-card text-muted-foreground bg-white px-2">Or continue with</span>
+                <span className="bg-white px-3 py-1 text-pink-600/70 font-medium rounded-full border border-pink-100">Or continue with</span>
               </div>
             </div>
 

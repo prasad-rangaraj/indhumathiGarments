@@ -127,22 +127,22 @@ const Signup = () => {
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Background Image - Fixed */}
       <div 
-        className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat"
+        className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 bg-cover bg-center bg-no-repeat pointer-events-none"
         style={{ backgroundImage: `url(${bgCotton})` }}
       />
       
       {/* Overlay */}
-      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-pink-100/80 via-pink-50/70 to-pink-100/80 backdrop-blur-sm" />
+      <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 bg-gradient-to-br from-pink-100/80 via-pink-50/70 to-pink-100/80 backdrop-blur-sm pointer-events-none" />
       
       {/* Signup Card */}
-      <div className="relative z-10 w-full max-w-xl mx-4 px-4 sm:px-0 my-8">
+      <div className="relative z-10 w-full max-w-xl px-4 sm:px-6 lg:px-8 mx-auto my-8">
         <img 
           src={logoImg} 
           alt="Indhumathi" 
-          className="h-16 mx-auto mb-6 drop-shadow-xl transition-transform hover:scale-105"
+          className="h-24 sm:h-28 md:h-32 mx-auto mb-6 drop-shadow-lg object-contain transition-transform hover:scale-105"
         />
         
-        <div className="bg-card/95 backdrop-blur-md rounded-2xl shadow-2xl border border-border/50 overflow-hidden">
+        <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl border border-pink-100/50 overflow-hidden">
           {step === "details" ? (
             <form onSubmit={handleRegister} className="p-6 sm:p-10 space-y-6">
               <div className="text-center mb-6">
@@ -248,10 +248,10 @@ const Signup = () => {
 
               <div className="relative my-6 text-center">
                 <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border/50"></span>
+                  <span className="w-full border-t border-pink-200"></span>
                 </div>
                 <div className="relative flex justify-center text-xs uppercase px-2">
-                  <span className="bg-card text-muted-foreground bg-white px-2">Or continue with</span>
+                  <span className="bg-white px-3 py-1 text-pink-600/70 font-medium rounded-full border border-pink-100">Or continue with</span>
                 </div>
               </div>
 
