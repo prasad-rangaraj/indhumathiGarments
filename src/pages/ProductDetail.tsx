@@ -193,7 +193,7 @@ const ProductDetail = () => {
 
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen relative overflow-x-hidden">
       {/* Background with blur - Fixed */}
       <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
         <img
@@ -207,14 +207,6 @@ const ProductDetail = () => {
 
       <div className="py-6 sm:py-8 px-4 sm:px-6 relative z-10">
         <div className="container mx-auto max-w-6xl">
-          {/* Back Button */}
-          <button
-            onClick={() => navigate('/products')}
-            className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-6 sm:mb-8 text-sm sm:text-base"
-          >
-            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-            Back to Products
-          </button>
 
           <div className="grid md:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-12">
             {/* Product Image Carousel */}

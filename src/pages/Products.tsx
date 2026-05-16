@@ -81,27 +81,17 @@ const Products = () => {
       <div className="py-8 sm:py-12 px-0 sm:px-6 relative z-10">
         <div className="container mx-auto">
 
-          {/* Back to gender select */}
-          <div className="mb-6 px-4 sm:px-0">
-            <Link
-              to="/products"
-              className="inline-flex items-center gap-2 text-sm font-medium transition-all hover:gap-3 text-primary"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Change selection
-            </Link>
-          </div>
 
           {/* Header */}
           <div className="text-center mb-10 sm:mb-14">
             {gender && (
               <div className="flex justify-center mb-4">
-                <span className={`px-5 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase bg-gradient-to-r ${themeColor} text-primary-foreground shadow-lg`}>
+                <span className={`px-5 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase bg-white/70 backdrop-blur-sm border border-primary/20 text-primary shadow-sm`}>
                   {gender === 'women' ? '♀  She — For Her' : '♂  He — For Him'}
                 </span>
               </div>
             )}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-foreground/90">
               {genderLabel}
             </h1>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -126,7 +116,7 @@ const Products = () => {
                     style={{ animationDelay: `${index * 0.06}s` }}
                   >
                     <div
-                      className="backdrop-blur-md rounded-2xl px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between gap-4 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border border-primary/20 bg-white/5 hover:border-primary/50"
+                      className="backdrop-blur-md rounded-2xl px-6 sm:px-8 py-4 sm:py-5 flex items-center justify-between gap-4 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border border-primary/20 bg-white/5 hover:border-primary/50"
                     >
                       <div>
                         <h2 className="text-lg sm:text-xl font-semibold text-foreground transition-colors group-hover:text-primary">

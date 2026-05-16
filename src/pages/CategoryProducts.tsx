@@ -110,22 +110,9 @@ const CategoryProducts = () => {
 
       <div className="py-6 sm:py-8 px-4 sm:px-6 relative z-10">
         <div className="container mx-auto">
-          {/* Header with Back Button */}
-          <div className="flex items-center mb-6 sm:mb-8">
-            <Link
-              to={decodedSubcategory ? `/category/${encodeURIComponent(decodedCategory)}` : "/products"}
-              className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors text-sm sm:text-base"
-            >
-              <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="hidden sm:inline">
-                {decodedSubcategory ? `Back to ${decodedCategory}` : 'Back to Categories'}
-              </span>
-              <span className="sm:hidden">Back</span>
-            </Link>
-          </div>
 
           <div className="text-center mb-8 sm:mb-12">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent px-4">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 text-foreground/90 px-4">
               {pageTitle}
             </h1>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">

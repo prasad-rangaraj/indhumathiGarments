@@ -28,11 +28,19 @@ const GenderSelect = () => {
   const [hovered, setHovered] = useState<Hovered>(null);
   const [mounted, setMounted] = useState(false);
   const [leaving, setLeaving] = useState<Hovered>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const dividerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    setIsMobile(window.innerWidth < 768);
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    
     const t = setTimeout(() => setMounted(true), 80);
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   const handleSelect = (gender: 'women' | 'men') => {
@@ -90,7 +98,7 @@ const GenderSelect = () => {
                 boxShadow: '0 0 6px rgba(233,30,140,0.5)',
                 animation: `petal ${p.dur}s ease-in-out infinite`,
                 animationDelay: `${p.delay}s`,
-                opacity: W ? 1 : 0,
+                opacity: (W || isMobile) ? 1 : 0,
                 transition: 'opacity 0.5s ease',
               }}
             />
@@ -204,8 +212,8 @@ const GenderSelect = () => {
 
         {/* Bottom tag */}
         <p
-          className="absolute bottom-4 md:bottom-8 text-[10px] md:text-xs tracking-widest uppercase"
-          style={{ color: 'rgba(194,24,91,0.45)', opacity: W ? 0 : 0.8, transition: 'opacity 0.4s ease' }}
+          className="absolute bottom-20 md:bottom-8 text-[10px] md:text-xs tracking-widest uppercase"
+          style={{ color: 'rgba(194,24,91,0.45)', opacity: (W || isMobile) ? 0 : 0.8, transition: 'opacity 0.4s ease' }}
         >
           Women's Collection
         </p>
@@ -319,7 +327,7 @@ const GenderSelect = () => {
                 boxShadow: '0 0 6px rgba(21,101,192,0.5)',
                 animation: `petal ${p.dur}s ease-in-out infinite`,
                 animationDelay: `${p.delay}s`,
-                opacity: M ? 1 : 0,
+                opacity: (M || isMobile) ? 1 : 0,
                 transition: 'opacity 0.5s ease',
               }}
             />
@@ -432,8 +440,8 @@ const GenderSelect = () => {
 
         {/* Bottom tag */}
         <p
-          className="absolute bottom-4 md:bottom-8 text-[10px] md:text-xs tracking-widest uppercase"
-          style={{ color: 'rgba(21,101,192,0.4)', opacity: M ? 0 : 0.8, transition: 'opacity 0.4s ease' }}
+          className="absolute bottom-6 md:bottom-8 text-[10px] md:text-xs tracking-widest uppercase"
+          style={{ color: 'rgba(21,101,192,0.4)', opacity: (M || isMobile) ? 0 : 0.8, transition: 'opacity 0.4s ease' }}
         >
           Men's Collection
         </p>
