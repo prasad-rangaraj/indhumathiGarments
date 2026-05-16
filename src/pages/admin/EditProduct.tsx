@@ -43,6 +43,7 @@ const EditProduct = () => {
 
   const [availableSizes, setAvailableSizes] = useState<string[]>(DEFAULT_SIZES);
   const [customSize, setCustomSize] = useState("");
+  const [customSubcategory, setCustomSubcategory] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -116,6 +117,13 @@ const EditProduct = () => {
     }
     
     setCustomSize("");
+  };
+
+  const handleAddCustomSubcategory = () => {
+    if (!customSubcategory.trim()) return;
+    const formatted = customSubcategory.trim();
+    setFormData((prev) => ({ ...prev, subcategory: formatted }));
+    setCustomSubcategory("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -450,12 +458,23 @@ const EditProduct = () => {
                     required
                   >
                     <option value="">Select Subcategory</option>
+                    {subcategoryList.includes(formData.subcategory) || !formData.subcategory ? null : (
+                      <option value={formData.subcategory}>{formData.subcategory}</option>
+                    )}
                     {subcategoryList.map((sub) => (
                       <option key={sub} value={sub}>
                         {sub}
                       </option>
                     ))}
                   </select>
+                  <div className="flex gap-2 mt-2">
+                    <Input 
+                      placeholder="Add custom subcategory" 
+                      value={customSubcategory}
+                      onChange={(e) => setCustomSubcategory(e.target.value)}
+                    />
+                    <Button type="button" onClick={handleAddCustomSubcategory}>Add</Button>
+                  </div>
                 </div>
               )}
             </CardContent>
