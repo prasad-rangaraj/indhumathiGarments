@@ -8,17 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 
-const colorPalettes: string[][] = [
-  ['bg-rose-500', 'bg-pink-400', 'bg-fuchsia-500'],
-  ['bg-pink-600', 'bg-rose-700', 'bg-pink-300'],
-  ['bg-orange-300', 'bg-rose-100', 'bg-pink-200'],
-];
 
-const getColorsForProduct = (id: string) => {
-  const numericId = parseInt(id, 10);
-  const paletteIndex = Number.isNaN(numericId) ? 0 : numericId % colorPalettes.length;
-  return colorPalettes[paletteIndex];
-};
 
 const SearchResults = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -248,13 +238,19 @@ const SearchResults = () => {
                         {product.material}
                       </span>
                     </div>
-                    <div className="flex gap-2">
-                      {getColorsForProduct(product.id).slice(0, 3).map((colorClass) => (
-                        <div
-                          key={colorClass}
-                          className={`w-6 h-6 rounded-full border-2 border-background shadow-sm ${colorClass}`}
-                        />
-                      ))}
+                    <div className="flex gap-1.5">
+                      {product.colors && product.colors.length > 0 ? (
+                        product.colors.slice(0, 4).map((color: any, idx: number) => (
+                          <div
+                            key={idx}
+                            className="w-5 h-5 rounded-full border border-border shadow-sm flex-shrink-0"
+                            style={{ backgroundColor: color.hex || '#ccc' }}
+                            title={color.name}
+                          />
+                        ))
+                      ) : (
+                        <div className="w-5 h-5 rounded-full border border-border bg-slate-200" />
+                      )}
                     </div>
                   </div>
                 </Link>
