@@ -13,6 +13,7 @@ const Categories = () => {
   const { products, fetchProducts } = useProductsStore();
   const [categories, setCategories] = useState<any[]>([]);
   const [newCategory, setNewCategory] = useState("");
+  const [newGender, setNewGender] = useState<"women" | "men" | "unisex">("unisex");
   const [newMetaTitle, setNewMetaTitle] = useState("");
   const [newMetaDescription, setNewMetaDescription] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,9 +42,11 @@ const Categories = () => {
         name: newCategory, 
         isActive: true,
         metaTitle: newMetaTitle || undefined,
-        metaDescription: newMetaDescription || undefined
+        metaDescription: newMetaDescription || undefined,
+        gender: newGender
       });
       setNewCategory("");
+      setNewGender("unisex");
       setNewMetaTitle("");
       setNewMetaDescription("");
       await loadCategories();
@@ -86,14 +89,39 @@ const Categories = () => {
           <CardTitle className="text-lg">Add New Category</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Category Name</label>
-            <Input
-              placeholder="Enter category name"
-              value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
-              className="w-full"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Category Name</label>
+              <Input
+                placeholder="Enter category name"
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Gender</label>
+              <div className="flex gap-2">
+                {(['women', 'men', 'unisex'] as const).map((g) => (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => setNewGender(g)}
+                    className={`flex-1 py-2 rounded-md border text-sm font-medium capitalize transition-all ${
+                      newGender === g
+                        ? g === 'women'
+                          ? 'border-pink-400 bg-pink-50 text-pink-700'
+                          : g === 'men'
+                          ? 'border-blue-400 bg-blue-50 text-blue-700'
+                          : 'border-purple-400 bg-purple-50 text-purple-700'
+                        : 'border-border/50 text-muted-foreground hover:bg-muted/30'
+                    }`}
+                  >
+                    {g}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -138,7 +166,18 @@ const Categories = () => {
                   <div className="flex items-center gap-4">
 
                     <div>
-                      <h3 className="font-semibold text-foreground">{category.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground">{category.name}</h3>
+                        {category.gender && (
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
+                            category.gender === 'women' ? 'bg-pink-100 text-pink-700' : 
+                            category.gender === 'men' ? 'bg-blue-100 text-blue-700' : 
+                            'bg-purple-100 text-purple-700'
+                          }`}>
+                            {category.gender}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-muted-foreground">{category.products} products</p>
                       {category.description && <p className="text-xs text-muted-foreground mt-1">{category.description}</p>}
                     </div>

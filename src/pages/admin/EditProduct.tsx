@@ -33,10 +33,12 @@ const EditProduct = () => {
     inStock: true,
     stock: "0",
     material: "Cotton",
-    image: "",
-    images: [] as string[],
+    image: "" as string | File,
+    images: [] as (string | File)[],
+    colors: [] as { name: string; hex?: string; images: (string | File)[] }[],
     metaTitle: "",
     metaDescription: "",
+    gender: "women" as "women" | "men" | "unisex",
   });
 
   const [availableSizes, setAvailableSizes] = useState<string[]>(DEFAULT_SIZES);
@@ -61,8 +63,10 @@ const EditProduct = () => {
                     material: product.material || "Cotton",
                     image: product.image || "",
                     images: product.images || [],
+                    colors: product.colors || [],
                     metaTitle: product.metaTitle || "",
                     metaDescription: product.metaDescription || "",
+                    gender: (product.gender || "women") as "women" | "men" | "unisex",
                 });
                 setAvailableSizes(Array.from(new Set([...DEFAULT_SIZES, ...(product.sizes || [])])));
             }
@@ -148,6 +152,21 @@ const EditProduct = () => {
         })
       );
       
+      const uploadedColors = await Promise.all(
+        formData.colors.map(async (colorObj) => {
+          const colorImagesKeys = await Promise.all(
+            colorObj.images.map(async (img) => {
+              if (img instanceof File) {
+                const res = await adminAPI.uploadImage(img);
+                return res.key;
+              }
+              return img;
+            })
+          );
+          return { name: colorObj.name, hex: colorObj.hex, images: colorImagesKeys as string[] };
+        })
+      );
+
       await updateProduct(id, {
         name: formData.name,
         description: formData.description,
@@ -160,9 +179,11 @@ const EditProduct = () => {
         material: formData.material,
         image: (primaryImageKey as string) || null,
         images: additionalImageKeys as string[] || [],
+        colors: uploadedColors,
         isActive: true,
         metaTitle: formData.metaTitle,
         metaDescription: formData.metaDescription,
+        gender: formData.gender,
       });
 
       toast({
@@ -186,7 +207,15 @@ const EditProduct = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {isSubmitting && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/50 backdrop-blur-[2px]">
+          <div className="flex flex-col items-center gap-4 p-6 rounded-lg bg-card border shadow-lg">
+            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-lg font-medium text-foreground">Saving Product...</p>
+          </div>
+        </div>
+      )}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="w-5 h-5" />
@@ -279,6 +308,91 @@ const EditProduct = () => {
 
           <Card className="bg-card border-border/50">
             <CardHeader>
+              <CardTitle className="text-lg">Product Colors</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {formData.colors.map((color, index) => (
+                <div key={index} className="p-4 border rounded-md relative space-y-4">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="absolute top-2 right-2 text-red-500 hover:text-red-600"
+                    onClick={() => {
+                      const newColors = [...formData.colors];
+                      newColors.splice(index, 1);
+                      setFormData({ ...formData, colors: newColors });
+                    }}
+                    type="button"
+                  >
+                    Remove
+                  </Button>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Color Name *</Label>
+                      <Input 
+                        value={color.name}
+                        onChange={(e) => {
+                          const newColors = [...formData.colors];
+                          newColors[index].name = e.target.value;
+                          setFormData({ ...formData, colors: newColors });
+                        }}
+                        placeholder="e.g., Red, Blue, Dark Black"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Color Code (Hex) *</Label>
+                      <div className="flex gap-2 items-center">
+                        <Input 
+                          type="color"
+                          value={color.hex || "#000000"}
+                          onChange={(e) => {
+                            const newColors = [...formData.colors];
+                            newColors[index].hex = e.target.value;
+                            setFormData({ ...formData, colors: newColors });
+                          }}
+                          className="w-12 h-10 p-1 cursor-pointer"
+                        />
+                        <Input 
+                          type="text"
+                          value={color.hex || ""}
+                          onChange={(e) => {
+                            const newColors = [...formData.colors];
+                            newColors[index].hex = e.target.value;
+                            setFormData({ ...formData, colors: newColors });
+                          }}
+                          placeholder="#000000"
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Color Specific Images</Label>
+                    <ImageUploader 
+                      value={color.images} 
+                      onChange={(val) => {
+                        const newColors = [...formData.colors];
+                        newColors[index].images = val as (string | File)[];
+                        setFormData({ ...formData, colors: newColors });
+                      }} 
+                      multiple={true} 
+                    />
+                  </div>
+                </div>
+              ))}
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setFormData({ ...formData, colors: [...formData.colors, { name: "", hex: "#000000", images: [] }] })}
+              >
+                <Plus className="w-4 h-4 mr-2" /> Add Color
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border/50">
+            <CardHeader>
               <CardTitle className="text-lg">SEO Configuration</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -344,6 +458,36 @@ const EditProduct = () => {
                   </select>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Gender Selection */}
+          <Card className="bg-card border-border/50">
+            <CardHeader>
+              <CardTitle className="text-lg">Gender *</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 gap-2">
+                {(['women', 'men', 'unisex'] as const).map((g) => (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, gender: g })}
+                    className={`py-3 rounded-xl border-2 text-sm font-semibold capitalize transition-all ${
+                      formData.gender === g
+                        ? g === 'women'
+                          ? 'border-pink-400 bg-pink-50 text-pink-700'
+                          : g === 'men'
+                          ? 'border-blue-400 bg-blue-50 text-blue-700'
+                          : 'border-purple-400 bg-purple-50 text-purple-700'
+                        : 'border-border/50 text-muted-foreground hover:bg-muted/30'
+                    }`}
+                  >
+                    {g === 'women' ? '♀ Women' : g === 'men' ? '♂ Men' : '⚧ Unisex'}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">This controls which gender section the product appears in.</p>
             </CardContent>
           </Card>
 

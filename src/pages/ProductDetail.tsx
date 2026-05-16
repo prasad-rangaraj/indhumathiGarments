@@ -12,17 +12,7 @@ import RelatedProducts from '@/components/RelatedProducts';
 import StarRating from '@/components/StarRating';
 import bgFashionModel from '@/assets/bg-fashion-model.png';
 
-const colorPalettes: string[][] = [
-  ['bg-rose-500', 'bg-pink-400', 'bg-fuchsia-500'],
-  ['bg-pink-600', 'bg-rose-700', 'bg-pink-300'],
-  ['bg-orange-300', 'bg-rose-100', 'bg-pink-200'],
-];
 
-const getColorsForProduct = (id: string) => {
-  const numericId = parseInt(id, 10);
-  const paletteIndex = Number.isNaN(numericId) ? 0 : numericId % colorPalettes.length;
-  return colorPalettes[paletteIndex];
-};
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -68,6 +58,12 @@ const ProductDetail = () => {
 
   const reviews = product ? getReviewsByProductId(product.id) : [];
   const averageRating = product ? getAverageRating(product.id) : 0;
+
+  useEffect(() => {
+    if (product?.colors && product.colors.length > 0 && !selectedColor) {
+      setSelectedColor(product.colors[0].name);
+    }
+  }, [product?.colors, selectedColor]);
 
 
   if (!product) {
@@ -168,7 +164,6 @@ const ProductDetail = () => {
     );
   }
 
-  const colorOptions = getColorsForProduct(product.id);
   const wishlistStatus = isInWishlist(product.id);
 
   const handleWishlistToggle = () => {
@@ -228,8 +223,10 @@ const ProductDetail = () => {
                 const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
                 const toUrl = (src: string) =>
                   src.startsWith('http') ? src : `${BASE}${src}`;
-                // Build image list: prefer images[], fallback to [image]
-                const imgList: string[] = (
+                const selectedColorObj = product.colors?.find(c => c.name === selectedColor);
+                const colorImages = selectedColorObj?.images || [];
+                // Build image list: prefer selected color images, fallback to images[], fallback to [image]
+                const imgList: string[] = colorImages.length > 0 ? colorImages : (
                   product.images && product.images.length > 0
                     ? product.images
                     : product.image
@@ -377,21 +374,31 @@ const ProductDetail = () => {
               </div>
 
               {/* Color Selection */}
-              <div className="mb-6">
-                <h3 className="font-semibold text-foreground mb-3">Select Color</h3>
-                <div className="flex items-center gap-3 flex-wrap">
-                  {colorOptions.map((colorClass) => (
-                    <button
-                      key={colorClass}
-                      type="button"
-                      onClick={() => setSelectedColor(colorClass)}
-                      className={`w-10 h-10 rounded-full border-2 transition-all duration-200 ${colorClass} ${selectedColor === colorClass ? 'border-primary ring-2 ring-primary/40' : 'border-background'
+              {product.colors && product.colors.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="font-semibold text-foreground mb-3">Select Color</h3>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {product.colors.map((colorObj) => (
+                      <button
+                        key={colorObj.name}
+                        type="button"
+                        onClick={() => {
+                          setSelectedColor(colorObj.name);
+                          setCurrentImageIndex(0); // Reset image index when changing color
+                        }}
+                        className={`w-8 h-8 rounded-full border-2 shadow-sm transition-all duration-200 ${
+                          selectedColor === colorObj.name
+                            ? 'border-primary ring-2 ring-primary ring-offset-2'
+                            : 'border-black/10 hover:border-primary/50'
                         }`}
-                      aria-label="Select color"
-                    />
-                  ))}
+                        style={{ backgroundColor: colorObj.hex || '#000000' }}
+                        title={colorObj.name}
+                        aria-label={`Select color ${colorObj.name}`}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Size Selection */}
               <div className="mb-6">

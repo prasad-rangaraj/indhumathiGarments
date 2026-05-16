@@ -11,4 +11,9 @@ export interface Product {
     inStock?: boolean;
     stock?: number;
     isActive?: boolean;
+    gender?: 'women' | 'men' | 'unisex';
+    colors?: { name: string; hex?: string; images: string[] }[];
+    images?: string[];
+    metaTitle?: string;
+    metaDescription?: string;
 }

@@ -1,98 +1,68 @@
 import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { useProductsStore } from '@/stores/productsStore';
 import CouponBanner from '@/components/CouponBanner';
 import bgProductsHero from '@/assets/bg-products-hero.jpg';
 
 const Products = () => {
   const { products, categories, loading, error, fetchProducts, fetchCategories } = useProductsStore();
+  const [searchParams] = useSearchParams();
+  const gender = searchParams.get('gender') as 'women' | 'men' | null;
 
   useEffect(() => {
     fetchProducts();
     fetchCategories();
   }, [fetchProducts, fetchCategories]);
 
-  // Main categories only (1–5 from your list)
-  const mainCategories = Object.keys(categories);
+  const allCategories = Object.keys(categories);
 
-  // Show loading state
+  // Filter categories: only show categories that have at least one product matching the selected gender (or any if no gender selected)
+  const mainCategories = allCategories.filter(cat => {
+    const productsInCat = products.filter(p => p.category === cat);
+    if (gender) {
+      return productsInCat.some(p => p.gender === gender || p.gender === 'unisex' || !p.gender);
+    }
+    return productsInCat.length > 0;
+  });
+
+  const genderLabel = gender === 'women' ? "Women's Collection" : gender === 'men' ? "Men's Collection" : 'All Products';
+  const themeColor = 'from-primary to-secondary';
+  const themeAccent = 'hsl(var(--primary))';
+  const themeAccentFaint = 'hsl(var(--primary) / 0.2)';
+  const themeAccentHover = 'hsl(var(--primary) / 0.5)';
+
+  // Loading state
   if (loading && mainCategories.length === 0) {
     return (
       <div className="min-h-screen relative">
         <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
-          <img
-            src={bgProductsHero}
-            alt=""
-            className="w-full h-full object-cover transition-opacity duration-500"
-          />
+          <img src={bgProductsHero} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
         </div>
-        <div className="py-8 sm:py-12 px-4 sm:px-6 relative z-10">
-          <div className="container mx-auto text-center">
-            <p className="text-muted-foreground">Loading products...</p>
-          </div>
+        <div className="py-8 px-4 relative z-10 text-center">
+          <p className="text-muted-foreground">Loading products...</p>
         </div>
       </div>
     );
   }
 
-  // Show error state
+  // Error state
   if (error) {
     return (
       <div className="min-h-screen relative">
         <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
-          <img
-            src={bgProductsHero}
-            alt=""
-            className="w-full h-full object-cover transition-opacity duration-500"
-          />
+          <img src={bgProductsHero} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
         </div>
-        <div className="py-8 sm:py-12 px-4 sm:px-6 relative z-10">
-          <div className="container mx-auto text-center">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              Products by Type
-            </h1>
-            <p className="text-red-500 mb-2">Error loading products: {error}</p>
-            <p className="text-muted-foreground text-sm">Please check your connection and try again.</p>
-          </div>
+        <div className="py-8 px-4 relative z-10 text-center">
+          <p className="text-red-500">{error}</p>
         </div>
       </div>
     );
   }
 
-  // Show empty state if no categories
-  if (!loading && mainCategories.length === 0) {
-    return (
-      <div className="min-h-screen relative">
-        <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
-          <img
-            src={bgProductsHero}
-            alt=""
-            className="w-full h-full object-cover transition-opacity duration-500"
-          />
-          <div className="absolute inset-0 bg-background/70 backdrop-blur-[4px]" />
-        </div>
-        <div className="py-8 sm:py-12 px-4 sm:px-6 relative z-10">
-          <div className="container mx-auto text-center">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              Products by Type
-            </h1>
-            <p className="text-muted-foreground mb-2">No product categories available.</p>
-            <p className="text-muted-foreground text-sm">Please add products to the database through the admin panel.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Get product count for a full category
-  const getCategoryCount = (category: string) => {
-    return products.filter(p => p.category === category).length;
-  };
-
-  // Get how many sub-types are inside a category
+  const getCategoryCount = (category: string) => products.filter(p => p.category === category).length;
   const getSubTypeCount = (category: string) => {
     const subTypes = categories[category as keyof typeof categories] || [];
     return subTypes.length;
@@ -100,13 +70,8 @@ const Products = () => {
 
   return (
     <div className="min-h-screen relative">
-      {/* Background with blur - Fixed */}
       <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
-        <img
-          src={bgProductsHero}
-          alt=""
-          className="w-full h-full object-cover transition-opacity duration-500"
-        />
+        <img src={bgProductsHero} alt="" className="w-full h-full object-cover transition-opacity duration-500" />
         <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
       </div>
 
@@ -115,52 +80,79 @@ const Products = () => {
 
       <div className="py-8 sm:py-12 px-0 sm:px-6 relative z-10">
         <div className="container mx-auto">
+
+          {/* Back to gender select */}
+          <div className="mb-6 px-4 sm:px-0">
+            <Link
+              to="/products"
+              className="inline-flex items-center gap-2 text-sm font-medium transition-all hover:gap-3 text-primary"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Change selection
+            </Link>
+          </div>
+
           {/* Header */}
           <div className="text-center mb-10 sm:mb-14">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              Products by Type
+            {gender && (
+              <div className="flex justify-center mb-4">
+                <span className={`px-5 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase bg-gradient-to-r ${themeColor} text-primary-foreground shadow-lg`}>
+                  {gender === 'women' ? '♀  She — For Her' : '♂  He — For Him'}
+                </span>
+              </div>
+            )}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              {genderLabel}
             </h1>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-              Choose a main type to explore all products and styles inside it
+              Choose a type to explore all products and styles
             </p>
           </div>
 
-          {/* Main Categories - vertical rectangular cards */}
-          <div className="max-w-3xl mx-auto space-y-4 sm:space-y-5">
-            {mainCategories.map((category, index) => {
-              const productCount = getCategoryCount(category);
-              const subTypeCount = getSubTypeCount(category);
+          {/* Categories */}
+          <div className="max-w-3xl mx-auto space-y-4 sm:space-y-5 px-4 sm:px-0">
+            {mainCategories.length === 0 ? (
+              <p className="text-center text-muted-foreground">No categories available. Add products via the admin panel.</p>
+            ) : (
+              mainCategories.map((category, index) => {
+                const productCount = getCategoryCount(category);
+                const subTypeCount = getSubTypeCount(category);
 
-              return (
-                <Link
-                  key={category}
-                  to={`/category/${encodeURIComponent(category)}`}
-                  className="block group"
-                  style={{ animationDelay: `${index * 0.06}s` }}
-                >
-                  <div className="bg-card/95 backdrop-blur-md border border-border/60 rounded-2xl px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between gap-4 hover:shadow-xl hover:border-primary/60 hover:-translate-y-1 transition-all duration-300">
-                    <div>
-                      <h2 className="text-lg sm:text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
-                        {category}
-                      </h2>
-                      <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                        {productCount} {productCount === 1 ? 'product' : 'products'} · {subTypeCount}{' '}
-                        {subTypeCount === 1 ? 'style' : 'styles'}
-                      </p>
-                    </div>
+                return (
+                  <Link
+                    key={category}
+                    to={`/category/${encodeURIComponent(category)}`}
+                    className="block group"
+                    style={{ animationDelay: `${index * 0.06}s` }}
+                  >
+                    <div
+                      className="backdrop-blur-md rounded-2xl px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between gap-4 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border border-primary/20 bg-white/5 hover:border-primary/50"
+                    >
+                      <div>
+                        <h2 className="text-lg sm:text-xl font-semibold text-foreground transition-colors group-hover:text-primary">
+                          {category}
+                        </h2>
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                          {productCount} {productCount === 1 ? 'product' : 'products'} · {subTypeCount}{' '}
+                          {subTypeCount === 1 ? 'style' : 'styles'}
+                        </p>
+                      </div>
 
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs sm:text-sm font-medium text-primary group-hover:underline">
-                        View products
-                      </span>
-                      <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-primary/20 to-secondary/30 flex items-center justify-center">
-                        <ArrowRight className="h-4 w-4 text-primary group-hover:translate-x-0.5 transition-transform" />
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className="text-xs sm:text-sm font-medium group-hover:underline text-primary">
+                          View products
+                        </span>
+                        <div
+                          className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 bg-primary/20"
+                        >
+                          <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform text-primary" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              );
-            })}
+                  </Link>
+                );
+              })
+            )}
           </div>
         </div>
       </div>

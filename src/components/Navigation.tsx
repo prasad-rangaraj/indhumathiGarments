@@ -24,6 +24,13 @@ const Navigation = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
+  // Products section is active on the gender select, shop, category, and product detail pages
+  const isProductsActive =
+    location.pathname === '/products' ||
+    location.pathname.startsWith('/shop') ||
+    location.pathname.startsWith('/category') ||
+    location.pathname.startsWith('/product');
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
@@ -58,7 +65,7 @@ const Navigation = () => {
             <Link
               to="/products"
               className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive('/products') ? 'text-primary' : 'text-muted-foreground'
+                isProductsActive ? 'text-primary' : 'text-muted-foreground'
               }`}
             >
               Products
@@ -185,7 +192,7 @@ const Navigation = () => {
                 to="/products"
                 onClick={() => setMobileMenuOpen(false)}
                 className={`text-base font-medium transition-colors hover:text-primary py-2 ${
-                  isActive('/products') ? 'text-primary' : 'text-muted-foreground'
+                  isProductsActive ? 'text-primary' : 'text-muted-foreground'
                 }`}
               >
                 Products

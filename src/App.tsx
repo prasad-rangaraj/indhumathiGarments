@@ -17,6 +17,7 @@ import StoreLayout from "./components/StoreLayout";
 const About = lazy(() => import("./pages/About"));
 const Login = lazy(() => import("./pages/Login"));
 const Signup = lazy(() => import("./pages/Signup"));
+const GenderSelect = lazy(() => import("./pages/GenderSelect"));
 const Products = lazy(() => import("./pages/Products"));
 const CategoryProducts = lazy(() => import("./pages/CategoryProducts"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
@@ -95,7 +96,8 @@ const App = () => (
               {/* Public Store Routes */}
               <Route element={<StoreLayout />}>
                 <Route index element={<About />} />
-                <Route path="/products" element={<Products />} />
+                <Route path="/products" element={<GenderSelect />} />
+                <Route path="/shop" element={<Products />} />
                 <Route path="/search" element={<SearchResults />} />
                 <Route path="/category/:category" element={<CategoryProducts />} />
                 <Route path="/category/:category/:subcategory" element={<CategoryProducts />} />

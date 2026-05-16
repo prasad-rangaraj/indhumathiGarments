@@ -14,6 +14,45 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ value, onChange, m
   // Maps S3 key → temporary pre-signed preview URL (only for newly uploaded images)
   const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
 
+  const compressImage = async (file: File): Promise<File> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 1200;
+          if (width > height && width > maxDim) {
+            height *= maxDim / width;
+            width = maxDim;
+          } else if (height > maxDim) {
+            width *= maxDim / height;
+            height = maxDim;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
+                type: 'image/webp',
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              resolve(file); // fallback
+            }
+          }, 'image/webp', 0.85); // 85% quality webp
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -25,24 +64,16 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ value, onChange, m
         const newPreviews: Record<string, string> = {};
 
         for (let i = 0; i < files.length; i++) {
-          if (files[i].size > 2 * 1024 * 1024) {
-            alert(`"${files[i].name}" is too large. Please keep images under 2MB.`);
-            continue;
-          }
-          newFiles.push(files[i]);
-          // We use the file object itself or its name as a key for the preview map,
-          // but better to just generate object URLs when rendering or store them here
-          newPreviews[files[i].name] = URL.createObjectURL(files[i]);
+          const compressed = await compressImage(files[i]);
+          newFiles.push(compressed);
+          newPreviews[compressed.name] = URL.createObjectURL(compressed);
         }
         setPreviewUrls(prev => ({ ...prev, ...newPreviews }));
         onChange(newFiles);
       } else {
-        if (files[0].size > 2 * 1024 * 1024) {
-          alert(`"${files[0].name}" is too large. Please keep images under 2MB.`);
-          return;
-        }
-        setPreviewUrls(prev => ({ ...prev, [files[0].name]: URL.createObjectURL(files[0]) }));
-        onChange(files[0]);
+        const compressed = await compressImage(files[0]);
+        setPreviewUrls(prev => ({ ...prev, [compressed.name]: URL.createObjectURL(compressed) }));
+        onChange(compressed);
       }
     } catch (error) {
       console.error('Image selection failed', error);

@@ -9,17 +9,6 @@ import bgProductsHero from '@/assets/bg-products-hero.jpg';
 
 
 
-const colorPalettes: string[][] = [
-  ['bg-rose-500', 'bg-pink-400', 'bg-fuchsia-500'],
-  ['bg-sky-500', 'bg-cyan-400', 'bg-blue-500'],
-  ['bg-emerald-500', 'bg-lime-400', 'bg-green-500'],
-];
-
-const getColorsForProduct = (id: string) => {
-  const numericId = parseInt(id, 10);
-  const paletteIndex = Number.isNaN(numericId) ? 0 : numericId % colorPalettes.length;
-  return colorPalettes[paletteIndex];
-};
 
 const CategoryProducts = () => {
   const { category, subcategory } = useParams<{ category: string; subcategory?: string }>();
@@ -309,19 +298,22 @@ const CategoryProducts = () => {
                   </div>
 
                   {/* Color options */}
-                  <div className="mb-4">
-                    <p className="text-xs text-muted-foreground mb-2">Available colors</p>
-                    <div className="flex gap-2">
-                      {getColorsForProduct(product.id).map((colorClass) => (
-                        <button
-                          key={colorClass}
-                          className={`w-6 h-6 rounded-full border-2 border-background shadow-sm ${colorClass}`}
-                          aria-label="Color option"
-                          type="button"
-                        />
-                      ))}
+                  {product.colors && product.colors.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-xs text-muted-foreground mb-2">Available colors</p>
+                      <div className="flex gap-2">
+                        {product.colors.map((colorObj) => (
+                          <div
+                            key={colorObj.name}
+                            className="w-6 h-6 rounded-full border border-black/10 shadow-sm"
+                            style={{ backgroundColor: colorObj.hex || '#000000' }}
+                            title={colorObj.name}
+                            aria-label={colorObj.name}
+                          />
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <Link
                     to={`/product/${product.id}`}
