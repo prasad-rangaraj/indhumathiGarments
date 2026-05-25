@@ -222,13 +222,13 @@ const GenderSelect = () => {
       {/* ─── CENTER DIVIDER BADGE ─────────────────────────────── */}
       <div
         ref={dividerRef}
-        className="relative z-30 flex-shrink-0 pointer-events-none flex flex-row md:flex-col items-center justify-center w-full h-[72px] -my-[36px] md:w-[72px] md:h-full md:my-0 md:-mx-[36px]"
+        className="relative z-30 flex-shrink-0 pointer-events-none flex items-center justify-center w-full h-[72px] -my-[36px] md:w-[72px] md:h-full md:my-0 md:-mx-[36px]"
       >
         {/* Line top / left */}
-        <div className="flex-1 w-full h-[1.5px] md:w-[1.5px] md:h-full bg-gradient-to-r md:bg-gradient-to-b from-transparent via-[#8c507840] to-transparent" />
+        <div className="absolute top-1/2 left-0 w-1/2 h-[1.5px] md:top-0 md:left-1/2 md:w-[1.5px] md:h-1/2 -translate-y-1/2 md:-translate-y-0 md:-translate-x-1/2 bg-gradient-to-r md:bg-gradient-to-b from-transparent to-[#8c507840]" />
 
         {/* Center Container */}
-        <div className="relative flex items-center justify-center flex-shrink-0">
+        <div className="relative flex items-center justify-center flex-shrink-0 z-10">
           {/* Diamond badge */}
           <div
             style={{
@@ -282,7 +282,7 @@ const GenderSelect = () => {
         </div>
 
         {/* Line bottom / right */}
-        <div className="flex-1 w-full h-[1.5px] md:w-[1.5px] md:h-full bg-gradient-to-r md:bg-gradient-to-b from-transparent via-[#648cb440] to-transparent" />
+        <div className="absolute top-1/2 right-0 w-1/2 h-[1.5px] md:bottom-0 md:left-1/2 md:w-[1.5px] md:h-1/2 -translate-y-1/2 md:-translate-y-0 md:-translate-x-1/2 bg-gradient-to-r md:bg-gradient-to-b from-[#648cb440] to-transparent" />
       </div>
 
       {/* ─── MEN HALF ─────────────────────────────────────────── */}

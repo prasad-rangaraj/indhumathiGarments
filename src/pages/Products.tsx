@@ -36,7 +36,7 @@ const Products = () => {
   if (loading && mainCategories.length === 0) {
     return (
       <div className="min-h-screen relative">
-        <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
+        <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
           <img src={bgProductsHero} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
         </div>
@@ -51,7 +51,7 @@ const Products = () => {
   if (error) {
     return (
       <div className="min-h-screen relative">
-        <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
+        <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
           <img src={bgProductsHero} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
         </div>
@@ -70,7 +70,7 @@ const Products = () => {
 
   return (
     <div className="min-h-screen relative">
-      <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
+      <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
         <img src={bgProductsHero} alt="" className="w-full h-full object-cover transition-opacity duration-500" />
         <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
       </div>
@@ -79,7 +79,7 @@ const Products = () => {
       <CouponBanner />
 
       <div className="py-8 sm:py-12 px-0 sm:px-6 relative z-10">
-        <div className="container mx-auto">
+        <div className="px-5">
 
 
           {/* Header */}
@@ -100,7 +100,7 @@ const Products = () => {
           </div>
 
           {/* Categories */}
-          <div className="max-w-3xl mx-auto space-y-4 sm:space-y-5 px-4 sm:px-0">
+          <div className="max-w-3xl mx-auto space-y-4 sm:space-y-5 sm:px-0">
             {mainCategories.length === 0 ? (
               <p className="text-center text-muted-foreground">No categories available. Add products via the admin panel.</p>
             ) : (
@@ -116,7 +116,7 @@ const Products = () => {
                     style={{ animationDelay: `${index * 0.06}s` }}
                   >
                     <div
-                      className="backdrop-blur-md rounded-2xl px-6 sm:px-8 py-4 sm:py-5 flex items-center justify-between gap-4 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border border-primary/20 bg-white/5 hover:border-primary/50"
+                      className="bg-white rounded-2xl px-6 sm:px-8 py-4 sm:py-5 flex items-center justify-between gap-4 transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1 border border-pink-100 hover:border-pink-300"
                     >
                       <div>
                         <h2 className="text-lg sm:text-xl font-semibold text-foreground transition-colors group-hover:text-primary">

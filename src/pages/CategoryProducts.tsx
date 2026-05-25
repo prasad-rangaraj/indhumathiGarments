@@ -99,7 +99,7 @@ const CategoryProducts = () => {
   return (
     <div className="min-h-screen relative">
       {/* Background with blur - Fixed */}
-      <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
+      <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
         <img
           src={bgProductsHero}
           alt=""
@@ -163,19 +163,6 @@ const CategoryProducts = () => {
                 <SlidersHorizontal className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden xs:inline">Filters</span>
               </Button>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-full xs:w-[160px] sm:w-[180px] text-xs sm:text-sm">
-                  <ArrowUpDown className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="relevance">Relevance</SelectItem>
-                  <SelectItem value="price-low">Price: Low to High</SelectItem>
-                  <SelectItem value="price-high">Price: High to Low</SelectItem>
-                  <SelectItem value="name-asc">Name: A to Z</SelectItem>
-                  <SelectItem value="name-desc">Name: Z to A</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             <p className="text-sm text-muted-foreground">
               {categoryProducts.length} {categoryProducts.length === 1 ? 'product' : 'products'}
@@ -288,11 +275,11 @@ const CategoryProducts = () => {
                   {product.colors && product.colors.length > 0 && (
                     <div className="mb-4">
                       <p className="text-xs text-muted-foreground mb-2">Available colors</p>
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         {product.colors.map((colorObj) => (
                           <div
                             key={colorObj.name}
-                            className="w-6 h-6 rounded-full border border-black/10 shadow-sm"
+                            className="w-6 h-6 rounded-full border border-black/10 shadow-sm flex-shrink-0"
                             style={{ backgroundColor: colorObj.hex || '#000000' }}
                             title={colorObj.name}
                             aria-label={colorObj.name}

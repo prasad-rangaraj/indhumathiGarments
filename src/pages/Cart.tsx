@@ -36,7 +36,7 @@ const Cart = () => {
   if (items.length === 0) {
     return (
       <div className="min-h-screen relative">
-        <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
+        <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
           <img src={bgCotton1} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
         </div>
@@ -56,14 +56,14 @@ const Cart = () => {
 
   return (
     <div className="min-h-screen relative">
-      <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
+      <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
         <img src={bgCotton1} alt="" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
       </div>
 
-      <div className="py-6 sm:py-8 px-4 sm:px-6 relative z-10">
+      <div className="py-6 sm:py-8 px-2 sm:px-6 relative z-10">
         <div className="container mx-auto max-w-4xl">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-foreground animate-fade-in">Shopping Cart</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-foreground animate-fade-in px-2 sm:px-0">Shopping Cart</h1>
         
         <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Cart Items */}

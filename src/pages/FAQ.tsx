@@ -118,14 +118,14 @@ const FAQ = () => {
 
   return (
     <div className="min-h-screen relative">
-      <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
+      <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
         <img src={bgCotton1} alt="" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
       </div>
 
-      <div className="py-6 sm:py-8 px-4 sm:px-6 relative z-10">
+      <div className="py-6 sm:py-8 sm:px-6 relative z-10">
         <div className="container mx-auto max-w-4xl">
-          <div className="text-center mb-8 sm:mb-12">
+          <div className="text-center mb-8 sm:mb-12 px-2 sm:px-0">
             <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-foreground">Frequently Asked Questions</h1>
             <p className="text-base sm:text-lg text-muted-foreground">
               Find answers to common questions about our products, orders, and services

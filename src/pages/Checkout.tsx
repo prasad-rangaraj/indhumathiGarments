@@ -260,12 +260,12 @@ const Checkout = () => {
 
   return (
     <div className="min-h-screen relative bg-slate-50/50 pb-20">
-      <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
+      <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
         <img src={bgCotton1} alt="" className="w-full h-full object-cover opacity-40" />
         <div className="absolute inset-0 bg-background/50 backdrop-blur-[2px]" />
       </div>
 
-      <div className="container mx-auto px-4 py-4 sm:py-8 relative z-10">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 relative z-10">
         <div className="container mx-auto max-w-6xl">
           <div className="flex items-center justify-between mb-8 pb-4 border-b border-border">
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Secure Checkout</h1>

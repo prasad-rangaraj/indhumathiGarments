@@ -6,7 +6,7 @@ import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 import { useAuthStore } from '../stores/authStore';
 import { userAPI, customerAPI, ordersAPI, wishlistAPI } from '../lib/api';
 import { useToast } from '../components/ui/use-toast';
-import { Loader2, User, MapPin, Package, Heart, LogOut, ChevronRight, Save, Plus, Trash2, Edit2 } from 'lucide-react';
+import { Loader2, User, MapPin, Package, Heart, LogOut, ChevronRight, ChevronLeft, Save, Plus, Trash2, Edit2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 
@@ -15,8 +15,8 @@ const OrderCard = ({ order, navigate }: { order: any; navigate: any }) => (
     key={order.id} 
     className="border border-gray-200 rounded-sm p-4 hover:shadow-md transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-50/50 hover:bg-white group"
   >
-    <div className="flex gap-4 items-center flex-1">
-      <div className="w-16 h-16 bg-gray-200 rounded-md flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-100 group-hover:border-pink-200 transition-colors">
+    <div className="flex gap-3 sm:gap-4 items-center flex-1 min-w-0 w-full">
+      <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gray-200 rounded-md flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-100 group-hover:border-pink-200 transition-colors">
         {(() => {
           const firstItem = order.items?.[0];
           if (!firstItem) return <Package className="text-gray-400"/>;
@@ -33,11 +33,11 @@ const OrderCard = ({ order, navigate }: { order: any; navigate: any }) => (
           return <Package className="text-gray-400"/>;
         })()}
       </div>
-      <div className="min-w-0">
-         <p className="font-semibold text-gray-800 group-hover:text-pink-600 transition-colors truncate">Order #{order.orderId}</p>
-         <p className="text-sm text-gray-600 mt-1">{order.items?.length || 0} Items • ₹{order.total}</p>
+      <div className="min-w-0 flex-1">
+         <p className="text-sm sm:text-base font-semibold text-gray-800 group-hover:text-pink-600 transition-colors truncate">Order #{order.orderId}</p>
+         <p className="text-xs sm:text-sm text-gray-600 mt-1">{order.items?.length || 0} Items • ₹{order.total}</p>
          
-         <div className="mt-3 flex flex-wrap items-center gap-y-2 gap-x-4">
+         <div className="mt-2 sm:mt-3 flex flex-wrap items-center gap-y-1 sm:gap-y-2 gap-x-3 sm:gap-x-4">
            {order.status === 'Delivered' ? (
              <div className="flex items-center gap-1.5">
                <div className="w-2 h-2 rounded-full bg-green-500" />
@@ -110,6 +110,10 @@ export default function Profile() {
     const tab = params.get('tab');
     if (tab === 'orders' || tab === 'addresses' || tab === 'wishlist' || tab === 'profile') {
       setActiveTab(tab as any);
+      setShowMobileMenu(false);
+    } else {
+      setShowMobileMenu(true);
+      setActiveTab('profile');
     }
   }, [location.search]);
 
@@ -121,6 +125,13 @@ export default function Profile() {
   const [error, setError] = useState<string | null>(null);
   const [wishlist, setWishlist] = useState<any[]>([]);
   const [addresses, setAddresses] = useState<any[]>([]);
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<any>(null);
+  const [addressForm, setAddressForm] = useState({ name: '', phone: '', street: '', city: '', state: '', pincode: '', isDefault: false });
+  const [showMobileMenu, setShowMobileMenu] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return !params.has('tab');
+  });
 
   useEffect(() => {
     if (!user) {
@@ -173,11 +184,44 @@ export default function Profile() {
     setLoading(true);
     try {
       const data = await customerAPI.getAddresses(user.id);
-      setAddresses(data);
+      setAddresses(Array.isArray(data) ? data : ((data as any).addresses || (data as any).data || []));
     } catch (e) {
       console.error("Failed to fetch addresses", e);
+      setAddresses([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveAddress = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user?.id) return;
+    setLoading(true);
+    try {
+      if (editingAddress) {
+        await customerAPI.updateAddress(editingAddress.id || editingAddress._id, { ...addressForm, userId: user.id });
+        toast({ title: 'Address updated successfully' });
+      } else {
+        await customerAPI.createAddress({ ...addressForm, userId: user.id });
+        toast({ title: 'Address added successfully' });
+      }
+      setIsAddressModalOpen(false);
+      fetchAddresses();
+    } catch (err: any) {
+      toast({ title: 'Failed to save address', description: err.message, variant: 'destructive' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteAddress = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this address?')) return;
+    try {
+      await customerAPI.deleteAddress(id);
+      toast({ title: 'Address deleted' });
+      fetchAddresses();
+    } catch (err: any) {
+      toast({ title: 'Failed to delete address', description: err.message, variant: 'destructive' });
     }
   };
 
@@ -210,15 +254,15 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen flex flex-col relative">
-      <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
+      <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
         <img src={bgCotton1} alt="" className="w-full h-full object-cover opacity-30" />
         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
       </div>
-      <div className="flex-1 container mx-auto px-4 py-8 max-w-6xl relative z-10">
-        <div className="flex flex-col md:flex-row gap-6">
+      <div className="flex-1 container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-6xl relative z-10">
+        <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
           
           {/* LEFT SIDEBAR (FLIPKART STYLE) */}
-          <div className="w-full md:w-1/4 space-y-4">
+          <div className={`w-full md:w-1/4 space-y-4 ${!showMobileMenu ? 'hidden md:block' : 'block'}`}>
             {/* Header Box */}
             <div className="bg-white rounded-md shadow-sm p-4 flex items-center gap-4 border border-pink-100">
               <div className="h-12 w-12 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 font-bold text-xl">
@@ -232,18 +276,18 @@ export default function Profile() {
 
             {/* Menu Box */}
             <div className="bg-white rounded-md shadow-sm overflow-hidden border border-pink-100">
-              <div className="p-4 border-b border-pink-50">
-                <div className="flex items-center gap-3 text-gray-500 font-medium mb-2 uppercase text-xs tracking-wider">
+              <div className="py-5 px-4 border-b border-pink-50">
+                <div className="flex items-center gap-3 text-gray-500 font-medium mb-3 uppercase text-xs tracking-wider">
                   <User size={18} className="text-pink-500"/> Account Settings
                 </div>
                 <div className="pl-8 space-y-3 mt-3">
-                  <button onClick={() => setActiveTab('profile')} className={`block w-full text-left text-sm transition-colors ${activeTab === 'profile' ? 'text-pink-600 font-bold' : 'text-gray-600 hover:text-pink-600'}`}>Profile Information</button>
-                  <button onClick={() => setActiveTab('addresses')} className={`block w-full text-left text-sm transition-colors ${activeTab === 'addresses' ? 'text-pink-600 font-bold' : 'text-gray-600 hover:text-pink-600'}`}>Manage Addresses</button>
+                  <button onClick={() => navigate('/profile?tab=profile')} className={`block w-full text-left text-sm transition-colors ${activeTab === 'profile' && !showMobileMenu ? 'text-pink-600 font-bold' : 'text-gray-600 hover:text-pink-600'}`}>Profile Information</button>
+                  <button onClick={() => navigate('/profile?tab=addresses')} className={`block w-full text-left text-sm transition-colors ${activeTab === 'addresses' && !showMobileMenu ? 'text-pink-600 font-bold' : 'text-gray-600 hover:text-pink-600'}`}>Manage Addresses</button>
                 </div>
               </div>
 
-              <div className="p-4 border-b border-pink-50 cursor-pointer hover:bg-pink-50/30 transition-colors" onClick={() => setActiveTab('orders')}>
-                <div className={`flex items-center justify-between text-sm ${activeTab === 'orders' ? 'text-pink-600 font-bold' : 'text-gray-600 font-medium'}`}>
+              <div className="py-5 px-4 border-b border-pink-50 cursor-pointer hover:bg-pink-50/30 transition-colors" onClick={() => navigate('/profile?tab=orders')}>
+                <div className={`flex items-center justify-between text-sm ${activeTab === 'orders' && !showMobileMenu ? 'text-pink-600 font-bold' : 'text-gray-600 font-medium'}`}>
                   <div className="flex items-center gap-3">
                     <Package size={18} className="text-pink-500"/> My Orders
                   </div>
@@ -251,8 +295,8 @@ export default function Profile() {
                 </div>
               </div>
 
-              <div className="p-4 border-b border-pink-50 cursor-pointer hover:bg-pink-50/30 transition-colors" onClick={() => setActiveTab('wishlist')}>
-                <div className={`flex items-center justify-between text-sm ${activeTab === 'wishlist' ? 'text-pink-600 font-bold' : 'text-gray-600 font-medium'}`}>
+              <div className="py-5 px-4 border-b border-pink-50 cursor-pointer hover:bg-pink-50/30 transition-colors" onClick={() => navigate('/profile?tab=wishlist')}>
+                <div className={`flex items-center justify-between text-sm ${activeTab === 'wishlist' && !showMobileMenu ? 'text-pink-600 font-bold' : 'text-gray-600 font-medium'}`}>
                   <div className="flex items-center gap-3">
                     <Heart size={18} className="text-pink-500"/> My Wishlist
                   </div>
@@ -260,7 +304,7 @@ export default function Profile() {
                 </div>
               </div>
 
-              <div className="p-4 cursor-pointer hover:bg-pink-50/30 transition-colors" onClick={handleLogout}>
+              <div className="py-5 px-4 cursor-pointer hover:bg-pink-50/30 transition-colors" onClick={handleLogout}>
                 <div className="flex items-center gap-3 text-sm text-gray-600 font-medium">
                   <LogOut size={18} className="text-pink-500"/> Logout
                 </div>
@@ -269,8 +313,15 @@ export default function Profile() {
           </div>
 
           {/* RIGHT MAIN CONTENT */}
-          <div className="w-full md:w-3/4">
-            <div className="bg-white rounded-md shadow-sm p-6 min-h-[500px]">
+          <div className={`w-full md:w-3/4 ${showMobileMenu ? 'hidden md:block' : 'block'}`}>
+            <div className="bg-white rounded-md shadow-sm p-4 sm:p-6 min-h-[500px]">
+              {/* Mobile Back Button */}
+              <button 
+                className="md:hidden flex items-center gap-1 text-gray-500 hover:text-pink-600 mb-6 font-medium transition-colors" 
+                onClick={() => navigate('/profile')}
+              >
+                <ChevronLeft size={18} /> Back to Menu
+              </button>
               
               {/* Profile Information View */}
               {activeTab === 'profile' && (
@@ -308,7 +359,17 @@ export default function Profile() {
                 <div>
                   <div className="flex items-center justify-between border-b border-pink-100 pb-4 mb-6">
                     <h2 className="text-xl font-semibold">Manage Addresses</h2>
-                    <Button variant="outline" className="text-pink-600 border-pink-200 hover:bg-pink-50 rounded-sm font-bold"><Plus size={16} className="mr-2"/> ADD A NEW ADDRESS</Button>
+                    <Button 
+                      onClick={() => {
+                        setEditingAddress(null);
+                        setAddressForm({ name: '', phone: '', street: '', city: '', state: '', pincode: '', isDefault: false });
+                        setIsAddressModalOpen(true);
+                      }}
+                      variant="outline" 
+                      className="text-pink-600 border-pink-200 hover:bg-pink-50 rounded-sm font-bold"
+                    >
+                      <Plus size={16} className="mr-2"/> ADD A NEW ADDRESS
+                    </Button>
                   </div>
                   
                   {loading ? (
@@ -333,13 +394,13 @@ export default function Profile() {
                         <div key={addr.id} className="border border-pink-100 rounded-xl p-5 relative hover:shadow-md transition-all bg-white group">
                            {addr.isDefault && <span className="absolute top-4 right-4 text-[10px] font-bold bg-pink-50 text-pink-600 px-2.5 py-1 rounded-full border border-pink-100 tracking-wider uppercase">DEFAULT</span>}
                            
-                           <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                             {!addr.isDefault && (
-                               <button className="p-1.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded-full transition-colors"><Edit2 size={16}/></button>
-                             )}
-                             {!addr.isDefault && (
-                               <button className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"><Trash2 size={16}/></button>
-                             )}
+                           <div className="absolute top-4 right-4 sm:opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                               <button onClick={() => {
+                                 setEditingAddress(addr);
+                                 setAddressForm({ name: addr.name || '', phone: addr.phone || '', street: addr.street || '', city: addr.city || '', state: addr.state || '', pincode: addr.pincode || '', isDefault: addr.isDefault || false });
+                                 setIsAddressModalOpen(true);
+                               }} className="p-1.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded-full transition-colors bg-white shadow-sm sm:shadow-none"><Edit2 size={16}/></button>
+                               <button onClick={() => handleDeleteAddress(addr.id || addr._id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors bg-white shadow-sm sm:shadow-none"><Trash2 size={16}/></button>
                            </div>
 
                            <div className="flex gap-4">
@@ -459,6 +520,57 @@ export default function Profile() {
 
         </div>
       </div>
+
+      {/* Address Form Dialog */}
+      <Dialog open={isAddressModalOpen} onOpenChange={setIsAddressModalOpen}>
+        <DialogContent className="max-w-md p-6">
+          <DialogHeader>
+            <DialogTitle>{editingAddress ? 'Edit Address' : 'Add New Address'}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSaveAddress} className="space-y-4 mt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs text-gray-500 font-bold">Name</label>
+                <input type="text" value={addressForm.name} onChange={e => setAddressForm({...addressForm, name: e.target.value})} className="w-full border-gray-200 rounded-sm bg-gray-50 p-2 text-sm focus:bg-white focus:ring-1 focus:ring-pink-500" required />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs text-gray-500 font-bold">Phone</label>
+                <input type="tel" value={addressForm.phone} onChange={e => setAddressForm({...addressForm, phone: e.target.value})} className="w-full border-gray-200 rounded-sm bg-gray-50 p-2 text-sm focus:bg-white focus:ring-1 focus:ring-pink-500" required />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs text-gray-500 font-bold">Street Address</label>
+              <textarea value={addressForm.street} onChange={e => setAddressForm({...addressForm, street: e.target.value})} className="w-full border-gray-200 rounded-sm bg-gray-50 p-2 text-sm focus:bg-white focus:ring-1 focus:ring-pink-500" rows={2} required />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs text-gray-500 font-bold">City</label>
+                <input type="text" value={addressForm.city} onChange={e => setAddressForm({...addressForm, city: e.target.value})} className="w-full border-gray-200 rounded-sm bg-gray-50 p-2 text-sm focus:bg-white focus:ring-1 focus:ring-pink-500" required />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs text-gray-500 font-bold">State</label>
+                <input type="text" value={addressForm.state} onChange={e => setAddressForm({...addressForm, state: e.target.value})} className="w-full border-gray-200 rounded-sm bg-gray-50 p-2 text-sm focus:bg-white focus:ring-1 focus:ring-pink-500" required />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs text-gray-500 font-bold">Pincode</label>
+                <input type="text" value={addressForm.pincode} onChange={e => setAddressForm({...addressForm, pincode: e.target.value})} className="w-full border-gray-200 rounded-sm bg-gray-50 p-2 text-sm focus:bg-white focus:ring-1 focus:ring-pink-500" required />
+              </div>
+              <div className="flex items-center gap-2 mt-6">
+                <input type="checkbox" id="isDefault" checked={addressForm.isDefault} onChange={e => setAddressForm({...addressForm, isDefault: e.target.checked})} className="accent-pink-600 w-4 h-4" />
+                <label htmlFor="isDefault" className="text-sm font-medium text-gray-700 cursor-pointer">Set as Default Address</label>
+              </div>
+            </div>
+            <div className="pt-4 flex justify-end gap-3">
+              <Button type="button" variant="outline" onClick={() => setIsAddressModalOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={loading} className="bg-pink-600 hover:bg-pink-700 text-white">
+                {loading ? <Loader2 className="animate-spin" size={16}/> : 'Save Address'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
       <Footer />
     </div>
   );

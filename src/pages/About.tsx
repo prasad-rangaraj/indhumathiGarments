@@ -11,7 +11,7 @@ const About = () => {
       {/* Hero Section */}
       <section className="relative min-h-[calc(100vh-4rem)] flex items-center px-4 pt-4 pb-10 sm:py-12 md:py-16 overflow-hidden">
         {/* Rotating Background Images - Fixed */}
-        <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
+        <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
           <div 
             className="absolute inset-0 bg-cover bg-center animate-bg-slide-1"
             style={{ backgroundImage: `url(${bgCotton1})` }}
@@ -79,15 +79,15 @@ const About = () => {
 
           {/* Single-row highlights (stacked on mobile) */}
           <div className="px-4 sm:px-6 py-6 sm:py-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-20 sm:gap-6">
               <div className="text-center">
                 <Award className="h-10 w-10 sm:h-12 sm:w-12 text-primary mx-auto mb-3 sm:mb-4" />
-                <h3 className="font-semibold text-foreground text-md sm:text-lg">Premium Quality</h3>
+                <h3 className="font-semibold text-foreground text-sm sm:text-lg">Premium Quality</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground">100% Pure Cotton</p>
               </div>
               <div className="text-center">
                 <Heart className="h-10 w-10 sm:h-12 sm:w-12 text-primary mx-auto mb-3 sm:mb-4" />
-                <h3 className="font-semibold text-foreground text-md sm:text-lg">Made with Love</h3>
+                <h3 className="font-semibold text-foreground text-sm sm:text-lg">Made with Love</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground">Handcrafted Care</p>
               </div>
               <div className="text-center">
@@ -96,7 +96,7 @@ const About = () => {
                 <p className="text-xs sm:text-sm text-muted-foreground">Hypoallergenic</p>
               </div>
               <div className="text-center">
-                <div className="h-10 w-10 sm:h-12 sm:w-12 text-lg bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <div className="h-11 w-11 sm:h-12 sm:w-12 text-lg bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                   <span className="text-white font-bold text-sm">20 +</span>
                 </div>
                 <h3 className="font-semibold text-foreground text-sm sm:text-lg">Years Experience</h3>
@@ -108,8 +108,8 @@ const About = () => {
       </section>
 
       {/* Values Section */}
-      <section className="py-8 sm:py-12 md:py-16 px-4 bg-gradient-to-r from-accent/30 to-secondary/20">
-        <div className="container mx-auto text-center">
+      <section className="py-8 sm:py-12 md:py-16 bg-gradient-to-r from-accent/30 to-secondary/20">
+        <div className=" mx-7 sm:mx-16 text-center">
           <h2 className="text-3xl font-bold mb-12 text-foreground">Why Choose Indhumathi?</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 max-w-sm sm:max-w-none mx-auto">
             <div className="card-elegant p-6 hover-lift">

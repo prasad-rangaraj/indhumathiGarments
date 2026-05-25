@@ -84,7 +84,7 @@ const SearchResults = () => {
 
   return (
     <div className="min-h-screen relative">
-      <div className="fixed top-0 left-0 w-full h-screen h-[100dvh] -z-10 pointer-events-none">
+      <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
         <img src={bgCotton1} alt="" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
       </div>
@@ -127,19 +127,6 @@ const SearchResults = () => {
                 <SlidersHorizontal className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden xs:inline">Filters</span>
               </Button>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-full xs:w-[160px] sm:w-[180px] text-xs sm:text-sm">
-                  <ArrowUpDown className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="relevance">Relevance</SelectItem>
-                  <SelectItem value="price-low">Price: Low to High</SelectItem>
-                  <SelectItem value="price-high">Price: High to Low</SelectItem>
-                  <SelectItem value="name-asc">Name: A to Z</SelectItem>
-                  <SelectItem value="name-desc">Name: Z to A</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
 
