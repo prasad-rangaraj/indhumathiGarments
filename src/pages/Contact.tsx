@@ -48,8 +48,8 @@ const Contact = () => {
         <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
       </div>
 
-      <div className="py-6 sm:py-8 sm:px-6 relative z-10">
-        <div className="container mx-auto max-w-6xl">
+      <div className="py-6 sm:py-8 sm:px-6 relative z-10 ">
+        <div className="mx-5 sm:mx-auto max-w-6xl">
         {/* Header */}
         <div className="text-center mb-8 sm:mb-12 animate-fade-in">
           <h1 className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">

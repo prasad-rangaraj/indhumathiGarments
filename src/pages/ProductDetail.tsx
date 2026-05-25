@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Minus, ShoppingCart, CreditCard, Star, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useProductsStore } from '@/stores/productsStore';
@@ -30,6 +30,17 @@ const ProductDetail = () => {
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const imageScrollRef = useRef<HTMLDivElement>(null);
+
+  const handleImageChange = (index: number) => {
+    setCurrentImageIndex(index);
+    if (imageScrollRef.current) {
+      imageScrollRef.current.scrollTo({
+        left: index * imageScrollRef.current.clientWidth,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   useEffect(() => {
     if (products.length === 0 && !productsLoading) {
@@ -200,21 +211,26 @@ const ProductDetail = () => {
           src={bgFashionModel}
           alt=""
           className="w-full h-full object-cover transition-opacity duration-500"
-          style={{ objectPosition: 'center center' }}
+          style={{ objectPosition: 'center 25%' }}
         />
         <div className="absolute inset-0 bg-background/80 backdrop-blur-[2px]" />
       </div>
 
       <div className="py-6 sm:py-8 px-4 sm:px-6 relative z-10">
-        <div className="container mx-auto max-w-6xl">
+        <div className="mx-4 sm:mx-auto max-w-6xl">
 
           <div className="grid md:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-12">
             {/* Product Image Carousel */}
             <div className="animate-fade-in">
               {(() => {
                 const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
-                const toUrl = (src: string) =>
-                  src.startsWith('http') ? src : `${BASE}${src}`;
+                const toUrl = (src: string) => {
+                  if (!src) return '';
+                  if (src.startsWith('http')) return src;
+                  const prefix = BASE.endsWith('/') ? BASE.slice(0, -1) : BASE;
+                  const path = src.startsWith('/') ? src : `/${src}`;
+                  return `${prefix}${path}`;
+                };
                 const selectedColorObj = product.colors?.find(c => c.name === selectedColor);
                 const colorImages = selectedColorObj?.images || [];
                 // Build image list: prefer selected color images, fallback to images[], fallback to [image]
@@ -232,14 +248,27 @@ const ProductDetail = () => {
                 return (
                   <div className="space-y-3">
                     {/* Main image */}
-                    <div className="relative overflow-hidden rounded-xl bg-accent/40 aspect-square sm:aspect-[4/5] group">
+                    <div className="relative overflow-hidden rounded-xl bg-accent/40 aspect-[6/6] group w-full">
                       {imgList.length > 0 ? (
-                        <img
-                          key={currentImageIndex}
-                          src={toUrl(imgList[currentImageIndex])}
-                          alt={`${product.name} ${currentImageIndex + 1}`}
-                          className="absolute inset-0 w-full h-full object-contain p-2 transition-opacity duration-300"
-                        />
+                        <div 
+                          ref={imageScrollRef}
+                          className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory hide-scrollbar scroll-smooth"
+                          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                          onScroll={(e) => {
+                            const target = e.target as HTMLDivElement;
+                            const index = Math.round(target.scrollLeft / target.clientWidth);
+                            if (index !== currentImageIndex) setCurrentImageIndex(index);
+                          }}
+                        >
+                          {imgList.map((img, idx) => (
+                            <img
+                              key={idx}
+                              src={toUrl(img)}
+                              alt={`${product.name} ${idx + 1}`}
+                              className="flex-shrink-0 w-full h-full object-contain snap-center snap-always"
+                            />
+                          ))}
+                        </div>
                       ) : (
                         <>
                           <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-secondary/15 to-background/40" />
@@ -252,7 +281,7 @@ const ProductDetail = () => {
                       {/* Left arrow */}
                       {hasPrev && (
                         <button
-                          onClick={() => setCurrentImageIndex(i => i - 1)}
+                          onClick={() => handleImageChange(currentImageIndex - 1)}
                           className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm border border-border/60 flex items-center justify-center hover:bg-background transition-colors shadow-md"
                           aria-label="Previous image"
                         >
@@ -263,7 +292,7 @@ const ProductDetail = () => {
                       {/* Right arrow */}
                       {hasNext && (
                         <button
-                          onClick={() => setCurrentImageIndex(i => i + 1)}
+                          onClick={() => handleImageChange(currentImageIndex + 1)}
                           className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm border border-border/60 flex items-center justify-center hover:bg-background transition-colors shadow-md"
                           aria-label="Next image"
                         >
@@ -285,7 +314,7 @@ const ProductDetail = () => {
                         {imgList.map((_, idx) => (
                           <button
                             key={idx}
-                            onClick={() => setCurrentImageIndex(idx)}
+                            onClick={() => handleImageChange(idx)}
                             className={`w-2 h-2 rounded-full transition-all duration-200 ${idx === currentImageIndex
                                 ? 'bg-primary scale-125'
                                 : 'bg-muted-foreground/40 hover:bg-muted-foreground/70'
@@ -302,7 +331,7 @@ const ProductDetail = () => {
                         {imgList.map((img, idx) => (
                           <button
                             key={idx}
-                            onClick={() => setCurrentImageIndex(idx)}
+                            onClick={() => handleImageChange(idx)}
                             className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ${idx === currentImageIndex
                                 ? 'border-primary ring-2 ring-primary/30'
                                 : 'border-border/50 hover:border-primary/50'
@@ -324,7 +353,16 @@ const ProductDetail = () => {
 
             {/* Product Details */}
             <div className="animate-slide-up">
-              <h1 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 text-foreground">{product.name}</h1>
+              <div className="flex justify-between items-start gap-4 mb-3 sm:mb-4">
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{product.name}</h1>
+                <button
+                  onClick={handleWishlistToggle}
+                  className={`p-2 rounded-full transition-colors flex-shrink-0 ${wishlistStatus ? 'bg-primary/10 text-primary hover:bg-primary/20' : 'bg-accent/50 text-muted-foreground hover:bg-accent hover:text-foreground'}`}
+                  title={wishlistStatus ? 'Remove from wishlist' : 'Add to wishlist'}
+                >
+                  <Heart className={`h-6 w-6 sm:h-7 sm:w-7 ${wishlistStatus ? 'fill-current' : ''}`} />
+                </button>
+              </div>
 
               <StarRating
                 rating={averageRating}
@@ -376,7 +414,7 @@ const ProductDetail = () => {
                         type="button"
                         onClick={() => {
                           setSelectedColor(colorObj.name);
-                          setCurrentImageIndex(0); // Reset image index when changing color
+                          handleImageChange(0); // Reset image index when changing color
                         }}
                         className={`w-8 h-8 rounded-full border-2 shadow-sm transition-all duration-200 ${
                           selectedColor === colorObj.name
@@ -457,14 +495,6 @@ const ProductDetail = () => {
                 >
                   <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                   <span>{product.inStock ? 'Buy Now' : 'No Stock'}</span>
-                </button>
-                <button
-                  onClick={handleWishlistToggle}
-                  className={`btn-secondary flex items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-2.5 min-w-[3rem] ${wishlistStatus ? 'bg-primary/20 text-primary' : ''
-                    }`}
-                  title={wishlistStatus ? 'Remove from wishlist' : 'Add to wishlist'}
-                >
-                  <Heart className={`h-4 w-4 sm:h-5 sm:w-5 ${wishlistStatus ? 'fill-current' : ''}`} />
                 </button>
               </div>
             </div>

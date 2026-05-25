@@ -6,6 +6,15 @@ import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 
+const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
+const toUrl = (src: string) => {
+  if (!src) return '';
+  if (src.startsWith('http')) return src;
+  const prefix = BASE.endsWith('/') ? BASE.slice(0, -1) : BASE;
+  const path = src.startsWith('/') ? src : `/${src}`;
+  return `${prefix}${path}`;
+};
+
 const Cart = () => {
   const { items, total, updateQuantity, removeItem, fetchCart } = useCartStore();
   const { isAuthenticated } = useAuthStore();
@@ -76,9 +85,9 @@ const Cart = () => {
               >
                 <div className="flex gap-3 sm:gap-4">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg flex-shrink-0 bg-accent/70 border border-border flex items-center justify-center text-[10px] sm:text-xs text-muted-foreground overflow-hidden">
-                    {item.image ? (
+                    {item.image || (item.images && item.images.length > 0) ? (
                       <img 
-                        src={item.image.startsWith('http') ? item.image : `${import.meta.env.VITE_API_URL.replace('/api', '')}${item.image}`}
+                        src={toUrl(item.image || item.images?.[0])}
                         alt={item.name}
                         className="w-full h-full object-cover"
                       />

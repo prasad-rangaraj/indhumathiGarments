@@ -18,6 +18,15 @@ const getColorsForProduct = (id: string) => {
   return colorPalettes[paletteIndex];
 };
 
+const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
+const toUrl = (src: string) => {
+  if (!src) return '';
+  if (src.startsWith('http')) return src;
+  const prefix = BASE.endsWith('/') ? BASE.slice(0, -1) : BASE;
+  const path = src.startsWith('/') ? src : `/${src}`;
+  return `${prefix}${path}`;
+};
+
 const Wishlist = () => {
   const { items, removeFromWishlist, fetchWishlist } = useWishlistStore();
   const { addItem } = useCartStore();
@@ -93,9 +102,9 @@ const Wishlist = () => {
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="relative overflow-hidden aspect-[4/5] bg-accent/60 flex items-center justify-center">
-                  {product.image ? (
+                  {product.image || (product.images && product.images.length > 0) ? (
                     <img
-                      src={product.image.startsWith('http') ? product.image : `${import.meta.env.VITE_API_URL.replace('/api', '')}${product.image}`}
+                      src={toUrl(product.image || product.images?.[0])}
                       alt={product.name}
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />

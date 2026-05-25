@@ -117,55 +117,7 @@ const SearchResults = () => {
                 {filteredProducts.length} {filteredProducts.length === 1 ? 'product found' : 'products found'}
               </p>
             </div>
-            <div className="flex gap-2 flex-wrap w-full sm:w-auto">
-              <Button
-                variant="outline"
-                onClick={() => setShowFilters(!showFilters)}
-                className="gap-2 text-xs sm:text-sm"
-                size="sm"
-              >
-                <SlidersHorizontal className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">Filters</span>
-              </Button>
-            </div>
           </div>
-
-          {/* Filter Panel */}
-          {showFilters && (
-            <div className="mb-6 p-4 bg-card/95 backdrop-blur-md rounded-lg border border-border/50">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Category</label>
-                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      {categoryList.map(cat => (
-                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Price Range</label>
-                  <Select value={priceFilter} onValueChange={setPriceFilter}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Prices</SelectItem>
-                      <SelectItem value="under500">Under ₹500</SelectItem>
-                      <SelectItem value="500-1000">₹500 - ₹1,000</SelectItem>
-                      <SelectItem value="1000-2000">₹1,000 - ₹2,000</SelectItem>
-                      <SelectItem value="over2000">Over ₹2,000</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Products Grid */}
           {filteredProducts.length > 0 ? (

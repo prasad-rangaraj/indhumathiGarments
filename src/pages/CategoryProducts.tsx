@@ -5,7 +5,7 @@ import { useProductsStore } from '@/stores/productsStore';
 import { useWishlistStore } from '@/stores/wishlistStore';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import bgProductsHero from '@/assets/bg-products-hero.jpg';
+import bgFashionModel from '@/assets/bg-fashion-model.png';
 
 
 
@@ -101,9 +101,10 @@ const CategoryProducts = () => {
       {/* Background with blur - Fixed */}
       <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
         <img
-          src={bgProductsHero}
+          src={bgFashionModel}
           alt=""
           className="w-full h-full object-cover transition-opacity duration-500"
+          style={{ objectPosition: 'center 25%' }}
         />
         <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
       </div>
@@ -151,46 +152,12 @@ const CategoryProducts = () => {
             </div>
           )}
 
-          {/* Filters and Sort */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center justify-between mb-6">
-            <div className="flex gap-2 flex-wrap w-full sm:w-auto">
-              <Button
-                variant="outline"
-                onClick={() => setShowFilters(!showFilters)}
-                className="gap-2 text-xs sm:text-sm"
-                size="sm"
-              >
-                <SlidersHorizontal className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">Filters</span>
-              </Button>
-            </div>
-            <p className="text-sm text-muted-foreground">
+          {/* Products Count */}
+          <div className="flex items-center justify-end mb-6">
+            <p className="text-sm text-muted-foreground font-medium">
               {categoryProducts.length} {categoryProducts.length === 1 ? 'product' : 'products'}
             </p>
           </div>
-
-          {/* Filter Panel */}
-          {showFilters && (
-            <div className="mb-6 p-4 bg-card/95 backdrop-blur-md rounded-lg border border-border/50">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Price Range</label>
-                  <Select value={priceFilter} onValueChange={setPriceFilter}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Prices</SelectItem>
-                      <SelectItem value="under500">Under ₹500</SelectItem>
-                      <SelectItem value="500-1000">₹500 - ₹1,000</SelectItem>
-                      <SelectItem value="1000-2000">₹1,000 - ₹2,000</SelectItem>
-                      <SelectItem value="over2000">Over ₹2,000</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Products Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 lg:gap-8">

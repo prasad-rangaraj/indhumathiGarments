@@ -3,7 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { useProductsStore } from '@/stores/productsStore';
 import CouponBanner from '@/components/CouponBanner';
-import bgProductsHero from '@/assets/bg-products-hero.jpg';
+import bgFashionModel from '@/assets/bg-fashion-model.png';
+import bgMensFashionModel from '@/assets/bg-mens-fashion-model.png';
 
 const Products = () => {
   const { products, categories, loading, error, fetchProducts, fetchCategories } = useProductsStore();
@@ -37,7 +38,7 @@ const Products = () => {
     return (
       <div className="min-h-screen relative">
         <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
-          <img src={bgProductsHero} alt="" className="w-full h-full object-cover" />
+          <img src={gender === 'men' ? bgMensFashionModel : bgFashionModel} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
         </div>
         <div className="py-8 px-4 relative z-10 text-center">
@@ -52,7 +53,7 @@ const Products = () => {
     return (
       <div className="min-h-screen relative">
         <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
-          <img src={bgProductsHero} alt="" className="w-full h-full object-cover" />
+          <img src={gender === 'men' ? bgMensFashionModel : bgFashionModel} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
         </div>
         <div className="py-8 px-4 relative z-10 text-center">
@@ -71,7 +72,7 @@ const Products = () => {
   return (
     <div className="min-h-screen relative">
       <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
-        <img src={bgProductsHero} alt="" className="w-full h-full object-cover transition-opacity duration-500" />
+        <img src={gender === 'men' ? bgMensFashionModel : bgFashionModel} alt="" className="w-full h-full object-cover transition-opacity duration-500" style={{ objectPosition: 'center 25%' }} />
         <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
       </div>
 

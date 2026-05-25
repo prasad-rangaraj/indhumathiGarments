@@ -124,7 +124,7 @@ const FAQ = () => {
       </div>
 
       <div className="py-6 sm:py-8 sm:px-6 relative z-10">
-        <div className="container mx-auto max-w-4xl">
+        <div className="mx-5 sm:mx-auto max-w-4xl">
           <div className="text-center mb-8 sm:mb-12 px-2 sm:px-0">
             <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-foreground">Frequently Asked Questions</h1>
             <p className="text-base sm:text-lg text-muted-foreground">
