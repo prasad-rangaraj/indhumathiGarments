@@ -7,6 +7,7 @@ import { Suspense, lazy, useEffect } from "react";
 import { useAuthStore } from "./stores/authStore";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import Navigation from "./components/Navigation";
+import { PullToRefresh } from "./components/PullToRefresh";
 
 // Layouts and Auth
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -75,8 +76,9 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <AppInner />
+        <PullToRefresh>
+          <BrowserRouter>
+            <AppInner />
           <Suspense fallback={
             <div className="flex h-screen w-full items-center justify-center bg-background">
               <div className="animate-pulse flex flex-col items-center">
@@ -151,6 +153,7 @@ const App = () => (
             </Routes>
           </Suspense>
         </BrowserRouter>
+        </PullToRefresh>
       </TooltipProvider>
     </GoogleOAuthProvider>
   </QueryClientProvider>

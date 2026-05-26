@@ -123,9 +123,9 @@
   /* Lock viewport to stop URL bar hiding while keeping pull-to-refresh active */
   @media (max-width: 768px) {
     html, body {
-      height: 100%;
-      /* NO overflow:hidden here! This allows native pull-to-refresh to trigger */
-      overscroll-behavior-y: auto;
+      height: 100dvh;
+      overflow: hidden;
+      overscroll-behavior-y: none;
     }
     
     #root {
