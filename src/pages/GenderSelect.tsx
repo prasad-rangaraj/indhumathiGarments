@@ -60,7 +60,7 @@ const GenderSelect = () => {
       <div
         className="relative flex flex-col items-center justify-center cursor-pointer overflow-hidden w-full md:w-auto pt-16 md:pt-16"
         style={{
-          flex: W ? 1.5 : 1,
+          flex: W ? '1.5 1 0%' : '1 1 0%',
           transition: 'flex 0.75s cubic-bezier(0.77,0,0.175,1)',
           background: W
             ? 'linear-gradient(145deg, #ffe4f0 0%, #fbc7e0 30%, #f48fb1 65%, #e91e8c 100%)'
@@ -127,9 +127,9 @@ const GenderSelect = () => {
 
         {/* Main content */}
         <div
-          className="relative z-10 flex flex-col items-center gap-5 m-auto"
+          className="absolute top-1/2 left-1/2 z-10 flex flex-col items-center gap-5 w-full px-4"
           style={{
-            transform: W ? 'translateY(-14px)' : 'translateY(0)',
+            transform: W ? 'translate(-50%, calc(-50% - 14px))' : 'translate(-50%, -50%)',
             transition: 'transform 0.65s cubic-bezier(0.34,1.56,0.64,1)',
           }}
         >
@@ -187,10 +187,11 @@ const GenderSelect = () => {
           </div>
 
           {/* Hover CTA */}
-          <div style={{
+          <div className="absolute top-[100%] pt-6 left-1/2 -translate-x-1/2 flex justify-center w-full" style={{
             opacity: W ? 1 : 0,
             transform: W ? 'translateY(0)' : 'translateY(8px)',
             transition: 'all 0.45s ease 0.1s',
+            pointerEvents: W ? 'auto' : 'none',
           }}>
             <span style={{
               color: '#c2185b',
@@ -287,9 +288,9 @@ const GenderSelect = () => {
 
       {/* ─── MEN HALF ─────────────────────────────────────────── */}
       <div
-        className="relative flex flex-col items-center justify-center cursor-pointer overflow-hidden w-full md:w-auto md:pt-16"
+        className="relative flex flex-col items-center justify-center cursor-pointer overflow-hidden w-full md:w-auto pb-16 md:pb-0 md:pt-16"
         style={{
-          flex: M ? 1.5 : 1,
+          flex: M ? '1.5 1 0%' : '1 1 0%',
           transition: 'flex 0.75s cubic-bezier(0.77,0,0.175,1)',
           background: M
             ? 'linear-gradient(145deg, #dff3ff 0%, #b3e0f7 30%, #64b5f6 65%, #1565c0 100%)'
@@ -356,9 +357,9 @@ const GenderSelect = () => {
 
         {/* Main content */}
         <div
-          className="relative z-10 flex flex-col items-center gap-5 m-auto"
+          className="absolute top-1/2 left-1/2 z-10 flex flex-col items-center gap-5 w-full px-4"
           style={{
-            transform: M ? 'translateY(-14px)' : 'translateY(0)',
+            transform: M ? 'translate(-50%, calc(-50% - 14px))' : 'translate(-50%, -50%)',
             transition: 'transform 0.65s cubic-bezier(0.34,1.56,0.64,1)',
           }}
         >
@@ -415,10 +416,11 @@ const GenderSelect = () => {
           </div>
 
           {/* Hover CTA */}
-          <div style={{
+          <div className="absolute top-[100%] pt-6 left-1/2 -translate-x-1/2 flex justify-center w-full" style={{
             opacity: M ? 1 : 0,
             transform: M ? 'translateY(0)' : 'translateY(8px)',
             transition: 'all 0.45s ease 0.1s',
+            pointerEvents: M ? 'auto' : 'none',
           }}>
             <span style={{
               color: '#1565c0',

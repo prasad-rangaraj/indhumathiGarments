@@ -127,12 +127,12 @@ const Signup = () => {
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Background Image - Fixed */}
       <div 
-        className="fixed top-0 left-0 w-full h-[100lvh] -z-10 bg-cover bg-center bg-no-repeat pointer-events-none"
+        className="fixed top-0 left-0 w-full h-[100dvh] -z-10 bg-cover bg-center bg-no-repeat pointer-events-none"
         style={{ backgroundImage: `url(${bgCotton})` }}
       />
       
       {/* Overlay */}
-      <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 bg-gradient-to-br from-pink-100/80 via-pink-50/70 to-pink-100/80 backdrop-blur-sm pointer-events-none" />
+      <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 bg-gradient-to-br from-pink-100/80 via-pink-50/70 to-pink-100/80 backdrop-blur-sm pointer-events-none" />
       
       {/* Signup Card */}
       <div className="relative z-10 w-full max-w-xl px-4 sm:px-6 lg:px-8 mx-auto my-8">

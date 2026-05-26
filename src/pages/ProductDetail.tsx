@@ -206,7 +206,7 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen relative overflow-x-hidden">
       {/* Background with blur - Fixed */}
-      <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
+      <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">
         <img
           src={bgFashionModel}
           alt=""
@@ -374,7 +374,7 @@ const ProductDetail = () => {
                 <p className="text-xs text-muted-foreground -mt-3 mb-4 italic">Not yet rated</p>
               )}
 
-              <p className="text-muted-foreground text-base sm:text-lg mb-4 sm:mb-6 leading-relaxed">
+              <p className="text-muted-foreground text-base sm:text-lg mb-4 sm:mb-6 leading-relaxed whitespace-pre-wrap">
                 {product.description}
               </p>
 
@@ -438,9 +438,9 @@ const ProductDetail = () => {
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`w-12 h-12 rounded-lg border-2 font-semibold transition-all duration-200 ${selectedSize === size
-                          ? 'border-primary bg-primary text-primary-foreground'
-                          : 'border-border hover:border-primary'
+                      className={`min-w-[3rem] h-12 px-3 rounded-lg border-2 font-semibold transition-all duration-200 flex items-center justify-center whitespace-nowrap shadow-sm ${selectedSize === size
+                          ? 'border-primary bg-primary text-primary-foreground shadow-md'
+                          : 'border-black/15 bg-background/60 text-foreground hover:border-primary/50 hover:bg-background/80'
                         }`}
                     >
                       {size}

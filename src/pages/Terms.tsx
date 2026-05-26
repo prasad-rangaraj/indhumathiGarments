@@ -4,13 +4,13 @@ import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 const Terms = () => {
   return (
     <div className="min-h-screen relative">
-      <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
+      <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">
         <img src={bgCotton1} alt="" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
       </div>
 
       <div className="py-6 sm:py-8 px-4 sm:px-6 relative z-10">
-        <div className="container mx-auto max-w-4xl">
+        <div className="mx-4 sm:mx-auto max-w-4xl">
           <div className="card-elegant p-6 sm:p-8">
             <h1 className="text-3xl sm:text-4xl font-bold mb-6 text-foreground">Terms & Conditions</h1>
             <p className="text-sm text-muted-foreground mb-8">Last updated: December 2025</p>

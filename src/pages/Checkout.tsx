@@ -260,7 +260,7 @@ const Checkout = () => {
 
   return (
     <div className="min-h-screen relative bg-slate-50/50 pb-20">
-      <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
+      <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">
         <img src={bgCotton1} alt="" className="w-full h-full object-cover opacity-40" />
         <div className="absolute inset-0 bg-background/50 backdrop-blur-[2px]" />
       </div>

@@ -117,10 +117,10 @@ export const useProductsStore = create<ProductsState>((set, get) => ({
     const lowerQuery = query.toLowerCase();
     return get().products.filter(
       p =>
-        p.name.toLowerCase().includes(lowerQuery) ||
-        p.description.toLowerCase().includes(lowerQuery) ||
-        p.category.toLowerCase().includes(lowerQuery) ||
-        p.subcategory.toLowerCase().includes(lowerQuery)
+        p.name?.toLowerCase().includes(lowerQuery) ||
+        p.description?.toLowerCase().includes(lowerQuery) ||
+        p.category?.toLowerCase().includes(lowerQuery) ||
+        p.subcategory?.toLowerCase().includes(lowerQuery)
     );
   },
 

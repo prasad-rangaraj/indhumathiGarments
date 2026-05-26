@@ -9,9 +9,9 @@ const About = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative min-h-[calc(100vh-4rem)] flex items-center px-4 pb-10 sm:py-12 md:py-16 overflow-hidden">
+      <section className="relative min-h-[calc(100dvh-4rem)] flex items-center px-4 pb-10 sm:py-12 md:py-16 overflow-hidden">
         {/* Rotating Background Images - Fixed */}
-        <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
+        <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">
           <div 
             className="absolute inset-0 bg-cover bg-center animate-bg-slide-1"
             style={{ backgroundImage: `url(${bgCotton1})` }}

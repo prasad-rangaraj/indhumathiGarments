@@ -37,7 +37,7 @@ const Products = () => {
   if (loading && mainCategories.length === 0) {
     return (
       <div className="min-h-screen relative">
-        <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
+        <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">
           <img src={gender === 'men' ? bgMensFashionModel : bgFashionModel} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
         </div>
@@ -52,7 +52,7 @@ const Products = () => {
   if (error) {
     return (
       <div className="min-h-screen relative">
-        <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
+        <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">
           <img src={gender === 'men' ? bgMensFashionModel : bgFashionModel} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
         </div>
@@ -71,7 +71,7 @@ const Products = () => {
 
   return (
     <div className="min-h-screen relative">
-      <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
+      <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">
         <img src={gender === 'men' ? bgMensFashionModel : bgFashionModel} alt="" className="w-full h-full object-cover transition-opacity duration-500" style={{ objectPosition: 'center 25%' }} />
         <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
       </div>

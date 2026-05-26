@@ -99,7 +99,7 @@ const CategoryProducts = () => {
   return (
     <div className="min-h-screen relative">
       {/* Background with blur - Fixed */}
-      <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
+      <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">
         <img
           src={bgFashionModel}
           alt=""
