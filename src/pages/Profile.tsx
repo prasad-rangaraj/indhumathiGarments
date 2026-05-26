@@ -500,20 +500,24 @@ export default function Profile() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {wishlist.map((item: any) => (
+                      {wishlist.map((item: any) => {
+                        const imgSrc = item.product?.image || item.product?.images?.[0];
+                        const resolvedSrc = imgSrc ? (imgSrc.startsWith('http') ? imgSrc : `${import.meta.env.VITE_API_URL.replace('/api', '')}${imgSrc.startsWith('/') ? imgSrc : '/' + imgSrc}`) : null;
+                        return (
                         <div key={item.id} className="border border-pink-100 rounded-xl p-3 relative group bg-white hover:shadow-md transition-all">
                           <button className="absolute top-2 right-2 p-1.5 bg-white shadow-sm rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:text-red-500 border border-pink-50">
                             <Trash2 size={16} />
                           </button>
                           <div className="aspect-[3/4] bg-pink-50 rounded-lg mb-3 overflow-hidden">
-                            {item.product?.images?.[0] ? <img src={item.product.images[0]} alt="w" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-pink-200"><Heart size={32} /></div>}
+                            {resolvedSrc ? <img src={resolvedSrc} alt="w" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-pink-200"><Heart size={32} /></div>}
                           </div>
                           <h3 className="font-bold text-sm truncate text-gray-800">{item.product?.name || 'Product'}</h3>
                           <div className="flex items-center gap-2 mt-2">
                             <span className="font-bold text-pink-600">₹{item.product?.price || 0}</span>
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>

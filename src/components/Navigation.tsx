@@ -177,7 +177,7 @@ const Navigation = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border/50 animate-fade-in">
+          <div className="md:hidden absolute top-full left-0 w-full bg-background/95 backdrop-blur-md border-b border-x border-border/50 rounded-b-2xl px-4 py-4 shadow-xl animate-fade-in">
             <div className="flex flex-col space-y-4">
               <Link
                 to="/"

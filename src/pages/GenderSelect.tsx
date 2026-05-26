@@ -53,12 +53,12 @@ const GenderSelect = () => {
 
   return (
     <div
-      className={`fixed inset-0 flex flex-col md:flex-row overflow-hidden select-none transition-opacity duration-700 ${mounted ? 'opacity-100' : 'opacity-0'}`}
+      className={`fixed inset-0 flex flex-col md:flex-row overflow-hidden select-none transition-opacity duration-700 z-10 ${mounted ? 'opacity-100' : 'opacity-0'}`}
       style={{ fontFamily: "'Outfit', 'Inter', sans-serif", background: '#f8f3f0' }}
     >
       {/* ─── WOMEN HALF ─────────────────────────────────────────── */}
       <div
-        className="relative flex flex-col items-center justify-center cursor-pointer overflow-hidden w-full md:w-auto h-auto md:h-full"
+        className="relative flex flex-col items-center justify-center cursor-pointer overflow-hidden w-full md:w-auto pt-16 md:pt-16"
         style={{
           flex: W ? 1.5 : 1,
           transition: 'flex 0.75s cubic-bezier(0.77,0,0.175,1)',
@@ -127,7 +127,7 @@ const GenderSelect = () => {
 
         {/* Main content */}
         <div
-          className="relative z-10 flex flex-col items-center gap-5"
+          className="relative z-10 flex flex-col items-center gap-5 m-auto"
           style={{
             transform: W ? 'translateY(-14px)' : 'translateY(0)',
             transition: 'transform 0.65s cubic-bezier(0.34,1.56,0.64,1)',
@@ -287,7 +287,7 @@ const GenderSelect = () => {
 
       {/* ─── MEN HALF ─────────────────────────────────────────── */}
       <div
-        className="relative flex flex-col items-center justify-center cursor-pointer overflow-hidden w-full md:w-auto h-auto md:h-full"
+        className="relative flex flex-col items-center justify-center cursor-pointer overflow-hidden w-full md:w-auto md:pt-16"
         style={{
           flex: M ? 1.5 : 1,
           transition: 'flex 0.75s cubic-bezier(0.77,0,0.175,1)',
@@ -356,7 +356,7 @@ const GenderSelect = () => {
 
         {/* Main content */}
         <div
-          className="relative z-10 flex flex-col items-center gap-5"
+          className="relative z-10 flex flex-col items-center gap-5 m-auto"
           style={{
             transform: M ? 'translateY(-14px)' : 'translateY(0)',
             transition: 'transform 0.65s cubic-bezier(0.34,1.56,0.64,1)',

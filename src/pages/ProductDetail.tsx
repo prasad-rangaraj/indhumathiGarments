@@ -204,7 +204,7 @@ const ProductDetail = () => {
 
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen relative overflow-x-hidden">
       {/* Background with blur - Fixed */}
       <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
         <img
@@ -221,7 +221,7 @@ const ProductDetail = () => {
 
           <div className="grid md:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-12">
             {/* Product Image Carousel */}
-            <div className="animate-fade-in">
+            <div className="animate-fade-in min-w-0">
               {(() => {
                 const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
                 const toUrl = (src: string) => {
@@ -433,7 +433,7 @@ const ProductDetail = () => {
               {/* Size Selection */}
               <div className="mb-6">
                 <h3 className="font-semibold text-foreground mb-3">Select Size</h3>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                   {(product.sizes ?? ['S', 'M', 'L', 'XL']).map((size) => (
                     <button
                       key={size}

@@ -110,7 +110,7 @@ const CategoryProducts = () => {
       </div>
 
       <div className="py-6 sm:py-8 px-4 sm:px-6 relative z-10">
-        <div className="container mx-auto">
+        <div className="sm:mx-4 mx-2 max-w-6xl">
 
           <div className="text-center mb-8 sm:mb-12">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 text-foreground/90 px-4">
