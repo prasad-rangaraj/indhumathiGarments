@@ -120,28 +120,38 @@
     background-attachment: fixed;
   }
 
-  /* Ensure fixed backgrounds don't scroll */
-  .fixed {
-    position: fixed;
-  }
-
-  /* Prevent background scrolling on mobile */
+  /* Prevent background scrolling on mobile & lock viewport to stop URL bar hiding */
   @media (max-width: 768px) {
-    html {
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior-y: none;
+    }
+    
+    #root {
+      height: 100dvh;
+      overflow-y: auto;
+      overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; /* Firefox */
+    }
+
+    #root::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Edge */
+    }
+
+    /* Prevent scrolling in root when a Radix modal is open */
+    body[data-scroll-locked] #root {
+      overflow: hidden !important;
     }
   }
 
-  /* Hide side scrollbars while keeping scroll behavior */
-  html,
-  body {
+  /* Hide side scrollbars globally while keeping scroll behavior */
+  html, body, #root {
     scrollbar-width: none;
-    /* Firefox */
   }
-
-  body::-webkit-scrollbar {
+  html::-webkit-scrollbar, body::-webkit-scrollbar, #root::-webkit-scrollbar {
     display: none;
-    /* Chrome, Safari, Edge */
   }
 }
 

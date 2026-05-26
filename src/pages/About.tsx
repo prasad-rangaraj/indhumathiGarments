@@ -9,7 +9,7 @@ const About = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative min-h-[calc(100vh-4rem)] flex items-center px-4 pt-4 pb-10 sm:py-12 md:py-16 overflow-hidden">
+      <section className="relative min-h-[calc(100vh-4rem)] flex items-center px-4 pb-10 sm:py-12 md:py-16 overflow-hidden">
         {/* Rotating Background Images - Fixed */}
         <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
           <div 
@@ -38,13 +38,13 @@ const About = () => {
               />
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 text-foreground px-4">
-              Premium Cotton Women's Lingerie
+              Premium Cotton attire  & clothing
             </h1>
             <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-6 sm:mb-8 max-w-3xl mx-auto px-4">
-              Manufacturing high quality pure cotton women inners
+              Manufacturing high quality pure cotton garments for men and women
             </p>
             <p className="text-base sm:text-lg text-foreground/80 mb-8 sm:mb-12 max-w-2xl mx-auto leading-relaxed px-4">
-              For over two decades, we've been dedicated to creating the finest cotton lingerie 
+              For over two decades, we've been dedicated to creating the finest cotton garments 
               that combines comfort, quality, and elegance. Every piece is crafted with love 
               and attention to detail.
             </p>
@@ -66,14 +66,14 @@ const About = () => {
             <h2 className="text-3xl font-bold mb-6 text-foreground">Our Story</h2>
             <p className="text-muted-foreground mb-6 leading-relaxed text-base sm:text-lg">
               Founded in 2001, Indhumathi began as a small family business with a simple mission: 
-              to provide women with the most comfortable, high-quality cotton undergarments. 
+              to provide everyone with the most comfortable, high-quality cotton garments. 
               What started in a small workshop has grown into a trusted brand known for our 
               commitment to natural fabrics and superior craftsmanship.
             </p>
             <p className="text-muted-foreground leading-relaxed text-base sm:text-lg">
               We believe that comfort should never be compromised. That's why we source only 
               the finest cotton fibers and employ traditional techniques alongside modern 
-              innovation to create lingerie that feels as good as it looks.
+              innovation to create clothing that feels as good as it looks.
             </p>
           </div>
 
@@ -123,13 +123,13 @@ const About = () => {
               <h3 className="text-xl font-semibold mb-4 text-foreground">Expert Craftsmanship</h3>
               <p className="text-muted-foreground">
                 Each piece is carefully crafted by skilled artisans who understand the 
-                importance of fit, comfort, and durability in intimate wear.
+                importance of fit, comfort, and durability in daily wear.
               </p>
             </div>
             <div className="card-elegant p-6 hover-lift">
               <h3 className="text-xl font-semibold mb-4 text-foreground">Affordable Luxury</h3>
               <p className="text-muted-foreground">
-                We believe every woman deserves quality lingerie. Our direct-to-consumer 
+                We believe everyone deserves quality garments. Our direct-to-consumer 
                 model ensures premium products at accessible prices.
               </p>
             </div>

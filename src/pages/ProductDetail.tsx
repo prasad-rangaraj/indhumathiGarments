@@ -252,7 +252,7 @@ const ProductDetail = () => {
                       {imgList.length > 0 ? (
                         <div 
                           ref={imageScrollRef}
-                          className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory hide-scrollbar scroll-smooth"
+                          className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory scrollbar-hide scroll-smooth"
                           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                           onScroll={(e) => {
                             const target = e.target as HTMLDivElement;
@@ -265,7 +265,7 @@ const ProductDetail = () => {
                               key={idx}
                               src={toUrl(img)}
                               alt={`${product.name} ${idx + 1}`}
-                              className="flex-shrink-0 w-full h-full object-contain snap-center snap-always"
+                              className="flex-shrink-0 w-full h-full object-contain snap-center scrollbar-hide snap-always"
                             />
                           ))}
                         </div>
@@ -273,7 +273,7 @@ const ProductDetail = () => {
                         <>
                           <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-secondary/15 to-background/40" />
                           <div className="relative z-10 h-full flex items-center justify-center text-center px-6">
-                            <p className="text-lg sm:text-xl font-semibold text-foreground">Premium Cotton Lingerie</p>
+                            <p className="text-lg sm:text-xl font-semibold text-foreground">Premium Cotton Garments</p>
                           </div>
                         </>
                       )}
@@ -327,7 +327,7 @@ const ProductDetail = () => {
 
                     {/* Thumbnail strip */}
                     {imgList.length > 1 && (
-                      <div className="flex gap-2 overflow-x-auto pb-1">
+                      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                         {imgList.map((img, idx) => (
                           <button
                             key={idx}
