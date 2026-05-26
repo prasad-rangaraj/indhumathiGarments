@@ -76,14 +76,20 @@ export const useCartStore = create<CartState>()(
           const cartItems = await cartAPI.get();
           
           if (!newAbortController.signal.aborted) {
-            const items: CartItem[] = cartItems.map((item: any) => ({
-              ...item.product,
-              productId: item.product.id,
-              quantity: item.quantity,
-              selectedSize: item.size,
-              id: `${item.product.id}-${item.size}`,
-              cartItemId: item.id,
-            }));
+            const { useProductsStore } = await import('./productsStore');
+            const items: CartItem[] = cartItems.map((item: any) => {
+              const storeProduct = useProductsStore.getState().products.find((p: any) => p.id === item.product.id);
+              const mergedProduct = storeProduct || item.product;
+              return {
+                ...mergedProduct,
+                productId: item.product.id,
+                quantity: item.quantity,
+                selectedSize: item.size,
+                selectedColor: item.color,
+                id: `${item.product.id}-${item.size}`,
+                cartItemId: item.id,
+              };
+            });
             const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
             set({ items, total, loading: false, lastFetchedCart: now, abortController: null });
           }

@@ -124,7 +124,7 @@ const ProductDetail = () => {
       await addItem(product, selectedSize, quantity);
       toast({
         title: "Added to cart!",
-        description: `${quantity} x ${product.name} (Size: ${selectedSize}${selectedColor ? `, Color: ${selectedColor}` : ''}) added to cart`,
+        description: `${quantity} x ${product.name} (Size: ${selectedSize}) added`,
       });
       return true;
     } catch (error: any) {
@@ -191,20 +191,20 @@ const ProductDetail = () => {
       removeFromWishlist(product.id);
       toast({
         title: "Removed from wishlist",
-        description: `${product.name} has been removed`,
+        description: `${product.name} removed`,
       });
     } else {
       addToWishlist(product);
       toast({
         title: "Added to wishlist",
-        description: `${product.name} has been added`,
+        description: `${product.name} added`,
       });
     }
   };
 
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden">
+    <div className="min-h-screen relative">
       {/* Background with blur - Fixed */}
       <div className="fixed top-0 left-0 w-full h-[100lvh] -z-10 pointer-events-none">
         <img

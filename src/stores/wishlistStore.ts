@@ -55,10 +55,14 @@ export const useWishlistStore = create<WishlistState>()(
           const wishlistItems = await wishlistAPI.get();
           
           if (!newAbortController.signal.aborted) {
-            const items: Product[] = wishlistItems.map((item: any) => ({
-              ...item.product,
-              id: item.product.id,
-            }));
+            const { useProductsStore } = await import('./productsStore');
+            const items: Product[] = wishlistItems.map((item: any) => {
+              const storeProduct = useProductsStore.getState().products.find((p: any) => p.id === item.product.id);
+              return {
+                ...(storeProduct || item.product),
+                id: item.product.id,
+              };
+            });
             set({ items, loading: false, lastFetched: now, abortController: null });
           }
         } catch (error) {

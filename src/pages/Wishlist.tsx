@@ -6,17 +6,7 @@ import { useCartStore } from '@/stores/cartStore';
 import { useToast } from '@/hooks/use-toast';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 
-const colorPalettes: string[][] = [
-  ['bg-rose-500', 'bg-pink-400', 'bg-fuchsia-500'],
-  ['bg-pink-600', 'bg-rose-700', 'bg-pink-300'],
-  ['bg-orange-300', 'bg-rose-100', 'bg-pink-200'],
-];
 
-const getColorsForProduct = (id: string) => {
-  const numericId = parseInt(id, 10);
-  const paletteIndex = Number.isNaN(numericId) ? 0 : numericId % colorPalettes.length;
-  return colorPalettes[paletteIndex];
-};
 
 const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
 const toUrl = (src: string) => {
@@ -148,14 +138,18 @@ const Wishlist = () => {
                     </span>
                   </div>
 
-                  <div className="flex gap-2 mb-4">
-                    {getColorsForProduct(product.id).slice(0, 3).map((colorClass) => (
-                      <div
-                        key={colorClass}
-                        className={`w-6 h-6 rounded-full border-2 border-background shadow-sm ${colorClass}`}
-                      />
-                    ))}
-                  </div>
+                  {product.colors && product.colors.length > 0 && (
+                    <div className="flex gap-2 mb-4 flex-wrap">
+                      {product.colors.map((colorObj) => (
+                        <div
+                          key={colorObj.name}
+                          className="w-6 h-6 rounded-full border border-black/10 shadow-sm"
+                          style={{ backgroundColor: colorObj.hex || '#000000' }}
+                          title={colorObj.name}
+                        />
+                      ))}
+                    </div>
+                  )}
 
                   <div className="flex gap-2">
                     <Link

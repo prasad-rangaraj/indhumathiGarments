@@ -89,7 +89,7 @@ const SearchResults = () => {
         <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
       </div>
 
-      <div className="py-6 sm:py-8 px-4 sm:px-6 relative z-10">
+      <div className="py-6 sm:py-8 sm:px-6 relative z-10">
         <div className="container mx-auto">
           {/* Search Bar */}
           <form onSubmit={handleSearch} className="mb-6 sm:mb-8">
@@ -163,7 +163,7 @@ const SearchResults = () => {
                           e.stopPropagation();
                           isInWishlist(product.id) ? removeFromWishlist(product.id) : addToWishlist(product);
                         }}
-                        className="p-1.5 rounded-full hover:bg-accent transition-colors flex-shrink-0 sm:hidden"
+                        className="p-1.5 rounded-full hover:bg-accent transition-colors flex-shrink-0"
                         aria-label="Toggle wishlist"
                       >
                         <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
@@ -177,9 +177,9 @@ const SearchResults = () => {
                         {product.material}
                       </span>
                     </div>
-                    <div className="flex gap-1.5">
+                    <div className="flex flex-wrap gap-1.5">
                       {product.colors && product.colors.length > 0 ? (
-                        product.colors.slice(0, 4).map((color: any, idx: number) => (
+                        product.colors.map((color: any, idx: number) => (
                           <div
                             key={idx}
                             className="w-5 h-5 rounded-full border border-border shadow-sm flex-shrink-0"

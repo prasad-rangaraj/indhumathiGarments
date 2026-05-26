@@ -216,7 +216,7 @@ const CategoryProducts = () => {
                         e.stopPropagation();
                         isInWishlist(product.id) ? removeFromWishlist(product.id) : addToWishlist(product);
                       }}
-                      className="p-1.5 rounded-full hover:bg-accent transition-colors flex-shrink-0 sm:hidden"
+                      className="p-1.5 rounded-full hover:bg-accent transition-colors flex-shrink-0"
                       aria-label="Toggle wishlist"
                     >
                       <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />

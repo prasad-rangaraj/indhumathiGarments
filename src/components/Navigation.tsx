@@ -146,7 +146,7 @@ const Navigation = () => {
             {isAuthenticated ? (
               <Link
                 to="/profile"
-                className={`relative p-2 hover:bg-accent rounded-lg transition-colors ${mobileMenuOpen ? 'hidden md:flex' : 'flex'}`}
+                className="relative p-2 hover:bg-accent rounded-lg transition-colors hidden md:flex"
               >
                 <User className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
               </Link>
