@@ -216,12 +216,12 @@ const ProductDetail = () => {
         <div className="absolute inset-0 bg-background/80 backdrop-blur-[2px]" />
       </div>
 
-      <div className="py-6 sm:py-8 px-4 sm:px-6 relative z-10">
+      <div className="py-6 sm:py-8 px-2 sm:px-6 relative z-10">
         <div className="mx-4 sm:mx-auto max-w-6xl">
 
           <div className="grid md:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-12">
             {/* Product Image Carousel */}
-            <div className="animate-fade-in min-w-0">
+            <div className="animate-fade-in min-w-1">
               {(() => {
                 const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
                 const toUrl = (src: string) => {
