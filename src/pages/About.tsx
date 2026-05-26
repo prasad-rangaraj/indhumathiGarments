@@ -9,31 +9,31 @@ const About = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative min-h-[calc(100dvh-4rem)] flex items-center px-4 pb-10 sm:py-12 md:py-16 overflow-hidden">
+      <section className="relative min-h-[calc(100dvh-4rem)] flex items-center px-4 pb-10 sm:py-9 md:py-9 overflow-hidden">
         {/* Rotating Background Images - Fixed */}
         <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center animate-bg-slide-1"
             style={{ backgroundImage: `url(${bgCotton1})` }}
           />
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center animate-bg-slide-2"
             style={{ backgroundImage: `url(${bgCotton2})` }}
           />
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center animate-bg-slide-3"
             style={{ backgroundImage: `url(${bgCotton3})` }}
           />
           {/* Dark overlay for text readability */}
           <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/70 to-background/80" />
         </div>
-        
-          <div className="container mx-auto text-center relative z-10 px-4 sm:px-6">
+
+        <div className="container mx-auto text-center relative z-10 px-4 sm:px-6">
           <div className="text-animate">
             <div className="flex justify-center mb-3 sm:mb-6">
-              <img 
-                src={indhumathiLogo} 
-                alt="Indhumathi" 
+              <img
+                src={indhumathiLogo}
+                alt="Indhumathi"
                 className="h-32 sm:h-36 md:h-36 lg:h-52 w-auto object-contain animate-fade-in"
               />
             </div>
@@ -44,12 +44,12 @@ const About = () => {
               Manufacturing high quality pure cotton garments for men and women
             </p>
             <p className="text-base sm:text-lg text-foreground/80 mb-8 sm:mb-12 max-w-2xl mx-auto leading-relaxed px-4">
-              For over two decades, we've been dedicated to creating the finest cotton garments 
-              that combines comfort, quality, and elegance. Every piece is crafted with love 
+              For over two decades, we've been dedicated to creating the finest cotton garments
+              that combines comfort, quality, and elegance. Every piece is crafted with love
               and attention to detail.
             </p>
-            <Link 
-              to="/products" 
+            <Link
+              to="/products"
               className="btn-primary inline-flex items-center gap-2 hover-glow animate-zoom-in text-sm sm:text-base"
             >
               Shop Now <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -60,19 +60,19 @@ const About = () => {
 
       {/* Our Story Section */}
       <section className="py-8 sm:py-12 md:py-16 px-4">
-        <div className="container mx-auto">
+        <div className="mx-4 sm:mx-auto">
           {/* Story text */}
           <div className="max-w-3xl mx-auto text-center animate-slide-up mb-10 sm:mb-12">
             <h2 className="text-3xl font-bold mb-6 text-foreground">Our Story</h2>
             <p className="text-muted-foreground mb-6 leading-relaxed text-base sm:text-lg">
-              Founded in 2001, Indhumathi began as a small family business with a simple mission: 
-              to provide everyone with the most comfortable, high-quality cotton garments. 
-              What started in a small workshop has grown into a trusted brand known for our 
+              Founded in 2001, Indhumathi began as a small family business with a simple mission:
+              to provide everyone with the most comfortable, high-quality cotton garments.
+              What started in a small workshop has grown into a trusted brand known for our
               commitment to natural fabrics and superior craftsmanship.
             </p>
             <p className="text-muted-foreground leading-relaxed text-base sm:text-lg">
-              We believe that comfort should never be compromised. That's why we source only 
-              the finest cotton fibers and employ traditional techniques alongside modern 
+              We believe that comfort should never be compromised. That's why we source only
+              the finest cotton fibers and employ traditional techniques alongside modern
               innovation to create clothing that feels as good as it looks.
             </p>
           </div>
@@ -115,21 +115,21 @@ const About = () => {
             <div className="card-elegant p-6 hover-lift">
               <h3 className="text-xl font-semibold mb-4 text-foreground">Pure Cotton Promise</h3>
               <p className="text-muted-foreground">
-                We use only 100% pure cotton, ensuring breathability, softness, and comfort 
+                We use only 100% pure cotton, ensuring breathability, softness, and comfort
                 for sensitive skin. No synthetic blends, no compromises.
               </p>
             </div>
             <div className="card-elegant p-6 hover-lift">
               <h3 className="text-xl font-semibold mb-4 text-foreground">Expert Craftsmanship</h3>
               <p className="text-muted-foreground">
-                Each piece is carefully crafted by skilled artisans who understand the 
+                Each piece is carefully crafted by skilled artisans who understand the
                 importance of fit, comfort, and durability in daily wear.
               </p>
             </div>
             <div className="card-elegant p-6 hover-lift">
               <h3 className="text-xl font-semibold mb-4 text-foreground">Affordable Luxury</h3>
               <p className="text-muted-foreground">
-                We believe everyone deserves quality garments. Our direct-to-consumer 
+                We believe everyone deserves quality garments. Our direct-to-consumer
                 model ensures premium products at accessible prices.
               </p>
             </div>

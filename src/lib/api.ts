@@ -63,6 +63,8 @@ export const userAPI = {
   getProfile: (id: string) => apiRequest<any>(`/users/${id}`),
   updateProfile: (data: any) => 
     apiRequest<any>('/users/profile', { method: 'PATCH', body: JSON.stringify(data) }),
+  updatePassword: (data: any) =>
+    apiRequest<any>('/users/update-password', { method: 'PATCH', body: JSON.stringify(data) }),
 };
 
 // Public Coupons API
@@ -125,7 +127,7 @@ export const ordersAPI = {
 // Wishlist API
 export const wishlistAPI = {
   get: () => apiRequest<any[]>('/wishlist'),
-  add: (data: { productId: string }) =>
+  add: (data: { productId: string; color?: string }) =>
     apiRequest<any>('/wishlist', { method: 'POST', body: JSON.stringify(data) }),
   remove: (productId: string) =>
     apiRequest<{ message: string }>(`/wishlist/${productId}`, { method: 'DELETE' }),
@@ -139,11 +141,12 @@ export const reviewsAPI = {
 
 // Admin API
 export const adminAPI = {
-  uploadImage: async (file: File) => {
+  uploadImage: async (file: File, folder?: string) => {
     const formData = new FormData();
     formData.append('file', file);
     const { token } = useAuthStore.getState();
-    const response = await fetch(`${API_BASE_URL}/admin/upload`, {
+    const url = folder ? `${API_BASE_URL}/admin/upload?folder=${encodeURIComponent(folder)}` : `${API_BASE_URL}/admin/upload`;
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -213,11 +216,12 @@ export const customerAPI = {
   deleteAddress: (id: string) =>
     apiRequest<{ message: string }>(`/customers/addresses/${id}`, { method: 'DELETE' }),
   getOrders: (userId: string) => apiRequest<any[]>(`/customers/orders/${userId}`),
-  uploadImagePublic: async (file: File) => {
+  uploadImagePublic: async (file: File, folder?: string) => {
     const formData = new FormData();
     formData.append('file', file);
     const { token } = useAuthStore.getState();
-    const response = await fetch(`${API_BASE_URL}/public/upload`, {
+    const url = folder ? `${API_BASE_URL}/public/upload?folder=${encodeURIComponent(folder)}` : `${API_BASE_URL}/public/upload`;
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),

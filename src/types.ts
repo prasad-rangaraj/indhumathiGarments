@@ -12,8 +12,9 @@ export interface Product {
     stock?: number;
     isActive?: boolean;
     gender?: 'women' | 'men' | 'unisex';
-    colors?: { name: string; hex?: string; images: string[] }[];
+    colors?: { name: string; hex?: string; images: string[]; primaryImage?: string }[];
     images?: string[];
     metaTitle?: string;
     metaDescription?: string;
+    wishlistColor?: string;
 }

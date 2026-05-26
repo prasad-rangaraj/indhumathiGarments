@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, Star, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,23 @@ import { ImageUploader } from "@/components/admin/ImageUploader";
 
 // Default sizes
 const DEFAULT_SIZES = ["S", "M", "L", "XL", "XXL"];
+
+const isSameImage = (a: any, b: any) => {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  if (a instanceof File || b instanceof File) return false;
+  const getPath = (url: string) => {
+    try {
+      if (url.startsWith('http')) {
+        return new URL(url).pathname.split('?')[0];
+      }
+      return url.split('?')[0];
+    } catch {
+      return url.split('?')[0];
+    }
+  };
+  return getPath(a) === getPath(b);
+};
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -35,7 +52,7 @@ const EditProduct = () => {
     material: "Cotton",
     image: "" as string | File,
     images: [] as (string | File)[],
-    colors: [] as { name: string; hex?: string; images: (string | File)[] }[],
+    colors: [] as { name: string; hex?: string; images: (string | File)[]; primaryImage?: string | File }[],
     metaTitle: "",
     metaDescription: "",
     gender: "women" as "women" | "men" | "unisex",
@@ -64,7 +81,10 @@ const EditProduct = () => {
                     material: product.material || "Cotton",
                     image: product.image || "",
                     images: product.images || [],
-                    colors: product.colors || [],
+                    colors: (product.colors || []).map(c => ({
+                      ...c,
+                      primaryImage: c.primaryImage || (c.images && c.images.length > 1 ? c.images[1] : c.images?.[0]),
+                    })),
                     metaTitle: product.metaTitle || "",
                     metaDescription: product.metaDescription || "",
                     gender: (product.gender || "women") as "women" | "men" | "unisex",
@@ -146,14 +166,14 @@ const EditProduct = () => {
       
       let primaryImageKey = formData.image;
       if (formData.image instanceof File) {
-        const res = await adminAPI.uploadImage(formData.image);
+        const res = await adminAPI.uploadImage(formData.image, 'products');
         primaryImageKey = res.key;
       }
 
       const additionalImageKeys = await Promise.all(
         formData.images.map(async (img) => {
           if (img instanceof File) {
-            const res = await adminAPI.uploadImage(img);
+            const res = await adminAPI.uploadImage(img, 'products');
             return res.key;
           }
           return img;
@@ -165,13 +185,25 @@ const EditProduct = () => {
           const colorImagesKeys = await Promise.all(
             colorObj.images.map(async (img) => {
               if (img instanceof File) {
-                const res = await adminAPI.uploadImage(img);
+                const res = await adminAPI.uploadImage(img, 'products');
                 return res.key;
               }
               return img;
             })
           );
-          return { name: colorObj.name, hex: colorObj.hex, images: colorImagesKeys as string[] };
+          let primaryImageKey: string | undefined;
+          if (colorObj.primaryImage) {
+            if (colorObj.primaryImage instanceof File) {
+              const primaryIdx = colorObj.images.indexOf(colorObj.primaryImage);
+              primaryImageKey = primaryIdx >= 0 ? colorImagesKeys[primaryIdx] as string : undefined;
+            } else {
+              primaryImageKey = colorObj.primaryImage as string;
+            }
+          }
+          if (!primaryImageKey && colorImagesKeys.length > 0) {
+            primaryImageKey = colorImagesKeys.length > 1 ? colorImagesKeys[1] as string : colorImagesKeys[0] as string;
+          }
+          return { name: colorObj.name, hex: colorObj.hex, images: colorImagesKeys as string[], primaryImage: primaryImageKey };
         })
       );
 
@@ -340,8 +372,9 @@ const EditProduct = () => {
                       <Input 
                         value={color.name}
                         onChange={(e) => {
-                          const newColors = [...formData.colors];
-                          newColors[index].name = e.target.value;
+                          const newColors = formData.colors.map((c, i) =>
+                            i === index ? { ...c, name: e.target.value } : c
+                          );
                           setFormData({ ...formData, colors: newColors });
                         }}
                         placeholder="e.g., Red, Blue, Dark Black"
@@ -355,8 +388,9 @@ const EditProduct = () => {
                           type="color"
                           value={color.hex || "#000000"}
                           onChange={(e) => {
-                            const newColors = [...formData.colors];
-                            newColors[index].hex = e.target.value;
+                            const newColors = formData.colors.map((c, i) =>
+                              i === index ? { ...c, hex: e.target.value } : c
+                            );
                             setFormData({ ...formData, colors: newColors });
                           }}
                           className="w-12 h-10 p-1 cursor-pointer"
@@ -365,8 +399,9 @@ const EditProduct = () => {
                           type="text"
                           value={color.hex || ""}
                           onChange={(e) => {
-                            const newColors = [...formData.colors];
-                            newColors[index].hex = e.target.value;
+                            const newColors = formData.colors.map((c, i) =>
+                              i === index ? { ...c, hex: e.target.value } : c
+                            );
                             setFormData({ ...formData, colors: newColors });
                           }}
                           placeholder="#000000"
@@ -375,24 +410,95 @@ const EditProduct = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Color Specific Images</Label>
+                  <div className="space-y-3">
+                    <Label>Color Images</Label>
                     <ImageUploader 
                       value={color.images} 
                       onChange={(val) => {
-                        const newColors = [...formData.colors];
-                        newColors[index].images = val as (string | File)[];
+                        const imgs = val as (string | File)[];
+                        const newColors = formData.colors.map((c, i) => {
+                          if (i !== index) return c;
+                          let nextPrimary = c.primaryImage;
+                          const isFirstImg = c.images.length > 0 && isSameImage(nextPrimary, c.images[0]);
+                          if (!nextPrimary || (imgs.length > 1 && isFirstImg)) {
+                            nextPrimary = imgs.length > 1 ? imgs[1] : imgs[0];
+                          }
+                          const exists = imgs.some(img => isSameImage(nextPrimary, img));
+                          if (!exists) {
+                            nextPrimary = imgs.length > 1 ? imgs[1] : imgs[0];
+                          }
+                          return { ...c, images: imgs, primaryImage: nextPrimary };
+                        });
                         setFormData({ ...formData, colors: newColors });
                       }} 
                       multiple={true} 
                     />
+                    {color.images.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+                          <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /> Click an image to set it as Primary (shown in cart &amp; orders)
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {color.images.map((img, imgIdx) => {
+                            const previewSrc = img instanceof File ? URL.createObjectURL(img) : img;
+                            const defaultIdx = color.images.length > 1 ? 1 : 0;
+                            const isPrimary = isSameImage(color.primaryImage, img) ||
+                              (imgIdx === defaultIdx && !color.primaryImage);
+                            return (
+                              <div
+                                key={imgIdx}
+                                className={`relative w-16 h-16 rounded-lg border-2 cursor-pointer overflow-hidden transition-all ${
+                                  isPrimary ? 'border-yellow-400 ring-2 ring-yellow-300' : 'border-border hover:border-primary/60'
+                                }`}
+                                onClick={() => {
+                                  const newColors = formData.colors.map((c, i) =>
+                                    i === index ? { ...c, primaryImage: img } : c
+                                  );
+                                  setFormData({ ...formData, colors: newColors });
+                                }}
+                              >
+                                <img src={previewSrc} alt={`color-${imgIdx}`} className="w-full h-full object-cover" />
+                                {isPrimary && (
+                                  <div className="absolute inset-0 bg-yellow-400/20 flex items-center justify-center">
+                                    <Star className="w-5 h-5 fill-yellow-400 text-yellow-500" />
+                                  </div>
+                                )}
+                                <button
+                                  type="button"
+                                  className="absolute top-0.5 right-0.5 bg-red-500 text-white rounded-full p-0.5 opacity-0 hover:opacity-100 transition-opacity"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const filtered = color.images.filter((_, i) => i !== imgIdx);
+                                    const newColors = formData.colors.map((c, i) => {
+                                      if (i !== index) return c;
+                                      let nextPrimary = c.primaryImage;
+                                      if (isSameImage(nextPrimary, img)) {
+                                        nextPrimary = filtered.length > 1 ? filtered[1] : filtered[0];
+                                      }
+                                      return {
+                                        ...c,
+                                        images: filtered,
+                                        primaryImage: nextPrimary,
+                                      };
+                                    });
+                                    setFormData({ ...formData, colors: newColors });
+                                  }}
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={() => setFormData({ ...formData, colors: [...formData.colors, { name: "", hex: "#000000", images: [] }] })}
+                onClick={() => setFormData({ ...formData, colors: [...formData.colors, { name: "", hex: "#000000", images: [], primaryImage: undefined }] })}
               >
                 <Plus className="w-4 h-4 mr-2" /> Add Color
               </Button>

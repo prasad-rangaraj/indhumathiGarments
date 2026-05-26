@@ -11,7 +11,7 @@ interface WishlistState {
   lastFetched: number;
   abortController: AbortController | null;
   fetchWishlist: (force?: boolean) => Promise<void>;
-  addToWishlist: (product: Product) => Promise<void>;
+  addToWishlist: (product: Product, selectedColor?: string) => Promise<void>;
   removeFromWishlist: (productId: string) => Promise<void>;
   clearWishlist: () => Promise<void>;
   isInWishlist: (productId: string) => boolean;
@@ -61,6 +61,7 @@ export const useWishlistStore = create<WishlistState>()(
               return {
                 ...(storeProduct || item.product),
                 id: item.product.id,
+                wishlistColor: item.color,
               };
             });
             set({ items, loading: false, lastFetched: now, abortController: null });
@@ -73,18 +74,18 @@ export const useWishlistStore = create<WishlistState>()(
         }
       },
 
-      addToWishlist: async (product: Product) => {
+      addToWishlist: async (product: Product, selectedColor?: string) => {
         const userId = getUserId();
         set({ loading: true, error: null });
         
         try {
           if (userId !== 'guest') {
-            await wishlistAPI.add({ productId: product.id });
+            await wishlistAPI.add({ productId: product.id, color: selectedColor });
           }
           
           const exists = get().items.find(item => item.id === product.id);
           if (!exists) {
-            set({ items: [...get().items, product], loading: false });
+            set({ items: [...get().items, { ...product, wishlistColor: selectedColor }], loading: false });
           } else {
             set({ loading: false });
           }

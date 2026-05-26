@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAdminStore } from "@/stores/adminStore";
 import { useOrdersStore, Order } from "@/stores/ordersStore";
 
 const statusOptions = ["Pending", "Packed", "Shipped", "Delivered", "Cancelled"];
@@ -21,7 +22,7 @@ const getStatusConfig = (status: string) => {
 };
 
 // CSV Export helper
-const exportOrdersCSV = (orders: Order[]) => {
+const exportOrdersCSV = (orders: any[]) => {
   const headers = ["Order ID", "Customer", "Email", "Items", "Total (₹)", "Status", "Date"];
   const rows = orders.map(o => [
     o.orderId,
@@ -41,7 +42,7 @@ const exportOrdersCSV = (orders: Order[]) => {
 };
 
 // Print invoice helper
-const printInvoice = (order: Order) => {
+const printInvoice = (order: any) => {
   const content = `
     <html><head><title>Invoice ${order.orderId}</title>
     <style>body{font-family:sans-serif;padding:20px;max-width:600px;margin:auto}
@@ -77,16 +78,25 @@ const printInvoice = (order: Order) => {
 
 const Orders = () => {
   const navigate = useNavigate();
-  const { orders, loading, fetchOrders, updateOrderStatus } = useOrdersStore();
+  const { orders, loading, fetchOrders } = useAdminStore();
+  const { updateOrderStatus } = useOrdersStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkStatus, setBulkStatus] = useState<string>("");
   const [bulkUpdating, setBulkUpdating] = useState(false);
 
+  const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
+
   useEffect(() => {
-    fetchOrders(undefined, true);
+    fetchOrders();
+    setLastRefreshed(new Date());
   }, [fetchOrders]);
+
+  const handleRefresh = () => {
+    fetchOrders();
+    setLastRefreshed(new Date());
+  };
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
@@ -136,16 +146,29 @@ const Orders = () => {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Order Management</h2>
-          <p className="text-muted-foreground">View and manage customer orders</p>
+          <p className="text-muted-foreground text-xs mt-0.5">
+            Last updated: {lastRefreshed.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+          </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2"
-          onClick={() => exportOrdersCSV(filteredOrders)}
-        >
-          <Download className="w-4 h-4" /> Export CSV
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={handleRefresh}
+            disabled={loading}
+          >
+            <RotateCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> {loading ? 'Refreshing...' : 'Refresh'}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => exportOrdersCSV(filteredOrders)}
+          >
+            <Download className="w-4 h-4" /> Export CSV
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -238,6 +261,7 @@ const Orders = () => {
                         <td className="py-3 px-4 text-xs font-medium text-foreground">{order.orderId}</td>
                         <td className="py-3 px-4">
                           <p className="text-sm font-medium text-foreground">{order.customerInfo?.name}</p>
+                          <p className="text-xs font-mono text-muted-foreground">{order.customerInfo?.id}</p>
                           <p className="text-xs text-muted-foreground">{order.customerInfo?.email}</p>
                         </td>
                         <td className="py-3 px-4 text-sm text-foreground hidden sm:table-cell">{order.items.length}</td>

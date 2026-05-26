@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
-const faqs = [
+const faqs = (settings: any) => [
   {
     category: 'Orders & Shipping',
     questions: [
@@ -17,7 +18,7 @@ const faqs = [
       },
       {
         q: 'Can I track my order?',
-        a: 'Yes! Once your order is shipped, you will receive a tracking number via email and SMS. You can track your order using the tracking number on our website.'
+        a: 'Yes! You can easily track your order status by logging into your account, navigating to your Profile, and checking the "My Orders" tab. You will also receive email updates as your order progresses.'
       },
       {
         q: 'Do you ship internationally?',
@@ -34,7 +35,7 @@ const faqs = [
       },
       {
         q: 'How do I initiate a return?',
-        a: 'Contact our support team with your Order ID and product details. You can reach us at support@indhumathi.com or call +91 87546 09226.'
+        a: `Contact our support team with your Order ID and product details. You can reach us at ${settings.email} or call ${settings.phone}.`
       },
       {
         q: 'Will I get a full refund?',
@@ -51,19 +52,19 @@ const faqs = [
     questions: [
       {
         q: 'What material are your products made of?',
-        a: 'All our products are made from 100% pure cotton, ensuring breathability, softness, and comfort for sensitive skin.'
+        a: 'Our signature garments, including our innerwear and trackpants, are crafted from high-quality, breathable cotton blends to ensure maximum comfort and durability for everyday wear.'
       },
       {
         q: 'How do I know my correct size?',
         a: 'We provide a detailed size guide on each product page. You can also contact our customer support for personalized size recommendations.'
       },
       {
-        q: 'Are your products hypoallergenic?',
-        a: 'Yes, our pure cotton products are naturally hypoallergenic and safe for sensitive skin. We use no synthetic materials or harsh chemicals.'
+        q: 'Do you offer products for both men and women?',
+        a: 'Yes! We have dedicated collections tailored for both men and women, featuring comfortable innerwear, t-shirts, and trackpants.'
       },
       {
-        q: 'Do you offer plus sizes?',
-        a: 'Yes, we offer sizes from S to XXL. Check individual product pages for available sizes.'
+        q: 'How should I wash and care for the garments?',
+        a: 'For best results, machine wash in cold water with similar colors. Do not bleach. Tumble dry on low or dry in the shade to maintain the fabric\'s softness.'
       }
     ]
   },
@@ -97,17 +98,18 @@ const faqs = [
       },
       {
         q: 'How can I contact customer support?',
-        a: 'You can reach us via email at support@indhumathi.com, call us at +91 87546 09226, or use the contact form on our website. Our support team is available Monday-Friday, 9 AM to 6 PM.'
+        a: `You can reach us via email at ${settings.email}, call us at ${settings.phone}, or use the contact form on our website. Our support team is available Monday-Friday, 9 AM to 6 PM.`
       },
       {
-        q: 'Do you have a physical store?',
-        a: 'Yes, you can visit us at 123 Cotton Street, Textile District, Coimbatore, Tamil Nadu 641001. Store hours: Monday-Friday 9 AM-6 PM, Saturday 9 AM-4 PM.'
+        q: 'Where are you located?',
+        a: `You can visit us at: ${settings.address}`
       }
     ]
   }
 ];
 
 const FAQ = () => {
+  const { settings } = useSiteSettings();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggleQuestion = (index: number) => {
@@ -133,7 +135,7 @@ const FAQ = () => {
           </div>
 
           <div className="space-y-6">
-            {faqs.map((category) => (
+            {faqs(settings).map((category) => (
               <div key={category.category} className="card-elegant p-4 sm:p-6">
                 <h2 className="text-xl sm:text-2xl font-bold mb-4 text-foreground">{category.category}</h2>
                 <div className="space-y-3">

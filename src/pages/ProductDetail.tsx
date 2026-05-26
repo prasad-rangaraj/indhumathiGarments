@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Plus, Minus, ShoppingCart, CreditCard, Star, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useProductsStore } from '@/stores/productsStore';
 import { useCartStore } from '@/stores/cartStore';
@@ -26,8 +26,12 @@ const ProductDetail = () => {
   const { isAuthenticated } = useAuthStore();
 
   const product = id ? getProductById(id) : undefined;
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const initialColor = searchParams.get('color');
+
   const [selectedSize, setSelectedSize] = useState('');
-  const [selectedColor, setSelectedColor] = useState<string>('');
+  const [selectedColor, setSelectedColor] = useState<string>(initialColor || '');
   const [quantity, setQuantity] = useState(1);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const imageScrollRef = useRef<HTMLDivElement>(null);
@@ -53,6 +57,12 @@ const ProductDetail = () => {
       fetchReviews(product.id, true); // Force fetch on mount
     }
   }, [product?.id, fetchReviews]);
+
+  useEffect(() => {
+    if (initialColor) {
+      setSelectedColor(initialColor);
+    }
+  }, [initialColor, id]);
 
   useEffect(() => {
     if (product) {
@@ -121,7 +131,7 @@ const ProductDetail = () => {
     }
 
     try {
-      await addItem(product, selectedSize, quantity);
+      await addItem(product, selectedSize, quantity, selectedColor || undefined);
       toast({
         title: "Added to cart!",
         description: `${quantity} x ${product.name} (Size: ${selectedSize}) added`,
@@ -194,7 +204,7 @@ const ProductDetail = () => {
         description: `${product.name} removed`,
       });
     } else {
-      addToWishlist(product);
+      addToWishlist(product, selectedColor || undefined);
       toast({
         title: "Added to wishlist",
         description: `${product.name} added`,

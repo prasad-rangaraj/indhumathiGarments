@@ -28,7 +28,9 @@ interface AdminState {
   fetchBanners: () => Promise<any[]>;
   fetchCoupons: () => Promise<any[]>;
   fetchCategories: () => Promise<any[]>;
+  fetchOrders: () => Promise<any[]>;
   categories: any[];
+  orders: any[];
 }
 
 export const useAdminStore = create<AdminState>((set, get) => ({
@@ -39,6 +41,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   lastFetchedRange: '',
   abortController: null,
   categories: [],
+  orders: [],
 
   fetchDashboardStats: async (range = 'month') => {
     const { lastFetchedStats, lastFetchedRange, loading, abortController } = get();
@@ -72,7 +75,14 @@ export const useAdminStore = create<AdminState>((set, get) => ({
             revenueData: data.revenueData || [],
             categoryData: data.categoryData || [],
             topProducts: data.topProducts || [],
-            recentOrders: data.recentOrders || [],
+            recentOrders: (data.recentOrders || []).map((order: any) => ({
+              ...order,
+              customerInfo: {
+                id: order.userId || '',
+                name: order.customerName || '',
+                email: order.customerEmail || '',
+              }
+            })),
           },
           loading: false,
           lastFetchedStats: now,
@@ -154,6 +164,53 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       return categories;
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Failed to fetch categories', loading: false });
+      return [];
+    }
+  },
+
+  fetchOrders: async () => {
+    set({ loading: true, error: null });
+    try {
+      const ordersData = await import('@/lib/api').then(m => m.adminAPI.getOrders());
+      
+      const orders = ordersData.map((order: any) => ({
+        orderId: order.orderId,
+        items: order.items.map((item: any) => ({
+          id: item.productId || item.product?.id,
+          name: item.product?.name || item.name || 'Product',
+          price: item.price,
+          quantity: item.quantity,
+          selectedSize: item.size,
+          selectedColor: item.color,
+          image: item.image,
+          product: item.product,
+        })),
+        total: order.total,
+        originalTotal: order.originalTotal,
+        discount: order.discount,
+        couponCode: order.couponCode,
+        customerInfo: {
+          id: order.userId || '',
+          name: order.customerName || '',
+          address: order.customerAddress || '',
+          city: order.customerCity || '',
+          pincode: order.customerPincode || '',
+          phone: order.customerPhone || '',
+          email: order.customerEmail || '',
+        },
+        paymentMethod: order.paymentMethod,
+        status: order.status,
+        trackingNumber: order.trackingNumber,
+        delayedDeliveryDate: order.delayedDeliveryDate,
+        delayReason: order.delayReason,
+        cancelReason: order.cancelReason,
+        orderDate: order.orderDate || order.createdAt,
+      }));
+      
+      set({ orders, loading: false });
+      return orders;
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Failed to fetch admin orders', loading: false });
       return [];
     }
   },

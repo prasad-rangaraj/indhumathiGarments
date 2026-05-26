@@ -17,9 +17,14 @@ import {
   CreditCard,
   RotateCcw,
   AlertTriangle,
+  Camera,
+  XCircle,
 } from 'lucide-react';
 import { useOrdersStore, Order } from '@/stores/ordersStore';
+import { resolveItemImage } from '@/lib/utils';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
+
+
 
 // ─── Step definitions ────────────────────────────────────────────────────────
 
@@ -64,18 +69,104 @@ const STEPS = [
 
 const STATUS_ORDER = ['Pending', 'Packed', 'Shipped', 'Delivered'] as const;
 
-const getStepIndex = (status: string) =>
-  STATUS_ORDER.indexOf(status as (typeof STATUS_ORDER)[number]);
+const RETURN_STEPS = [
+  {
+    key: 'Return Requested',
+    label: 'Requested',
+    sub: 'Return request submitted',
+    icon: RotateCcw,
+    color: 'orange',
+    doneColor: '#f97316',
+    ringColor: '#fed7aa',
+  },
+  {
+    key: 'Return Picked Up',
+    label: 'Picked Up',
+    sub: 'Item picked up by courier',
+    icon: Truck,
+    color: 'blue',
+    doneColor: '#3b82f6',
+    ringColor: '#bfdbfe',
+  },
+  {
+    key: 'Refund Processed',
+    label: 'Processed',
+    sub: 'Refund has been initiated',
+    icon: CreditCard,
+    color: 'purple',
+    doneColor: '#a855f7',
+    ringColor: '#e9d5ff',
+  },
+  {
+    key: 'Refund Completed',
+    label: 'Completed',
+    sub: 'Refund credited successfully',
+    icon: CheckCircle,
+    color: 'green',
+    doneColor: '#22c55e',
+    ringColor: '#bbf7d0',
+  },
+] as const;
+
+const RETURN_STATUS_ORDER = ['Return Requested', 'Return Picked Up', 'Refund Processed', 'Refund Completed'] as const;
+
+const getStepIndex = (status: string) => {
+  if (RETURN_STATUS_ORDER.includes(status as any)) {
+    return RETURN_STATUS_ORDER.indexOf(status as any);
+  }
+  return STATUS_ORDER.indexOf(status as any);
+};
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
+const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
+const toUrl = (src: string) => {
+  if (!src) return '';
+  if (src.startsWith('http') || src.startsWith('data:')) return src;
+  const prefix = BASE.endsWith('/') ? BASE.slice(0, -1) : BASE;
+  const path = src.startsWith('/') ? src : `/${src}`;
+  return `${prefix}${path}`;
+};
+
 const OrderTracking = () => {
   const { orderId } = useParams<{ orderId: string }>();
-  const { orders, loading, fetchOrders, cancelOrder } = useOrdersStore();
+  const { orders, loading, fetchOrders, cancelOrder, requestReturn } = useOrdersStore();
   const { toast } = useToast();
+  
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelReasonText, setCancelReasonText] = useState('');
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+
+  const [isReturning, setIsReturning] = useState(false);
+  const [returnReasonText, setReturnReasonText] = useState('');
+  const [returnImages, setReturnImages] = useState<string[]>([]);
+  const [isReturnDialogOpen, setIsReturnDialogOpen] = useState(false);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    if (returnImages.length + files.length > 5) {
+      toast({ title: "Limit reached", description: "You can only upload up to 5 images.", variant: "destructive" });
+      return;
+    }
+
+    Array.from(files).forEach(file => {
+      if (file.size > 2 * 1024 * 1024) {
+        toast({ title: "File too large", description: `"${file.name}" exceeds 2MB. Please compress the image.`, variant: "destructive" });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setReturnImages(prev => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (index: number) => {
+    setReturnImages(prev => prev.filter((_, i) => i !== index));
+  };
 
   useEffect(() => {
     // Force a fresh fetch on page load to see the latest status
@@ -86,9 +177,13 @@ const OrderTracking = () => {
 
   const currentStep = order ? getStepIndex(order.status) : -1;
   const isCancelled = order?.status === 'Cancelled';
+  const isReturnRejected = order?.status === 'Return Rejected';
+  const isReturnFlow = order ? RETURN_STATUS_ORDER.includes(order.status as any) : false;
+  const activeSteps = isReturnFlow ? RETURN_STEPS : STEPS;
+
   const progressPct =
-    !isCancelled && currentStep >= 0
-      ? (currentStep / (STEPS.length - 1)) * 100
+    (!isCancelled && !isReturnRejected && currentStep >= 0)
+      ? (currentStep / (activeSteps.length - 1)) * 100
       : 0;
 
   const formatDate = (d: string) =>
@@ -151,7 +246,7 @@ const OrderTracking = () => {
       </div>
 
       <div className="py-8 px-4 sm:px-6 relative z-10">
-        <div className="container mx-auto max-w-3xl">
+        <div className="sm:mx-auto max-w-3xl">
 
           {/* Back */}
           <Link
@@ -183,8 +278,8 @@ const OrderTracking = () => {
                       </span>
                     ) : (() => {
                       const d = new Date(order.orderDate);
-                      d.setDate(d.getDate() + 4);
-                      return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+                      d.setDate(d.getDate() + 7);
+                      return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
                     })()}
                   </p>
                 </div>
@@ -258,8 +353,8 @@ const OrderTracking = () => {
           {/* ── Progress Stepper card ───────────────────────────────────── */}
           <div className="card-elegant p-6 sm:p-8 mb-4">
             <h2 className="text-base font-semibold text-foreground mb-8 flex items-center gap-2">
-              <Truck className="w-4 h-4 text-primary" />
-              Shipment Status
+              {isReturnFlow ? <RotateCcw className="w-4 h-4 text-primary" /> : <Truck className="w-4 h-4 text-primary" />}
+              {isReturnFlow ? 'Return & Refund Status' : 'Shipment Status'}
             </h2>
 
             {order.status !== 'Delivered' && order.delayReason && (
@@ -280,6 +375,16 @@ const OrderTracking = () => {
                 <p className="text-red-600 font-semibold text-lg">Order Cancelled</p>
                 <p className="text-muted-foreground text-sm">This order has been cancelled.</p>
               </div>
+            ) : isReturnRejected ? (
+              <div className="flex flex-col items-center gap-3 py-6">
+                <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
+                  <span className="text-3xl text-red-600">✕</span>
+                </div>
+                <p className="text-red-600 font-semibold text-lg">Return Rejected</p>
+                <p className="text-muted-foreground text-sm text-center max-w-sm">
+                  Your return request was reviewed and rejected by our team. Please contact support for further details.
+                </p>
+              </div>
             ) : (
               <>
                 {/* Desktop stepper */}
@@ -298,7 +403,7 @@ const OrderTracking = () => {
 
                     {/* Steps */}
                     <div className="relative z-10 flex justify-between">
-                      {STEPS.map((step, idx) => {
+                      {activeSteps.map((step, idx) => {
                         const done = idx <= currentStep;
                         const active = idx === currentStep;
                         const Icon = step.icon;
@@ -338,30 +443,30 @@ const OrderTracking = () => {
                 </div>
 
                 {/* Mobile stepper (vertical) */}
-                <div className="sm:hidden relative pl-6">
+                <div className="sm:hidden relative">
                   {/* Vertical track */}
-                  <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-border rounded-full" />
+                  <div className="absolute left-[19px] top-5 bottom-5 w-0.5 bg-border rounded-full z-0" />
 
                   <div className="space-y-0">
-                    {STEPS.map((step, idx) => {
+                    {activeSteps.map((step, idx) => {
                       const done = idx <= currentStep;
                       const active = idx === currentStep;
                       const Icon = step.icon;
-                      const isLast = idx === STEPS.length - 1;
+                      const isLast = idx === activeSteps.length - 1;
 
                       return (
-                        <div key={step.key} className={`relative flex gap-4 ${isLast ? '' : 'pb-7'}`}>
+                        <div key={step.key} className={`relative flex gap-4 ${isLast ? '' : 'pb-8'}`}>
                           {/* Filled segment */}
                           {!isLast && done && (
                             <div
-                              className="absolute left-[-8px] top-6 bottom-0 w-0.5 transition-all duration-700"
+                              className="absolute left-[19px] top-5 bottom-0 w-0.5 transition-all duration-700 z-0"
                               style={{ background: step.doneColor }}
                             />
                           )}
 
                           {/* Icon */}
                           <div
-                            className="relative z-10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ml-[-8px] transition-all duration-500"
+                            className="relative z-10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 bg-background"
                             style={{
                               background: done ? step.doneColor : 'var(--color-card, #fff)',
                               border: done ? `2px solid ${step.doneColor}` : '2px solid var(--color-border)',
@@ -393,6 +498,93 @@ const OrderTracking = () => {
             )}
           </div>
 
+          {order.status === 'Delivered' && (
+            <div className="card-elegant p-6 mb-4 border-blue-200 bg-blue-50/50">
+              <div className="flex items-start gap-4">
+                <div className="p-2 bg-blue-100 rounded-full mt-0.5">
+                  <RotateCcw className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-blue-800">Return & Exchange</h3>
+                  <p className="text-sm text-blue-700 mt-1">
+                    Not satisfied? You can return or exchange this order within 7 days of delivery.
+                  </p>
+                  <Dialog open={isReturnDialogOpen} onOpenChange={setIsReturnDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="mt-4 border-blue-300 text-blue-700 hover:bg-blue-100">Request Return</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Request Return</DialogTitle>
+                        <DialogDescription>
+                          Please let us know why you are returning this item. You can also upload images to help us process your request faster.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="py-4 space-y-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Return Reason <span className="text-red-500">*</span></label>
+                          <Textarea 
+                            placeholder="Why are you returning this?"
+                            value={returnReasonText}
+                            onChange={(e) => setReturnReasonText(e.target.value)}
+                            disabled={isReturning}
+                          />
+                        </div>
+                        <div className="space-y-3">
+                          <label className="text-sm font-medium">Photos (Optional, max 5)</label>
+                          <div className="flex flex-wrap gap-4">
+                            {returnImages.map((img, idx) => (
+                              <div key={idx} className="relative w-20 h-20 group">
+                                <img src={img} alt="upload" className="w-full h-full object-cover rounded-lg border border-border" />
+                                <button 
+                                  onClick={() => removeImage(idx)}
+                                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <XCircle size={14} />
+                                </button>
+                              </div>
+                            ))}
+                            {returnImages.length < 5 && (
+                              <label className="w-20 h-20 border-2 border-dashed border-blue-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-blue-50 transition-colors group">
+                                <Camera className="w-6 h-6 text-blue-300 group-hover:text-blue-500" />
+                                <span className="text-[10px] text-blue-400 mt-1">Add Photo</span>
+                                <span className="text-[9px] text-blue-300 mt-0.5">Max 2MB</span>
+                                <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
+                              </label>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">Uploading an image (under 2MB) helps us respond faster.</p>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsReturnDialogOpen(false)} disabled={isReturning}>
+                          Cancel
+                        </Button>
+                        <Button 
+                          disabled={isReturning || returnReasonText.trim() === ''}
+                          onClick={async () => {
+                            setIsReturning(true);
+                            try {
+                              await requestReturn(order.orderId, returnReasonText, returnImages);
+                              toast({ title: 'Return Requested', description: 'Your return request has been submitted successfully.' });
+                              setIsReturnDialogOpen(false);
+                            } catch (err) {
+                              toast({ title: 'Failed to request return', description: 'Could not submit request', variant: 'destructive' });
+                            } finally {
+                              setIsReturning(false);
+                            }
+                          }}
+                        >
+                          {isReturning ? 'Submitting...' : 'Submit Request'}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ── Order Items card ────────────────────────────────────────── */}
           <div className="card-elegant p-6 mb-4">
             <h2 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
@@ -406,14 +598,32 @@ const OrderTracking = () => {
             <div className="divide-y divide-border/40">
               {order.items.map((item: any, i: number) => (
                 <div key={i} className="flex items-center gap-3 py-3">
-                  <div className="w-12 h-12 rounded-lg bg-accent/60 border border-border flex items-center justify-center text-[9px] text-muted-foreground flex-shrink-0">
-                    IMG
+                  <div className="w-12 h-12 rounded-lg bg-accent/60 border border-border flex items-center justify-center text-[9px] text-muted-foreground flex-shrink-0 overflow-hidden">
+                    {(() => {
+                      const imgSrc = resolveItemImage(item);
+                      return imgSrc ? (
+                        <img 
+                          src={toUrl(imgSrc)} 
+                          alt={item.name} 
+                          className="w-full h-full object-cover" 
+                        />
+                      ) : (
+                        "IMG"
+                      );
+                    })()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Size: {item.selectedSize} &nbsp;·&nbsp; Qty: {item.quantity}
-                    </p>
+                    <div className="flex flex-wrap gap-2 text-xs text-muted-foreground mt-0.5">
+                      <span>Size: {item.selectedSize || item.size}</span>
+                      {item.color && (
+                        <span className="flex items-center gap-1">
+                          · Color:
+                          <span className="w-3.5 h-3.5 rounded-full border border-border shadow-sm inline-block" style={{ backgroundColor: item.color }} title={item.color} />
+                        </span>
+                      )}
+                      <span>· Qty: {item.quantity}</span>
+                    </div>
                   </div>
                   <p className="text-sm font-semibold text-primary flex-shrink-0">
                     ₹{(item.price * item.quantity).toLocaleString()}
@@ -472,12 +682,6 @@ const OrderTracking = () => {
               <ArrowLeft className="w-4 h-4" />
               My Orders
             </Link>
-            {order.status === 'Delivered' && (
-              <Link to={`/order/${order.orderId}`} className="btn-primary flex items-center justify-center gap-2 flex-1">
-                <RotateCcw className="w-4 h-4" />
-                Request Return
-              </Link>
-            )}
           </div>
 
         </div>

@@ -4,11 +4,22 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Footer from '../components/Footer';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 import { useAuthStore } from '../stores/authStore';
-import { userAPI, customerAPI, ordersAPI, wishlistAPI } from '../lib/api';
+import { userAPI, customerAPI, ordersAPI, wishlistAPI, couponsAPI } from '../lib/api';
 import { useToast } from '../components/ui/use-toast';
-import { Loader2, User, MapPin, Package, Heart, LogOut, ChevronRight, ChevronLeft, Save, Plus, Trash2, Edit2 } from 'lucide-react';
+import { Loader2, User, MapPin, Package, Heart, LogOut, ChevronRight, ChevronLeft, Save, Plus, Trash2, Edit2, Ticket, Headphones, RotateCcw } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+
+const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
+const toUrl = (src: string) => {
+  if (!src) return '';
+  if (src.startsWith('http') || src.startsWith('data:')) return src;
+  const prefix = BASE.endsWith('/') ? BASE.slice(0, -1) : BASE;
+  const path = src.startsWith('/') ? src : `/${src}`;
+  return `${prefix}${path}`;
+};
+
+import { resolveItemImage } from '@/lib/utils';
 
 const OrderCard = ({ order, navigate }: { order: any; navigate: any }) => (
   <div
@@ -20,11 +31,15 @@ const OrderCard = ({ order, navigate }: { order: any; navigate: any }) => (
         {(() => {
           const firstItem = order.items?.[0];
           if (!firstItem) return <Package className="text-gray-400" />;
-          const imgSrc = firstItem.product?.image || firstItem.product?.images?.[0] || firstItem.image;
-          if (imgSrc) {
+          
+          // Map color for resolveItemImage if it exists as color instead of selectedColor (since it bypasses ordersStore)
+          const itemForResolution = { ...firstItem, selectedColor: firstItem.color || firstItem.selectedColor };
+          const resolvedImg = resolveItemImage(itemForResolution);
+          
+          if (resolvedImg) {
             return (
               <img
-                src={imgSrc.startsWith('http') ? imgSrc : `${import.meta.env.VITE_API_URL.replace('/api', '')}${imgSrc}`}
+                src={toUrl(resolvedImg)}
                 alt="product"
                 className="w-full h-full object-cover"
               />
@@ -44,7 +59,7 @@ const OrderCard = ({ order, navigate }: { order: any; navigate: any }) => (
               <span className="text-xs font-medium text-gray-500">
                 Delivered on {(() => {
                   const d = new Date(order.orderDate);
-                  d.setDate(d.getDate() + 4);
+                  d.setDate(d.getDate() + 7);
                   return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
                 })()}
               </span>
@@ -66,7 +81,7 @@ const OrderCard = ({ order, navigate }: { order: any; navigate: any }) => (
                     `${new Date(order.delayedDeliveryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}${order.delayReason ? ` - ${order.delayReason}` : ''}`
                   ) : (() => {
                     const d = new Date(order.orderDate);
-                    d.setDate(d.getDate() + 4);
+                    d.setDate(d.getDate() + 7);
                     return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
                   })()}
                 </span>
@@ -102,13 +117,13 @@ export default function Profile() {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<'profile' | 'addresses' | 'orders' | 'wishlist'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'addresses' | 'orders' | 'wishlist' | 'security' | 'coupons'>('profile');
 
   // Sync tab with URL query parameter
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
-    if (tab === 'orders' || tab === 'addresses' || tab === 'wishlist' || tab === 'profile') {
+    if (['orders', 'addresses', 'wishlist', 'profile', 'security', 'coupons'].includes(tab || '')) {
       setActiveTab(tab as any);
       setShowMobileMenu(false);
     } else {
@@ -120,7 +135,10 @@ export default function Profile() {
   // Sub-component States
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ name: '', phone: '', address: '' });
+  const [passwordForm, setPasswordForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
   const [orders, setOrders] = useState<any[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [coupons, setCoupons] = useState<any[]>([]);
   const [isViewAllOpen, setIsViewAllOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [wishlist, setWishlist] = useState<any[]>([]);
@@ -142,6 +160,7 @@ export default function Profile() {
   }, [user, navigate]);
 
   const fetchOrders = async () => {
+    setOrdersLoading(true);
     setLoading(true);
     try {
       const data = await ordersAPI.getAll();
@@ -151,6 +170,7 @@ export default function Profile() {
       setError(e.message || "Failed to fetch orders");
     } finally {
       setLoading(false);
+      setOrdersLoading(false);
     }
   };
 
@@ -225,10 +245,23 @@ export default function Profile() {
     }
   };
 
+  const fetchCoupons = async () => {
+    setLoading(true);
+    try {
+      const data = await couponsAPI.getActive();
+      setCoupons(data);
+    } catch (e) {
+      console.error("Failed to fetch coupons", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'orders') fetchOrders();
     if (activeTab === 'wishlist') fetchWishlist();
     if (activeTab === 'addresses') fetchAddresses();
+    if (activeTab === 'coupons') fetchCoupons();
   }, [activeTab]);
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
@@ -238,6 +271,24 @@ export default function Profile() {
       const updatedUser = await userAPI.updateProfile(formData);
       setUser(updatedUser);
       toast({ title: "Success", description: "Profile Details Updated Successfully!" });
+    } catch (error: any) {
+      toast({ title: "Failed", description: error.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast({ title: "Error", description: "New passwords do not match", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
+    try {
+      await userAPI.updatePassword({ oldPassword: passwordForm.oldPassword, newPassword: passwordForm.newPassword });
+      toast({ title: "Success", description: "Password updated successfully!" });
+      setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error: any) {
       toast({ title: "Failed", description: error.message, variant: "destructive" });
     } finally {
@@ -258,7 +309,7 @@ export default function Profile() {
         <img src={bgCotton1} alt="" className="w-full h-full object-cover opacity-30" />
         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
       </div>
-      <div className="flex-1 container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-6xl relative z-10">
+      <div className="flex-1 container mx-auto px-4 sm:px-4 py-4 sm:py-8 max-w-6xl relative z-10">
         <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
 
           {/* LEFT SIDEBAR (FLIPKART STYLE) */}
@@ -283,6 +334,16 @@ export default function Profile() {
                 <div className="pl-8 space-y-3 mt-3">
                   <button onClick={() => navigate('/profile?tab=profile')} className={`block w-full text-left text-sm transition-colors ${activeTab === 'profile' && !showMobileMenu ? 'text-pink-600 font-bold' : 'text-gray-600 hover:text-pink-600'}`}>Profile Information</button>
                   <button onClick={() => navigate('/profile?tab=addresses')} className={`block w-full text-left text-sm transition-colors ${activeTab === 'addresses' && !showMobileMenu ? 'text-pink-600 font-bold' : 'text-gray-600 hover:text-pink-600'}`}>Manage Addresses</button>
+                  <button onClick={() => navigate('/profile?tab=security')} className={`block w-full text-left text-sm transition-colors ${activeTab === 'security' && !showMobileMenu ? 'text-pink-600 font-bold' : 'text-gray-600 hover:text-pink-600'}`}>Security & Password</button>
+                </div>
+              </div>
+
+              <div className="py-5 px-4 border-b border-pink-50 cursor-pointer hover:bg-pink-50/30 transition-colors" onClick={() => navigate('/profile?tab=coupons')}>
+                <div className={`flex items-center justify-between text-sm ${activeTab === 'coupons' && !showMobileMenu ? 'text-pink-600 font-bold' : 'text-gray-600 font-medium'}`}>
+                  <div className="flex items-center gap-3">
+                    <Ticket size={18} className="text-pink-500" /> My Coupons
+                  </div>
+                  <ChevronRight size={16} />
                 </div>
               </div>
 
@@ -304,7 +365,16 @@ export default function Profile() {
                 </div>
               </div>
 
-              <div className="py-5 px-4 cursor-pointer hover:bg-pink-50/30 transition-colors" onClick={handleLogout}>
+              <div className="py-5 px-4 border-b border-pink-50 cursor-pointer hover:bg-pink-50/30 transition-colors" onClick={() => navigate('/contact')}>
+                <div className={`flex items-center justify-between text-sm text-gray-600 font-medium`}>
+                  <div className="flex items-center gap-3">
+                    <Headphones size={18} className="text-pink-500" /> Help & Support
+                  </div>
+                  <ChevronRight size={16} />
+                </div>
+              </div>
+
+              <div className="py-5 px-4 cursor-pointer hover:bg-red-50/50 transition-colors group" onClick={handleLogout}>
                 <div className="flex items-center gap-3 text-sm text-gray-600 font-medium">
                   <LogOut size={18} className="text-pink-500" /> Logout
                 </div>
@@ -348,6 +418,50 @@ export default function Profile() {
                     <div className="md:col-span-2 mt-4">
                       <Button type="submit" disabled={loading} className="px-8 bg-pink-600 hover:bg-pink-700 text-white rounded-sm font-bold transition-all transform hover:scale-105 active:scale-95 shadow-md hover:shadow-pink-200">
                         {loading ? <Loader2 className="animate-spin mr-2" /> : "SAVE CHANGES"}
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* Security View */}
+              {activeTab === 'security' && (
+                <div className="max-w-2xl">
+                  <h2 className="text-xl font-semibold mb-6 border-b border-pink-100 pb-4">Security Settings</h2>
+                  <form onSubmit={handlePasswordUpdate} className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                      <input
+                        type="password"
+                        value={passwordForm.oldPassword}
+                        onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
+                        className="w-full sm:w-2/3 border border-pink-200 rounded-md p-2 focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Leave blank if you logged in via Google and are setting a password for the first time.</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                      <input
+                        type="password"
+                        required
+                        value={passwordForm.newPassword}
+                        onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                        className="w-full sm:w-2/3 border border-pink-200 rounded-md p-2 focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                      <input
+                        type="password"
+                        required
+                        value={passwordForm.confirmPassword}
+                        onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                        className="w-full sm:w-2/3 border border-pink-200 rounded-md p-2 focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none"
+                      />
+                    </div>
+                    <div>
+                      <Button type="submit" disabled={loading} className="bg-pink-600 hover:bg-pink-700 font-bold px-8">
+                        {loading ? <Loader2 className="animate-spin mr-2" /> : "UPDATE PASSWORD"}
                       </Button>
                     </div>
                   </form>
@@ -425,19 +539,76 @@ export default function Profile() {
                 </div>
               )}
 
+              {/* Coupons View */}
+              {activeTab === 'coupons' && (
+                <div>
+                  <h2 className="text-xl font-semibold mb-6 border-b border-pink-100 pb-4">My Coupons</h2>
+                  {loading ? (
+                    <div className="flex justify-center py-10"><Loader2 className="animate-spin text-pink-600" size={32} /></div>
+                  ) : coupons.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500 bg-pink-50/20 rounded-xl border border-dashed border-pink-200">
+                      <Heart className="w-12 h-12 text-pink-200 mx-auto mb-4" />
+                      <p>No active coupons available right now.</p>
+                      <Button onClick={() => navigate('/products')} className="mt-4 bg-pink-600 hover:bg-pink-700">Explore Collection</Button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {coupons.map((coupon: any) => (
+                        <div key={coupon.id} className="border border-pink-200 bg-pink-50/30 rounded-xl p-5 flex flex-col justify-between">
+                          <div>
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="bg-pink-600 text-white font-bold px-3 py-1 rounded text-sm uppercase tracking-wider">{coupon.code}</span>
+                            </div>
+                            <h3 className="font-bold text-gray-800 text-lg">{coupon.discountPercentage}% OFF</h3>
+                            <p className="text-sm text-gray-600 mt-1">{coupon.description || `Get ${coupon.discountPercentage}% off on your purchase.`}</p>
+                          </div>
+                          <div className="mt-4 pt-4 border-t border-pink-200/50 flex justify-between items-center">
+                            <span className="text-xs text-gray-500 font-medium">
+                              Valid till: {new Date(coupon.validUntil).toLocaleDateString()}
+                            </span>
+                            <Button size="sm" variant="outline" className="h-8 text-xs font-bold border-pink-300 text-pink-600 hover:bg-pink-100" onClick={() => {
+                              navigator.clipboard.writeText(coupon.code);
+                              toast({ title: 'Coupon Copied!', description: 'You can apply it at checkout.' });
+                            }}>
+                              COPY
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* My Orders View */}
               {activeTab === 'orders' && (
                 <div>
-                  <h2 className="text-xl font-semibold mb-6 border-b border-pink-100 pb-4">My Orders</h2>
-                  {loading ? (
+                  <div className="flex items-center justify-between border-b border-pink-100 pb-4 mb-6">
+                    <h2 className="text-xl font-semibold">My Orders</h2>
+                    <button
+                      onClick={fetchOrders}
+                      disabled={ordersLoading}
+                      className="flex items-center gap-1.5 text-xs text-pink-600 hover:text-pink-800 font-semibold border border-pink-200 hover:bg-pink-50 rounded-full px-3 py-1.5 transition-all disabled:opacity-50"
+                    >
+                      <RotateCcw size={12} className={ordersLoading ? 'animate-spin' : ''} />
+                      {ordersLoading ? 'Refreshing...' : 'Refresh'}
+                    </button>
+                  </div>
+                  {ordersLoading && orders.length === 0 ? (
                     <div className="flex justify-center py-10"><Loader2 className="animate-spin text-pink-600" size={32} /></div>
                   ) : error ? (
-                    <div className="text-center py-10 text-red-500 font-medium">Error loading orders: {error}</div>
+                    <div className="text-center py-10">
+                      <p className="text-red-500 font-medium mb-3">Error loading orders: {error}</p>
+                      <button onClick={fetchOrders} className="text-pink-600 underline text-sm">Try again</button>
+                    </div>
                   ) : orders.length === 0 ? (
                     <div className="text-center py-12 text-gray-500 bg-pink-50/20 rounded-xl border border-dashed border-pink-200">
                       <Package className="w-12 h-12 text-pink-200 mx-auto mb-4" />
-                      <p>You haven't placed any orders yet.</p>
-                      <Button onClick={() => navigate('/products')} className="mt-4 bg-pink-600 hover:bg-pink-700">Explore Collection</Button>
+                      <p className="mb-3">No orders found.</p>
+                      <button onClick={fetchOrders} disabled={ordersLoading} className="text-pink-600 underline text-sm block mx-auto mb-3">
+                        {ordersLoading ? 'Checking...' : 'Click to refresh'}
+                      </button>
+                      <Button onClick={() => navigate('/products')} className="mt-2 bg-pink-600 hover:bg-pink-700">Explore Collection</Button>
                     </div>
                   ) : (
                     <div className="space-y-4">

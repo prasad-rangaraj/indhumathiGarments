@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CreditCard, Smartphone, Banknote, Ticket, Check, CheckCircle, MapPin, Package, ShieldCheck } from 'lucide-react';
+import { CreditCard, Smartphone, Banknote, Ticket, Check, CheckCircle, MapPin, Package, ShieldCheck, Truck } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 import { useOrdersStore } from '@/stores/ordersStore';
 import { useAuthStore } from '@/stores/authStore';
+import { resolveItemImage } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -25,7 +26,7 @@ const loadRazorpayScript = (): Promise<boolean> => {
 
 const Checkout = () => {
   const { items, total, clearCart } = useCartStore();
-  const { createOrder } = useOrdersStore();
+  const { createOrder, fetchOrders } = useOrdersStore();
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -158,6 +159,8 @@ const Checkout = () => {
         await createOrder(fullOrderData);
         localStorage.setItem('lastOrder', JSON.stringify(fullOrderData));
         await clearCart();
+        // Force-refresh orders so Profile/My Orders shows this order immediately
+        fetchOrders(undefined, true);
         toast({ title: 'Order placed!', description: 'Your COD order is confirmed.' });
         navigate('/confirmation');
         return;
@@ -216,6 +219,8 @@ const Checkout = () => {
                 trackingNumber: result.trackingNumber,
               }));
               await clearCart();
+              // Force-refresh orders so Profile/My Orders shows this order immediately
+              fetchOrders(undefined, true);
               toast({ title: '🎉 Payment Successful!', description: `Order ${result.orderId} confirmed.` });
               navigate('/confirmation');
               resolve();
@@ -265,8 +270,8 @@ const Checkout = () => {
         <div className="absolute inset-0 bg-background/50 backdrop-blur-[2px]" />
       </div>
 
-      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 relative z-10">
-        <div className="container mx-auto max-w-6xl">
+      <div className="sm:mx-auto px-2 sm:px-4 py-4 sm:py-8 relative z-10">
+        <div className="mx-4 sm:mx-auto max-w-6xl">
           <div className="flex items-center justify-between mb-8 pb-4 border-b border-border">
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Secure Checkout</h1>
             <div className="flex items-center gap-2 text-green-600 bg-green-50 px-3 py-1.5 rounded-full border border-green-200">
@@ -276,10 +281,10 @@ const Checkout = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="grid lg:grid-cols-3 gap-6 sm:gap-8 items-start">
-            
+
             {/* Left Column: Flow Stepper */}
             <div className="lg:col-span-2 space-y-4">
-              
+
               {/* STEP 1: LOGIN */}
               <div className="bg-card border border-border rounded-xl flex items-center justify-between p-4 sm:p-5 shadow-sm">
                 <div className="flex gap-4 items-center">
@@ -387,8 +392,8 @@ const Checkout = () => {
                       {items.map((item) => (
                         <div key={`${item.id}-${item.selectedSize}`} className="flex gap-4 p-4 sm:p-6">
                           <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-md border border-border shrink-0 overflow-hidden bg-accent/20">
-                            {item.image ? (
-                              <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                            {resolveItemImage(item) ? (
+                              <img src={resolveItemImage(item) as string} alt={item.name} className="w-full h-full object-cover" />
                             ) : (
                               <Package className="w-8 h-8 m-auto mt-6 sm:mt-8 text-muted-foreground/30" />
                             )}
@@ -397,7 +402,7 @@ const Checkout = () => {
                             <h4 className="font-semibold text-foreground text-sm sm:text-base line-clamp-2 mb-1">{item.name}</h4>
                             <div className="text-xs sm:text-sm text-muted-foreground flex flex-wrap items-center gap-2 sm:gap-4 mb-2">
                               {item.selectedSize && <span className="bg-muted px-2 py-0.5 rounded">Size: {item.selectedSize}</span>}
-                              {item.selectedColor && <span className="bg-muted px-2 py-0.5 rounded flex items-center gap-1">Color: <span className="w-2.5 h-2.5 rounded-full border border-border" style={{backgroundColor: item.selectedColor}} /></span>}
+                              {item.selectedColor && <span className="bg-muted px-2 py-0.5 rounded flex items-center gap-1">Color: <span className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border border-border shadow-sm" style={{ backgroundColor: item.selectedColor }} /></span>}
                               <span>Qty: <span className="font-medium text-foreground">{item.quantity}</span></span>
                             </div>
                             <div className="flex items-center gap-2">
@@ -429,7 +434,7 @@ const Checkout = () => {
 
               {/* STEP 4: PAYMENT OPTIONS */}
               <div className={`bg-card border ${currentStep === 4 ? 'border-primary shadow-md' : 'border-border shadow-sm'} rounded-xl overflow-hidden transition-all duration-300`}>
-                 <div className={`flex items-center gap-4 p-4 sm:p-5 ${currentStep === 4 ? 'bg-primary/5 border-b border-primary/20' : ''}`}>
+                <div className={`flex items-center gap-4 p-4 sm:p-5 ${currentStep === 4 ? 'bg-primary/5 border-b border-primary/20' : ''}`}>
                   <div className={`w-8 h-8 flex items-center justify-center rounded font-bold ${currentStep === 4 ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>4</div>
                   <h3 className={`font-semibold ${currentStep === 4 ? 'text-primary' : 'text-foreground'}`}>
                     Payment Options
@@ -450,12 +455,12 @@ const Checkout = () => {
                           </div>
                           <p className="text-sm text-muted-foreground mt-1">UPI, Credit/Debit Cards, Netbanking</p>
                           {paymentMethod === 'online' && (
-                             <div className="mt-4 animate-in slide-in-from-top-2">
-                               <button type="submit" disabled={isProcessing} className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 py-3 rounded-lg shadow-md flex justify-center items-center gap-2 transition-all active:scale-[0.98]">
-                                  {isProcessing ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : null}
-                                  {isProcessing ? 'Processing...' : `Pay ₹${finalTotal}`}
-                               </button>
-                             </div>
+                            <div className="mt-4 animate-in slide-in-from-top-2">
+                              <button type="submit" disabled={isProcessing} className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 py-3 rounded-lg shadow-md flex justify-center items-center gap-2 transition-all active:scale-[0.98]">
+                                {isProcessing ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : null}
+                                {isProcessing ? 'Processing...' : `Pay ₹${finalTotal}`}
+                              </button>
+                            </div>
                           )}
                         </div>
                       </label>
@@ -468,12 +473,12 @@ const Checkout = () => {
                           </span>
                           <p className="text-sm text-muted-foreground mt-1">Pay when you receive the order</p>
                           {paymentMethod === 'cod' && (
-                             <div className="mt-4 animate-in slide-in-from-top-2">
-                               <button type="submit" disabled={isProcessing} className="w-full sm:w-auto border-2 border-primary text-primary hover:bg-primary/5 font-bold px-8 py-3 rounded-lg flex justify-center items-center gap-2 transition-all active:scale-[0.98]">
-                                  {isProcessing ? <span className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /> : null}
-                                  {isProcessing ? 'Processing...' : `Confirm Order`}
-                               </button>
-                             </div>
+                            <div className="mt-4 animate-in slide-in-from-top-2">
+                              <button type="submit" disabled={isProcessing} className="w-full sm:w-auto border-2 border-primary text-primary hover:bg-primary/5 font-bold px-8 py-3 rounded-lg flex justify-center items-center gap-2 transition-all active:scale-[0.98]">
+                                {isProcessing ? <span className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /> : null}
+                                {isProcessing ? 'Processing...' : `Confirm Order`}
+                              </button>
+                            </div>
                           )}
                         </div>
                       </label>
@@ -485,70 +490,83 @@ const Checkout = () => {
 
             {/* Right Column: Price Breakdown Sticky Panel */}
             <div className="lg:col-span-1">
-               <div className="bg-card border border-border shadow-sm p-0 rounded-xl sticky top-24 overflow-hidden">
-                 
-                 <div className="p-4 sm:p-5 border-b border-border/50 bg-muted/20">
-                   <h2 className="text-sm uppercase tracking-wider font-bold text-muted-foreground">Price Details</h2>
-                 </div>
+              <div className="bg-card border border-border shadow-sm p-0 rounded-xl sticky top-24 overflow-hidden">
 
-                 <div className="p-4 sm:p-5 space-y-4">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-foreground">Price ({items.length} items)</span>
-                      <span className="font-medium text-foreground">₹{total}</span>
+                <div className="p-4 sm:p-5 border-b border-border/50 bg-muted/20">
+                  <h2 className="text-sm uppercase tracking-wider font-bold text-muted-foreground">Price Details</h2>
+                </div>
+
+                <div className="p-4 sm:p-5 space-y-4">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-foreground">Price ({items.length} items)</span>
+                    <span className="font-medium text-foreground">₹{total}</span>
+                  </div>
+
+                  {/* Coupons */}
+                  {!appliedCoupon ? (
+                    <div className="space-y-2 py-2">
+                      <div className="flex gap-2">
+                        <Input type="text" placeholder="Enter Coupon Code" value={couponCode} onChange={(e) => { setCouponCode(e.target.value); setCouponError(''); }} className="h-9 text-sm" />
+                        <Button type="button" onClick={handleApplyCoupon} variant="outline" className="h-9 px-3">Apply</Button>
+                      </div>
+                      {couponError && <p className="text-xs text-destructive">{couponError}</p>}
                     </div>
-
-                    {/* Coupons */}
-                    {!appliedCoupon ? (
-                      <div className="space-y-2 py-2">
-                        <div className="flex gap-2">
-                          <Input type="text" placeholder="Enter Coupon Code" value={couponCode} onChange={(e) => { setCouponCode(e.target.value); setCouponError(''); }} className="h-9 text-sm" />
-                          <Button type="button" onClick={handleApplyCoupon} variant="outline" className="h-9 px-3">Apply</Button>
-                        </div>
-                        {couponError && <p className="text-xs text-destructive">{couponError}</p>}
+                  ) : (
+                    <div className="flex items-center justify-between p-2.5 bg-green-50 border border-green-200 rounded text-sm">
+                      <div className="flex items-center gap-2 font-semibold text-green-700">
+                        <Check className="w-4 h-4" /> {appliedCoupon.code}
                       </div>
-                    ) : (
-                      <div className="flex items-center justify-between p-2.5 bg-green-50 border border-green-200 rounded text-sm">
-                        <div className="flex items-center gap-2 font-semibold text-green-700">
-                          <Check className="w-4 h-4" /> {appliedCoupon.code}
-                        </div>
-                        <button type="button" onClick={handleRemoveCoupon} className="text-xs text-green-700 hover:text-green-800 font-bold uppercase underline decoration-transparent hover:decoration-green-700 transition-all focus:outline-none">Remove</button>
-                      </div>
-                    )}
-
-                    {appliedCoupon && (
-                      <div className="flex justify-between items-center text-sm text-green-600">
-                        <span>Discount</span>
-                        <span className="font-medium">- ₹{calculateDiscount()}</span>
-                      </div>
-                    )}
-
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-foreground">Delivery Charges</span>
-                      <span className="font-semibold text-green-600">FREE</span>
+                      <button type="button" onClick={handleRemoveCoupon} className="text-xs text-green-700 hover:text-green-800 font-bold uppercase underline decoration-transparent hover:decoration-green-700 transition-all focus:outline-none">Remove</button>
                     </div>
+                  )}
 
-                    <div className="border-t border-dashed border-border/70 my-4" />
-
-                    <div className="flex justify-between text-lg font-bold text-foreground">
-                      <span>Total Amount</span>
-                      <span>₹{finalTotal}</span>
+                  {appliedCoupon && (
+                    <div className="flex justify-between items-center text-sm text-green-600">
+                      <span>Discount</span>
+                      <span className="font-medium">- ₹{calculateDiscount()}</span>
                     </div>
+                  )}
 
-                    {appliedCoupon && (
-                      <div className="text-sm font-semibold text-green-600 bg-green-50 py-2.5 px-3 rounded text-center border border-green-100 mt-4">
-                        You will save ₹{calculateDiscount()} on this order
-                      </div>
-                    )}
-                 </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-foreground">Delivery Charges</span>
+                    <span className="font-semibold text-green-600">FREE</span>
+                  </div>
 
-                 {/* Trust Badges */}
-                 <div className="px-5 py-4 bg-muted/40 border-t border-border/50 flex gap-4 items-center justify-center">
-                    <ShieldCheck className="w-8 h-8 text-muted-foreground/60" />
-                    <p className="text-xs font-semibold text-muted-foreground leading-snug">
-                      Safe and Secure Payments.<br/>100% Authentic products.
-                    </p>
-                 </div>
-               </div>
+                  <div className="flex justify-between items-center text-sm bg-blue-50/50 p-2.5 rounded-lg border border-blue-100/50">
+                    <span className="text-blue-700 flex items-center gap-1.5 font-medium">
+                      <Truck className="w-4 h-4" /> Est. Delivery
+                    </span>
+                    <span className="font-bold text-blue-800">
+                      {(() => {
+                        const d = new Date();
+                        d.setDate(d.getDate() + 7);
+                        return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+                      })()}
+                    </span>
+                  </div>
+
+                  <div className="border-t border-dashed border-border/70 my-4" />
+
+                  <div className="flex justify-between text-lg font-bold text-foreground">
+                    <span>Total Amount</span>
+                    <span>₹{finalTotal}</span>
+                  </div>
+
+                  {appliedCoupon && (
+                    <div className="text-sm font-semibold text-green-600 bg-green-50 py-2.5 px-3 rounded text-center border border-green-100 mt-4">
+                      You will save ₹{calculateDiscount()} on this order
+                    </div>
+                  )}
+                </div>
+
+                {/* Trust Badges */}
+                <div className="px-5 py-4 bg-muted/40 border-t border-border/50 flex gap-4 items-center justify-center">
+                  <ShieldCheck className="w-8 h-8 text-muted-foreground/60" />
+                  <p className="text-xs font-semibold text-muted-foreground leading-snug">
+                    Safe and Secure Payments.<br />100% Authentic products.
+                  </p>
+                </div>
+              </div>
             </div>
 
           </form>

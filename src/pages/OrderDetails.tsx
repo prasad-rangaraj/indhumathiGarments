@@ -4,6 +4,7 @@ import { ArrowLeft, Package, Truck, CheckCircle, MapPin, Phone, Mail, RotateCcw,
 import { useOrdersStore, Order } from '@/stores/ordersStore';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { resolveItemImage } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
@@ -16,17 +17,27 @@ import {
 } from "@/components/ui/dialog";
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 
+const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
+const toUrl = (src: string) => {
+  if (!src) return '';
+  if (src.startsWith('http') || src.startsWith('data:')) return src;
+  const prefix = BASE.endsWith('/') ? BASE.slice(0, -1) : BASE;
+  const path = src.startsWith('/') ? src : `/${src}`;
+  return `${prefix}${path}`;
+};
+
 const OrderDetails = () => {
   const { orderId } = useParams();
-  const { orders, loading, fetchOrders, getOrderById, cancelOrder } = useOrdersStore();
+  const { orders, loading, fetchOrders, getOrderById, cancelOrder, requestReturn } = useOrdersStore();
   const { toast } = useToast();
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelReasonText, setCancelReasonText] = useState('');
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
-  const [returnReason, setReturnReason] = useState('');
-  const [returnImages, setReturnImages] = useState<string[]>([]);
+
+  const [isReturning, setIsReturning] = useState(false);
+  const [returnReasonText, setReturnReasonText] = useState('');
   const [isReturnDialogOpen, setIsReturnDialogOpen] = useState(false);
-  const [isSubmittingReturn, setIsSubmittingReturn] = useState(false);
+  const [returnImages, setReturnImages] = useState<string[]>([]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -53,7 +64,6 @@ const OrderDetails = () => {
   const removeImage = (index: number) => {
     setReturnImages(prev => prev.filter((_, i) => i !== index));
   };
-
   useEffect(() => {
     // Force a fresh fetch on page load to see the latest status
     fetchOrders(undefined, true);
@@ -123,7 +133,7 @@ const OrderDetails = () => {
       </div>
 
       <div className="py-8 px-4 sm:px-6 relative z-10">
-        <div className="container mx-auto max-w-4xl">
+        <div className="sm:mx-auto max-w-4xl">
           <Link to="/orders" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-6">
             <ArrowLeft className="h-4 w-4" />
             Back to Orders
@@ -156,7 +166,7 @@ const OrderDetails = () => {
                       <div className="py-4 space-y-4">
                         <div className="space-y-2">
                           <label className="text-sm font-medium">Cancellation Reason <span className="text-red-500">*</span></label>
-                          <Textarea 
+                          <Textarea
                             placeholder="Why do you wish to cancel?"
                             value={cancelReasonText}
                             onChange={(e) => setCancelReasonText(e.target.value)}
@@ -168,7 +178,7 @@ const OrderDetails = () => {
                         <Button variant="outline" onClick={() => setIsCancelDialogOpen(false)} disabled={isCancelling}>
                           Keep Order
                         </Button>
-                        <Button 
+                        <Button
                           variant="destructive"
                           disabled={isCancelling || cancelReasonText.trim() === ''}
                           onClick={async () => {
@@ -242,9 +252,9 @@ const OrderDetails = () => {
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Payment Method:</span>
                     <span className="font-semibold capitalize text-foreground">
-                      {order.paymentMethod === 'upi' ? 'UPI' : 
-                       order.paymentMethod === 'cod' ? 'Cash on Delivery' : 
-                       'Credit/Debit Card'}
+                      {order.paymentMethod === 'upi' ? 'UPI' :
+                        order.paymentMethod === 'cod' ? 'Cash on Delivery' :
+                          'Credit/Debit Card'}
                     </span>
                   </div>
                   {order.trackingNumber && (
@@ -268,13 +278,13 @@ const OrderDetails = () => {
                   <div key={`${item.id}-${index}`} className="flex flex-col sm:flex-row gap-4 p-4 bg-white border border-border/60 hover:border-pink-200 transition-colors rounded-xl group">
                     <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-lg flex items-center justify-center text-xs text-muted-foreground flex-shrink-0 group-hover:bg-pink-50/50 transition-colors overflow-hidden">
                       {(() => {
-                        const imgSrc = item.product?.image || item.product?.images?.[0] || item.image;
+                        const imgSrc = resolveItemImage(item);
                         if (imgSrc) {
                           return (
-                            <img 
-                              src={imgSrc.startsWith('http') ? imgSrc : `${import.meta.env.VITE_API_URL.replace('/api', '')}${imgSrc}`}
-                              alt={item.name} 
-                              className="w-full h-full object-cover rounded-lg" 
+                            <img
+                              src={toUrl(imgSrc)}
+                              alt={item.name}
+                              className="w-full h-full object-cover rounded-lg"
                             />
                           );
                         }
@@ -283,10 +293,15 @@ const OrderDetails = () => {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-bold text-foreground">{item.name}</h3>
-                      <div className="grid grid-cols-2 gap-x-8 gap-y-1 mt-2">
-                        <p className="text-sm text-muted-foreground">Size: <span className="font-semibold text-foreground">{item.selectedSize}</span></p>
-                        <p className="text-sm text-muted-foreground text-right sm:text-left">Qty: <span className="font-semibold text-foreground">{item.quantity}</span></p>
-                        <p className="text-sm text-muted-foreground">Price: <span className="font-semibold text-foreground">₹{item.price}</span></p>
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2">
+                        <p className="text-sm text-muted-foreground flex items-center gap-1">Size: <span className="font-semibold text-foreground bg-muted px-1.5 py-0.5 rounded">{item.selectedSize || item.size}</span></p>
+                        {item.color && (
+                          <p className="text-sm text-muted-foreground flex items-center gap-1">Color: 
+                            <span className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border border-border shadow-sm inline-block ml-0.5" style={{ backgroundColor: item.color }} title={item.color} />
+                          </p>
+                        )}
+                        <p className="text-sm text-muted-foreground flex items-center gap-1">Qty: <span className="font-semibold text-foreground">{item.quantity}</span></p>
+                        <p className="text-sm text-muted-foreground flex items-center gap-1">Price: <span className="font-semibold text-foreground">₹{item.price}</span></p>
                       </div>
                     </div>
                     <div className="text-right flex flex-col justify-center border-t sm:border-t-0 sm:border-l border-border/40 pl-0 sm:pl-6 pt-3 sm:pt-0">
@@ -308,81 +323,99 @@ const OrderDetails = () => {
               <Button variant="outline" className="border-pink-200 text-pink-600 hover:bg-pink-50 font-bold" asChild>
                 <a href="/contact">Contact Support</a>
               </Button>
-              {order.status === 'Delivered' && (
-                <Button className="bg-pink-600 hover:bg-pink-700 font-bold shadow-lg shadow-pink-200" onClick={() => setIsReturnDialogOpen(true)}>
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Request Return
-                </Button>
-              )}
             </div>
           </div>
         </div>
       </div>
 
-      <Dialog open={isReturnDialogOpen} onOpenChange={setIsReturnDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Request Return/Exchange</DialogTitle>
-            <DialogDescription>
-              Please tell us why you want to return this order. You can upload photos if there's a defect.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-6 my-4">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold">Reason for Return <span className="text-red-500">*</span></label>
-              <Textarea 
-                placeholder="Ex: Size doesn't fit, manufacturing defect, etc."
-                className="min-h-[120px] focus:ring-pink-500"
-                value={returnReason}
-                onChange={(e) => setReturnReason(e.target.value)}
-              />
-            </div>
-            
-            <div className="space-y-3">
-              <label className="text-sm font-semibold">Photos (Optional, max 5)</label>
-              <div className="flex flex-wrap gap-4">
-                {returnImages.map((img, idx) => (
-                  <div key={idx} className="relative w-20 h-20 group">
-                    <img src={img} alt="upload" className="w-full h-full object-cover rounded-lg border border-border" />
-                    <button 
-                      onClick={() => removeImage(idx)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <XCircle size={14} />
-                    </button>
-                  </div>
-                ))}
-                {returnImages.length < 5 && (
-                  <label className="w-20 h-20 border-2 border-dashed border-pink-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-pink-50 transition-colors group">
-                    <Camera className="w-6 h-6 text-pink-300 group-hover:text-pink-500" />
-                    <span className="text-[10px] text-pink-400 mt-1">Add Photo</span>
-                    <span className="text-[9px] text-pink-300 mt-0.5">Max 2MB</span>
-                    <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
-                  </label>
-                )}
+      {order.status === 'Delivered' && (
+        <div className="mx-4 sm:mx-auto max-w-4xl px-4 sm:px-6 mb-8">
+          <div className="card-elegant p-6 border-blue-200 bg-blue-50/50">
+            <div className="flex items-start gap-4">
+              <div className="p-2 bg-blue-100 rounded-full mt-0.5">
+                <RotateCcw className="w-5 h-5 text-blue-600" />
               </div>
-              <p className="text-xs text-muted-foreground mt-1">Each photo must be under 2MB.</p>
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-blue-800">Return & Exchange</h3>
+                <p className="text-sm text-blue-700 mt-1">
+                  Not satisfied? You can return or exchange this order within 7 days of delivery.
+                </p>
+                <Dialog open={isReturnDialogOpen} onOpenChange={setIsReturnDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="mt-4 border-blue-300 text-blue-700 hover:bg-blue-100">Request Return</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Request Return</DialogTitle>
+                      <DialogDescription>
+                        Please let us know why you are returning this item. You can also upload images to help us process your request faster.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Return Reason <span className="text-red-500">*</span></label>
+                        <Textarea 
+                          placeholder="Why are you returning this?"
+                          value={returnReasonText}
+                          onChange={(e) => setReturnReasonText(e.target.value)}
+                          disabled={isReturning}
+                        />
+                      </div>
+                      <div className="space-y-3">
+                        <label className="text-sm font-medium">Photos (Optional, max 5)</label>
+                        <div className="flex flex-wrap gap-4">
+                          {returnImages.map((img, idx) => (
+                            <div key={idx} className="relative w-20 h-20 group">
+                              <img src={img} alt="upload" className="w-full h-full object-cover rounded-lg border border-border" />
+                              <button 
+                                onClick={() => removeImage(idx)}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <XCircle size={14} />
+                              </button>
+                            </div>
+                          ))}
+                          {returnImages.length < 5 && (
+                            <label className="w-20 h-20 border-2 border-dashed border-blue-200 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-blue-50 transition-colors group">
+                              <Camera className="w-6 h-6 text-blue-300 group-hover:text-blue-500" />
+                              <span className="text-[10px] text-blue-400 mt-1">Add Photo</span>
+                              <span className="text-[9px] text-blue-300 mt-0.5">Max 2MB</span>
+                              <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
+                            </label>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">Uploading an image (under 2MB) helps us respond faster.</p>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setIsReturnDialogOpen(false)} disabled={isReturning}>
+                        Cancel
+                      </Button>
+                      <Button 
+                        disabled={isReturning || returnReasonText.trim() === ''}
+                        onClick={async () => {
+                          setIsReturning(true);
+                          try {
+                            await requestReturn(order.orderId, returnReasonText, returnImages);
+                            toast({ title: 'Return Requested', description: 'Your return request has been submitted successfully.' });
+                            setIsReturnDialogOpen(false);
+                          } catch (err) {
+                            toast({ title: 'Failed to request return', description: 'Could not submit request', variant: 'destructive' });
+                          } finally {
+                            setIsReturning(false);
+                          }
+                        }}
+                      >
+                        {isReturning ? 'Submitting...' : 'Submit Request'}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsReturnDialogOpen(false)}>Cancel</Button>
-            <Button 
-              className="bg-pink-600 hover:bg-pink-700 font-bold"
-              disabled={!returnReason.trim() || isSubmittingReturn}
-              onClick={async () => {
-                setIsSubmittingReturn(true);
-                // Simulate API call
-                await new Promise(r => setTimeout(r, 1500));
-                toast({ title: "Return Requested", description: "Our team will review your request and get back within 24 hours." });
-                setIsReturnDialogOpen(false);
-                setIsSubmittingReturn(false);
-              }}
-            >
-              {isSubmittingReturn ? "Submitting..." : "Submit Request"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </div>
   );
 };

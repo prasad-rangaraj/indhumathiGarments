@@ -4,6 +4,7 @@ import { Heart, ShoppingCart, Trash2 } from 'lucide-react';
 import { useWishlistStore } from '@/stores/wishlistStore';
 import { useCartStore } from '@/stores/cartStore';
 import { useToast } from '@/hooks/use-toast';
+import { resolveItemImage } from '@/lib/utils';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 
 
@@ -79,7 +80,7 @@ const Wishlist = () => {
       </div>
 
       <div className="py-6 sm:py-8 px-4 sm:px-6 relative z-10">
-        <div className="container mx-auto max-w-6xl">
+        <div className="mx-4 sm:mx-auto max-w-6xl">
           <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-foreground animate-fade-in">
             My Wishlist ({items.length})
           </h1>
@@ -91,10 +92,13 @@ const Wishlist = () => {
                 className="card-product group overflow-hidden animate-slide-up"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="relative overflow-hidden aspect-[4/5] bg-accent/60 flex items-center justify-center">
-                  {product.image || (product.images && product.images.length > 0) ? (
+                <Link 
+                  to={`/products/${product.id}${product.wishlistColor ? `?color=${encodeURIComponent(product.wishlistColor)}` : ''}`}
+                  className="relative overflow-hidden aspect-[4/5] bg-accent/60 flex items-center justify-center block"
+                >
+                  {resolveItemImage(product) ? (
                     <img
-                      src={toUrl(product.image || product.images?.[0])}
+                      src={toUrl(resolveItemImage(product) as string)}
                       alt={product.name}
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
@@ -122,12 +126,16 @@ const Wishlist = () => {
                   >
                     <Trash2 className="w-4 h-4 text-destructive" />
                   </button>
-                </div>
+                </Link>
 
                 <div className="p-4 sm:p-6">
-                  <h3 className="text-lg sm:text-xl font-semibold mb-2 text-foreground group-hover:text-primary transition-colors">
-                    {product.name}
-                  </h3>
+                  <Link 
+                    to={`/products/${product.id}${product.wishlistColor ? `?color=${encodeURIComponent(product.wishlistColor)}` : ''}`}
+                  >
+                    <h3 className="text-lg sm:text-xl font-semibold mb-2 text-foreground group-hover:text-primary transition-colors">
+                      {product.name}
+                    </h3>
+                  </Link>
                   <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
                     {product.description}
                   </p>
@@ -136,6 +144,11 @@ const Wishlist = () => {
                     <span className="text-xs text-muted-foreground bg-accent/50 px-2 py-1 rounded">
                       {product.material}
                     </span>
+                    {product.wishlistColor && (
+                      <span className="text-xs text-muted-foreground bg-accent/50 px-2 py-1 rounded capitalize">
+                        Color: {product.wishlistColor}
+                      </span>
+                    )}
                   </div>
 
                   {product.colors && product.colors.length > 0 && (

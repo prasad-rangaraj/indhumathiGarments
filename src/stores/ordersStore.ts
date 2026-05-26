@@ -18,7 +18,7 @@ export interface Order {
   };
   paymentMethod: string;
   orderDate: string;
-  status: 'Pending' | 'Packed' | 'Shipped' | 'Delivered' | 'Cancelled';
+  status: 'Pending' | 'Packed' | 'Shipped' | 'Delivered' | 'Cancelled' | 'Return Requested' | 'Return Picked Up' | 'Refund Processed' | 'Refund Completed' | 'Return Rejected';
   trackingNumber?: string;
   delayedDeliveryDate?: string | null;
   delayReason?: string | null;
@@ -37,7 +37,8 @@ interface OrdersState {
   cancelOrder: (orderId: string, reason?: string) => Promise<void>;
   updateOrderStatus: (orderId: string, status: Order['status']) => Promise<void>;
   updateOrderDelay: (orderId: string, data: { delayedDeliveryDate: string | null; delayReason: string | null }) => Promise<void>;
-  getOrdersByStatus: (status: Order['status']) => Order[];
+  requestReturn: (orderId: string, reason: string, images?: string[]) => Promise<void>;
+  getOrdersByStatus: (status: Order['status'] | string) => Order[];
 }
 
 import { ordersAPI } from '@/lib/api';
@@ -51,14 +52,11 @@ export const useOrdersStore = create<OrdersState>()(
       abortController: null,
 
       fetchOrders: async (userId?: string, force = false) => {
-        // Evaluate targetUserId to check if we can use cache (if context changed?)
-        // For simplicity, we just use global cache time.
-        // Ideally we should key cache by userId, but given single-session nature:
-        
         const { lastFetched, loading, abortController } = get();
         const now = Date.now();
-        const CACHE_DURATION = 30 * 1000; // 30 seconds for more responsive status updates
+        const CACHE_DURATION = 30 * 1000; // 30 seconds
 
+        // force=true ALWAYS bypasses cache; otherwise use 30s cache
         if (!force && !loading && (now - lastFetched < CACHE_DURATION)) {
           return;
         }
@@ -99,11 +97,8 @@ export const useOrdersStore = create<OrdersState>()(
                 quantity: item.quantity,
                 selectedSize: item.size,
                 selectedColor: item.color,
-                image: item.product?.image || item.image,
-                product: item.product ? {
-                  images: item.product.images || [],
-                  image: item.product.image,
-                } : undefined,
+                image: item.image, // Prefer the item's saved image which can be resolved later
+                product: item.product,
               })),
               total: order.total,
               originalTotal: order.originalTotal,
@@ -153,6 +148,8 @@ export const useOrdersStore = create<OrdersState>()(
               size: item.selectedSize,
               color: item.selectedColor,
               price: item.price,
+              product: item.product,
+              image: item.image,
             })),
             total: order.total,
             originalTotal: order.originalTotal,
@@ -180,7 +177,8 @@ export const useOrdersStore = create<OrdersState>()(
           };
           
           const updatedOrders = [transformedOrder, ...get().orders];
-          set({ orders: updatedOrders, loading: false });
+          // Reset lastFetched so next page visit (Profile/Orders) always re-fetches fresh from API
+          set({ orders: updatedOrders, loading: false, lastFetched: 0 });
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to create order', loading: false });
         }
@@ -232,12 +230,31 @@ export const useOrdersStore = create<OrdersState>()(
         }
       },
 
-      getOrdersByStatus: (status: Order['status']) => {
+      requestReturn: async (orderId: string, reason: string, images?: string[]) => {
+        set({ loading: true, error: null });
+        try {
+          await import('@/lib/api').then(m => m.ordersAPI.requestReturn(orderId, { reason, images }));
+          
+          const updatedOrders = get().orders.map(order =>
+            order.orderId === orderId ? { ...order, status: 'Return Requested' as any } : order
+          );
+          set({ orders: updatedOrders, loading: false });
+        } catch (error) {
+          set({ error: error instanceof Error ? error.message : 'Failed to request return', loading: false });
+          throw error;
+        }
+      },
+
+      getOrdersByStatus: (status: Order['status'] | string) => {
         return get().orders.filter(o => o.status === status);
       },
     }),
     {
       name: 'orders-storage',
+      // Do NOT persist orders or lastFetched — always re-fetch from server on reload
+      partialize: (state) => ({
+        // Persist nothing — all order data must come from the server
+      }),
     }
   )
 );

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Package, Eye, Truck, CheckCircle } from 'lucide-react';
 import { useOrdersStore } from '@/stores/ordersStore';
+import { resolveItemImage } from '@/lib/utils';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 
 const OrderHistory = () => {
@@ -63,7 +64,7 @@ const OrderHistory = () => {
       </div>
 
       <div className="py-6 sm:py-8 px-4 sm:px-6 relative z-10">
-        <div className="container mx-auto max-w-4xl">
+        <div className=" sm:mx-auto max-w-4xl">
           <div className="flex items-center justify-between mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
               My Orders
@@ -81,8 +82,8 @@ const OrderHistory = () => {
               return (
                 <div key={order.orderId} className="card-elegant overflow-hidden group">
                   {/* Clickable block — top section goes to track page */}
-                  <Link 
-                    to={`/track/${order.orderId}`} 
+                  <Link
+                    to={`/track/${order.orderId}`}
                     className="block p-4 sm:p-6 border-b border-border/50 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
@@ -115,9 +116,9 @@ const OrderHistory = () => {
                       {order.items.slice(0, 3).map((item: any, idx: number) => (
                         <div key={idx} className="flex items-center gap-2 text-sm">
                           <div className="w-10 h-10 rounded bg-accent/70 flex items-center justify-center text-xs text-muted-foreground overflow-hidden">
-                            {item.image ? (
-                              <img 
-                                src={item.image.startsWith('http') ? item.image : `${import.meta.env.VITE_API_URL.replace('/api', '')}${item.image}`}
+                            {resolveItemImage(item) ? (
+                              <img
+                                src={resolveItemImage(item)?.startsWith('http') ? resolveItemImage(item) as string : `${import.meta.env.VITE_API_URL.replace('/api', '')}${resolveItemImage(item)}`}
                                 alt={item.name}
                                 className="w-full h-full object-cover"
                               />
@@ -127,9 +128,15 @@ const OrderHistory = () => {
                           </div>
                           <div>
                             <p className="font-medium text-foreground text-xs">{item.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              Size: {item.selectedSize} × {item.quantity}
-                            </p>
+                            <div className="text-[10px] text-muted-foreground flex flex-wrap items-center gap-1 mt-0.5">
+                              <span>Size: {item.selectedSize || item.size}</span>
+                              {(item.selectedColor || item.color) && (
+                                <span className="flex items-center gap-0.5 ml-1">
+                                  Color: <span className="w-2.5 h-2.5 rounded-full border border-border shadow-sm inline-block" style={{ backgroundColor: item.selectedColor || item.color }} title={item.selectedColor || item.color} />
+                                </span>
+                              )}
+                              <span className="ml-1">× {item.quantity}</span>
+                            </div>
                           </div>
                         </div>
                       ))}

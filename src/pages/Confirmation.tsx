@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { CheckCircle, Package, Clock, Phone, Info } from 'lucide-react';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 import type { CartItem } from '@/stores/cartStore';
+import { resolveItemImage } from '@/lib/utils';
 
 interface OrderData {
   orderId: string;
@@ -19,6 +20,15 @@ interface OrderData {
   paymentMethod: 'upi' | 'card' | 'cod';
   orderDate: string;
 }
+
+const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
+const toUrl = (src: string) => {
+  if (!src) return '';
+  if (src.startsWith('http') || src.startsWith('data:')) return src;
+  const prefix = BASE.endsWith('/') ? BASE.slice(0, -1) : BASE;
+  const path = src.startsWith('/') ? src : `/${src}`;
+  return `${prefix}${path}`;
+};
 
 const Confirmation = () => {
   const [orderData, setOrderData] = useState<OrderData | null>(null);
@@ -65,14 +75,14 @@ const Confirmation = () => {
       </div>
 
       <div className="py-6 sm:py-8 px-4">
-        <div className="container mx-auto max-w-3xl">
+        <div className="mx-3 sm:mx-auto max-w-3xl">
           {/* Success Animation */}
           <div className="text-center mb-8 sm:mb-12 animate-zoom-in">
             <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full mb-4 sm:mb-6">
               <CheckCircle className="h-10 w-10 sm:h-12 sm:w-12 text-green-600 animate-bounce" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 sm:mb-4 px-4">Order Confirmed!</h1>
-            <p className="text-base sm:text-lg text-muted-foreground px-4">
+            <h1 className="text-xl sm:text-3xl font-bold text-foreground mb-3 sm:mb-4 px-4">Order Confirmed!</h1>
+            <p className="text-sm sm:text-lg text-muted-foreground px-4">
               Thank you for your purchase. Your order has been successfully placed.
             </p>
           </div>
@@ -81,7 +91,7 @@ const Confirmation = () => {
           <div className="card-elegant p-4 sm:p-6 md:p-8 mb-6 sm:mb-8 animate-fade-in">
             <div className="grid md:grid-cols-2 gap-8 mb-8">
               <div>
-                <h2 className="text-xl font-bold text-foreground mb-4">Order Information</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4">Order Information</h2>
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Order ID:</span>
@@ -107,7 +117,7 @@ const Confirmation = () => {
               </div>
 
               <div>
-                <h2 className="text-xl font-bold text-foreground mb-4">Shipping Address</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4">Shipping Address</h2>
                 <div className="text-muted-foreground">
                   <p className="font-medium text-foreground">{orderData.customerInfo.name}</p>
                   <p>{orderData.customerInfo.address}</p>
@@ -120,12 +130,23 @@ const Confirmation = () => {
 
             {/* Order Items */}
             <div>
-              <h2 className="text-xl font-bold text-foreground mb-4">Order Items</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4">Order Items</h2>
               <div className="space-y-4">
                 {orderData.items.map((item: CartItem) => (
                   <div key={`${item.id}-${item.selectedSize}`} className="flex gap-4 p-4 bg-accent/30 rounded-lg">
-                    <div className="w-16 h-16 rounded bg-accent/70 border border-border flex items-center justify-center text-[10px] text-muted-foreground">
-                      No Image
+                    <div className="w-16 h-16 rounded bg-accent/70 border border-border flex items-center justify-center text-[10px] text-muted-foreground overflow-hidden">
+                      {(() => {
+                        const imgSrc = resolveItemImage(item);
+                        return imgSrc ? (
+                          <img 
+                            src={toUrl(imgSrc)} 
+                            alt={item.name} 
+                            className="w-full h-full object-cover" 
+                          />
+                        ) : (
+                          "No Image"
+                        );
+                      })()}
                     </div>
                     <div className="flex-1">
                       <h3 className="font-medium text-foreground">{item.name}</h3>
@@ -175,11 +196,11 @@ const Confirmation = () => {
                 <Info className="w-5 h-5 text-pink-600" />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-bold text-foreground mb-2">Cancellation & Return Policy</h2>
-                <p className="text-sm font-medium text-pink-800 mb-3 bg-pink-100/50 p-3 rounded-md border border-pink-200">
+                <h2 className="text-base sm:text-xl font-bold text-foreground mb-2">Cancellation & Return Policy</h2>
+                <p className="text-xs sm:text-sm font-medium text-pink-800 mb-3 bg-pink-100/50 p-3 rounded-md border border-pink-200">
                   Note: You can cancel your order within 24 hours of placement directly from your Order Tracking page.
                 </p>
-                <ul className="list-disc list-inside space-y-1.5 text-sm text-muted-foreground">
+                <ul className="list-disc list-inside space-y-1.5 text-xs sm:text-sm text-muted-foreground">
                   <li>Easy 7-day return from the date of delivery for size issues or manufacturing defects.</li>
                   <li>Products must be unused, with tags attached and in original packing.</li>
                   <li>For hygiene reasons, worn or washed innerwear cannot be accepted for return.</li>

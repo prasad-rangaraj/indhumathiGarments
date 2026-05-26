@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+import { useAdminStore } from '@/stores/adminStore';
 import { useOrdersStore, Order } from '@/stores/ordersStore';
 import { useToast } from '@/hooks/use-toast';
 
@@ -29,7 +30,8 @@ const OrderDetails = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { orders, fetchOrders, updateOrderStatus, getOrderById, updateOrderDelay } = useOrdersStore();
+  const { orders, fetchOrders } = useAdminStore();
+  const { updateOrderStatus, getOrderById, updateOrderDelay } = useOrdersStore();
   const [updating, setUpdating] = useState(false);
   const [delayUpdating, setDelayUpdating] = useState(false);
   const [delayDate, setDelayDate] = useState<string>('');
@@ -41,7 +43,7 @@ const OrderDetails = () => {
     }
   }, [orders.length, fetchOrders]);
 
-  const order = orderId ? getOrderById(orderId) : undefined;
+  const order = orderId ? orders.find(o => o.orderId === orderId) : undefined;
   const status = order?.status || 'Pending';
 
   if (!order) {

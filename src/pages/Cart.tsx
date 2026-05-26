@@ -4,6 +4,7 @@ import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
+import { resolveItemImage } from '@/lib/utils';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 
 const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
@@ -51,9 +52,9 @@ const Cart = () => {
         </div>
         <div className="flex items-center justify-center px-4 min-h-screen">
           <div className="text-center animate-fade-in">
-          <ShoppingBag className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
-          <h2 className="text-2xl font-bold mb-4 text-foreground">Your cart is empty</h2>
-          <p className="text-muted-foreground mb-8">Add some beautiful cotton lingerie to get started!</p>
+            <ShoppingBag className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
+            <h2 className="text-2xl font-bold mb-4 text-foreground">Your cart is empty</h2>
+            <p className="text-muted-foreground mb-8">Add some beautiful cotton lingerie to get started!</p>
             <Link to="/products" className="btn-primary">
               Shop Now
             </Link>
@@ -71,118 +72,134 @@ const Cart = () => {
       </div>
 
       <div className="py-6 sm:py-8 px-2 sm:px-6 relative z-10">
-        <div className="container mx-auto max-w-4xl">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-foreground animate-fade-in px-2 sm:px-0">Shopping Cart</h1>
-        
-        <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
-          {/* Cart Items */}
-          <div className="lg:col-span-2 space-y-4 sm:space-y-5">
-            {items.map((item, index) => (
-              <div 
-                key={`${item.id}-${item.selectedSize}`}
-                className="card-elegant p-4 sm:p-6 animate-slide-up"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className="flex gap-3 sm:gap-4">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg flex-shrink-0 bg-accent/70 border border-border flex items-center justify-center text-[10px] sm:text-xs text-muted-foreground overflow-hidden">
-                    {item.image || (item.images && item.images.length > 0) ? (
-                      <img 
-                        src={toUrl(item.image || item.images?.[0])}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      "No Image"
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{item.name}</h3>
-                    <p className="text-xs sm:text-sm text-muted-foreground">Size: {item.selectedSize}</p>
-                    <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">{item.category}</p>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-3 sm:mt-4 gap-3">
-                      <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-start">
-                        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="mx-4 sm:mx-auto max-w-4xl">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-foreground animate-fade-in px-2 sm:px-0">Shopping Cart</h1>
+
+          <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
+            {/* Cart Items */}
+            <div className="lg:col-span-2 space-y-4 sm:space-y-5">
+              {items.map((item, index) => (
+                <div
+                  key={`${item.id}-${item.selectedSize}`}
+                  className="card-elegant p-4 sm:p-6 animate-slide-up"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="flex gap-3 sm:gap-4">
+                    <Link 
+                      to={`/products/${item.productId}${item.selectedColor ? `?color=${encodeURIComponent(item.selectedColor)}` : ''}`}
+                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg flex-shrink-0 bg-accent/70 border border-border flex items-center justify-center text-[10px] sm:text-xs text-muted-foreground overflow-hidden hover:opacity-80 transition-opacity block"
+                    >
+                      {resolveItemImage(item) ? (
+                        <img
+                          src={toUrl(resolveItemImage(item) as string)}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        "No Image"
+                      )}
+                    </Link>
+                    <div className="flex-1 min-w-0">
+                      <Link 
+                        to={`/products/${item.productId}${item.selectedColor ? `?color=${encodeURIComponent(item.selectedColor)}` : ''}`}
+                        className="hover:text-primary transition-colors block"
+                      >
+                        <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{item.name}</h3>
+                      </Link>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-xs sm:text-sm text-muted-foreground">Size: {item.selectedSize}</p>
+                        {item.selectedColor && (
+                          <>
+                            <span className="text-muted-foreground text-xs">•</span>
+                            <p className="text-xs sm:text-sm text-muted-foreground capitalize">Color: {item.selectedColor}</p>
+                          </>
+                        )}
+                      </div>
+                      <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">{item.category}</p>
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-3 sm:mt-4 gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-start">
+                          <div className="flex items-center gap-2 sm:gap-3">
+                            <button
+                              onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-border hover:border-primary transition-colors flex items-center justify-center flex-shrink-0"
+                            >
+                              <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
+                            </button>
+                            <span className="w-8 sm:w-10 text-center font-medium text-sm sm:text-base">{item.quantity}</span>
+                            <button
+                              onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-border hover:border-primary transition-colors flex items-center justify-center flex-shrink-0"
+                            >
+                              <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                            </button>
+                          </div>
+                          <span className="font-bold text-primary text-base sm:text-lg">₹{item.price * item.quantity}</span>
+                        </div>
+                        <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-end">
                           <button
-                            onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-border hover:border-primary transition-colors flex items-center justify-center flex-shrink-0"
+                            onClick={() => handleRemoveItem(item.id)}
+                            className="text-destructive hover:text-destructive/80 transition-colors p-2"
                           >
-                            <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
-                          </button>
-                          <span className="w-8 sm:w-10 text-center font-medium text-sm sm:text-base">{item.quantity}</span>
-                          <button
-                            onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-border hover:border-primary transition-colors flex items-center justify-center flex-shrink-0"
-                          >
-                            <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
                           </button>
                         </div>
-                        <span className="font-bold text-primary text-base sm:text-lg">₹{item.price * item.quantity}</span>
-                      </div>
-                      <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-end">
-                        <button
-                          onClick={() => handleRemoveItem(item.id)}
-                          className="text-destructive hover:text-destructive/80 transition-colors p-2"
-                        >
-                          <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
-                        </button>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          {/* Order Summary */}
-          <div className="lg:col-span-1">
-            <div className="card-elegant p-6 sticky top-24 animate-fade-in">
-              <h2 className="text-xl font-bold mb-6 text-foreground">Order Summary</h2>
-              
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">
-                    Subtotal ({items.reduce((sum, item) => sum + item.quantity, 0)} items)
-                  </span>
-                  <span className="font-medium">₹{total}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Shipping</span>
-                  <span className="font-medium text-green-600">Free</span>
-                </div>
-                <hr className="border-border" />
-                <div className="flex justify-between text-lg font-bold">
-                  <span>Total</span>
-                  <span className="text-primary">₹{total}</span>
-                </div>
-              </div>
+            {/* Order Summary */}
+            <div className="lg:col-span-1">
+              <div className="card-elegant p-6 sticky top-24 animate-fade-in">
+                <h2 className="text-xl font-bold mb-6 text-foreground">Order Summary</h2>
 
-              <button 
-                onClick={(e) => {
-                  if (!isAuthenticated) {
-                    e.preventDefault();
-                    toast({
-                      title: "Please login",
-                      description: "You need to be logged in to proceed to checkout",
-                    });
-                    navigate('/login');
-                  } else {
-                    navigate('/checkout');
-                  }
-                }}
-                className="btn-primary w-full text-center block hover-glow"
-              >
-                Proceed to Checkout
-              </button>
-              
-              <Link 
-                to="/products" 
-                className="btn-secondary w-full text-center block mt-3"
-              >
-                Continue Shopping
-              </Link>
+                <div className="space-y-3 mb-6">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      Subtotal ({items.reduce((sum, item) => sum + item.quantity, 0)} items)
+                    </span>
+                    <span className="font-medium">₹{total}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Shipping</span>
+                    <span className="font-medium text-green-600">Free</span>
+                  </div>
+                  <hr className="border-border" />
+                  <div className="flex justify-between text-lg font-bold">
+                    <span>Total</span>
+                    <span className="text-primary">₹{total}</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={(e) => {
+                    if (!isAuthenticated) {
+                      e.preventDefault();
+                      toast({
+                        title: "Please login",
+                        description: "You need to be logged in to proceed to checkout",
+                      });
+                      navigate('/login');
+                    } else {
+                      navigate('/checkout');
+                    }
+                  }}
+                  className="btn-primary w-full text-center block hover-glow"
+                >
+                  Proceed to Checkout
+                </button>
+
+                <Link
+                  to="/products"
+                  className="btn-secondary w-full text-center block mt-3"
+                >
+                  Continue Shopping
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
         </div>
       </div>
     </div>

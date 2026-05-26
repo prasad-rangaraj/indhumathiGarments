@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Bell } from "lucide-react";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { Link } from "react-router-dom";
 import { adminAPI } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+
+const fixDate = (dateStr: string) => {
+  const d = new Date(dateStr);
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+};
 
 export const NotificationBell = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -104,8 +109,8 @@ export const NotificationBell = () => {
                   </div>
                   <span className="text-sm text-gray-600 leading-relaxed mb-2">{n.message}</span>
                   <div className="flex justify-between w-full items-center mt-auto">
-                    <span className="text-xs text-gray-400">
-                      {format(new Date(n.createdAt), "MMM d, yyyy HH:mm")}
+                    <span className="text-xs text-gray-400" title={format(fixDate(n.createdAt), "MMM d, yyyy HH:mm")}>
+                      {formatDistanceToNow(fixDate(n.createdAt), { addSuffix: true })}
                     </span>
                     {n.link && (
                       <Link 

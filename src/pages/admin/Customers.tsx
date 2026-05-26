@@ -164,7 +164,10 @@ const exportCustomersCSV = (customers: Customer[]) => {
                           <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
                             {customer.name.charAt(0)}
                           </div>
-                          <span className="text-sm font-medium text-foreground truncate">{customer.name}</span>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-foreground truncate">{customer.name}</span>
+                            <span className="text-xs font-mono text-muted-foreground">{customer.id}</span>
+                          </div>
                         </div>
                       </td>
                       <td className="py-3 px-4 hidden md:table-cell">

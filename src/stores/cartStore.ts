@@ -2,10 +2,11 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Product } from '@/types';
 import { cartAPI } from '@/lib/api';
+import { resolveItemImage } from '@/lib/utils';
 import { useAuthStore } from './authStore';
 
 export interface CartItem {
-  id: string; // Composite ID: `${productId}-${size}`
+  id: string; // Composite ID: `${productId}-${size}-${color}`
   productId: string; // Raw database ID
   name: string;
   price: number;
@@ -13,6 +14,7 @@ export interface CartItem {
   selectedSize: string;
   selectedColor?: string;
   image?: string;
+  images?: string[];
   category?: string;
   cartItemId?: string;
 }
@@ -25,7 +27,7 @@ interface CartState {
   lastFetchedCart: number;
   abortController: AbortController | null;
   fetchCart: (force?: boolean) => Promise<void>;
-  addItem: (product: Product, size: string, quantity?: number) => Promise<void>;
+  addItem: (product: Product, size: string, quantity?: number, selectedColor?: string) => Promise<void>;
   removeItem: (id: string) => Promise<void>;
   updateQuantity: (id: string, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
@@ -80,15 +82,19 @@ export const useCartStore = create<CartState>()(
             const items: CartItem[] = cartItems.map((item: any) => {
               const storeProduct = useProductsStore.getState().products.find((p: any) => p.id === item.product.id);
               const mergedProduct = storeProduct || item.product;
-              return {
+              const mappedItem = {
                 ...mergedProduct,
                 productId: item.product.id,
                 quantity: item.quantity,
                 selectedSize: item.size,
                 selectedColor: item.color,
-                id: `${item.product.id}-${item.size}`,
+                id: `${item.product.id}-${item.size}${item.color ? `-${item.color}` : ''}`,
                 cartItemId: item.id,
               };
+              
+              // We need to resolve the image before saving to local store so it doesn't fall back to generic
+              mappedItem.image = resolveItemImage(mappedItem) || mappedItem.image;
+              return mappedItem;
             });
             const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
             set({ items, total, loading: false, lastFetchedCart: now, abortController: null });
@@ -101,11 +107,22 @@ export const useCartStore = create<CartState>()(
         }
       },
 
-      addItem: async (product: Product, size: string, quantity: number = 1) => {
+      addItem: async (product: Product, size: string, quantity: number = 1, selectedColor?: string) => {
         const userId = getUserId();
-        const compositeId = `${product.id}-${size}`;
+        const compositeId = `${product.id}-${size}${selectedColor ? `-${selectedColor}` : ''}`;
         const previousItems = get().items;
         const existingItem = previousItems.find(item => item.id === compositeId);
+
+        // Resolve the color-specific primary image
+        let colorImage: string | undefined;
+        if (selectedColor && product.colors) {
+          const colorObj = product.colors.find(c => c.name === selectedColor);
+          if (colorObj) {
+            colorImage = colorObj.primaryImage || (colorObj.images && colorObj.images.length > 1 ? colorObj.images[1] : colorObj.images?.[0]);
+          }
+        }
+        // Fall back to product primary image
+        const resolvedImage = colorImage || product.image;
 
         let updatedItems: CartItem[];
         
@@ -124,6 +141,8 @@ export const useCartStore = create<CartState>()(
               id: compositeId,
               quantity: quantity,
               selectedSize: size,
+              selectedColor: selectedColor,
+              image: resolvedImage,
             }
           ];
         }
@@ -141,6 +160,7 @@ export const useCartStore = create<CartState>()(
                 productId: product.id,
                 quantity,
                 size,
+                color: selectedColor,
               });
               // Update the store with the newly assigned database cartItemId
               const mappedItems = get().items.map(i => 
