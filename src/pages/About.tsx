@@ -33,14 +33,17 @@ const About = () => {
             <div className="flex justify-center mb-3 sm:mb-6">
               <img
                 src={indhumathiLogo}
-                alt="Indhumathi"
+                alt="Indhumathi Garments"
                 className="h-32 sm:h-36 md:h-36 lg:h-52 w-auto object-contain animate-fade-in"
               />
             </div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 text-foreground px-4">
-              Premium Cotton attire  & clothing
+              Indhumathi Garments
             </h1>
-            <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-6 sm:mb-8 max-w-3xl mx-auto px-4">
+            <h2 className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-3 sm:mb-4 max-w-3xl mx-auto px-4">
+              Premium Cotton Attire & Clothing
+            </h2>
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-3xl mx-auto px-4">
               Manufacturing high quality pure cotton garments for men and women
             </p>
             <p className="text-base sm:text-lg text-foreground/80 mb-8 sm:mb-12 max-w-2xl mx-auto leading-relaxed px-4">
@@ -110,7 +113,7 @@ const About = () => {
       {/* Values Section */}
       <section className="py-8 sm:py-12 md:py-16 bg-gradient-to-r from-accent/30 to-secondary/20">
         <div className=" mx-7 sm:mx-16 text-center">
-          <h2 className="text-3xl font-bold mb-12 text-foreground">Why Choose Indhumathi?</h2>
+          <h2 className="text-3xl font-bold mb-12 text-foreground">Why Choose Indhumathi Garments?</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 max-w-sm sm:max-w-none mx-auto">
             <div className="card-elegant p-6 hover-lift">
               <h3 className="text-xl font-semibold mb-4 text-foreground">Pure Cotton Promise</h3>
