@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,6 +21,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { useOrdersStore, Order } from '@/stores/ordersStore';
+import { useAuthStore } from '@/stores/authStore';
 import { resolveItemImage } from '@/lib/utils';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 
@@ -131,7 +132,10 @@ const toUrl = (src: string) => {
 const OrderTracking = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const { orders, loading, fetchOrders, cancelOrder, requestReturn } = useOrdersStore();
+  const { isAuthenticated } = useAuthStore();
+  const navigate = useNavigate();
   const { toast } = useToast();
+  const [hasFetched, setHasFetched] = useState(false);
   
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelReasonText, setCancelReasonText] = useState('');
@@ -169,9 +173,14 @@ const OrderTracking = () => {
   };
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      // Not logged in — redirect to login, then come back
+      navigate(`/login?redirect=/track/${orderId}`, { replace: true });
+      return;
+    }
     // Force a fresh fetch on page load to see the latest status
-    fetchOrders(undefined, true);
-  }, [fetchOrders]);
+    fetchOrders(undefined, true).finally(() => setHasFetched(true));
+  }, [fetchOrders, isAuthenticated, orderId, navigate]);
 
   const order: Order | undefined = orders.find((o) => o.orderId === orderId);
 
@@ -201,7 +210,7 @@ const OrderTracking = () => {
   };
 
   // ── Loading ──────────────────────────────────────────────────────────────
-  if (loading && !order) {
+  if (loading || !hasFetched) {
     return (
       <div className="min-h-screen relative flex items-center justify-center">
         <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">

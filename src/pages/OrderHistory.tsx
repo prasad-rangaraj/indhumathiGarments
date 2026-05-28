@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Package, Eye, Truck, CheckCircle } from 'lucide-react';
 import { useOrdersStore } from '@/stores/ordersStore';
@@ -7,9 +7,10 @@ import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 
 const OrderHistory = () => {
   const { orders, loading, fetchOrders } = useOrdersStore();
+  const [hasFetched, setHasFetched] = useState(false);
 
   useEffect(() => {
-    fetchOrders();
+    fetchOrders().finally(() => { setHasFetched(true); });
   }, [fetchOrders]);
 
   const getStatusConfig = (status: string) => {
@@ -35,7 +36,25 @@ const OrderHistory = () => {
     });
   };
 
-  if (orders.length === 0 && !loading) {
+  // Show spinner while loading or before first fetch completes
+  if (loading || !hasFetched) {
+    return (
+      <div className="min-h-screen relative">
+        <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">
+          <img src={bgCotton1} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
+        </div>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="flex flex-col items-center gap-4 text-muted-foreground">
+            <div className="w-10 h-10 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+            <p className="text-sm font-medium">Loading your orders…</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (orders.length === 0) {
     return (
       <div className="min-h-screen relative">
         <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">

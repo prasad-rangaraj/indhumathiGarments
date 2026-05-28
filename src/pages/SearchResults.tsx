@@ -32,19 +32,8 @@ const SearchResults = () => {
   }, [query]);
 
   // Filter products
-  let filteredProducts = query 
-    ? searchProducts(query)
-    : products.filter(p => {
-    const matchesSearch = !query || 
-      p.name?.toLowerCase().includes(query.toLowerCase()) ||
-      p.description?.toLowerCase().includes(query.toLowerCase()) ||
-      p.category?.toLowerCase().includes(query.toLowerCase()) ||
-      p.subcategory?.toLowerCase().includes(query.toLowerCase());
-    
-    const matchesCategory = categoryFilter === 'all' || p.category === categoryFilter;
-    
-      return matchesCategory;
-    });
+  let baseProducts = query ? searchProducts(query) : products;
+  let filteredProducts = baseProducts.filter(p => categoryFilter === 'all' || p.category === categoryFilter);
 
   // Apply price filter
   if (priceFilter !== 'all') {

@@ -30,6 +30,7 @@ const OrderDetails = () => {
   const { orderId } = useParams();
   const { orders, loading, fetchOrders, getOrderById, cancelOrder, requestReturn } = useOrdersStore();
   const { toast } = useToast();
+  const [hasFetched, setHasFetched] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelReasonText, setCancelReasonText] = useState('');
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
@@ -66,10 +67,26 @@ const OrderDetails = () => {
   };
   useEffect(() => {
     // Force a fresh fetch on page load to see the latest status
-    fetchOrders(undefined, true);
+    fetchOrders(undefined, true).finally(() => setHasFetched(true));
   }, [fetchOrders]);
 
   const order = orderId ? getOrderById(orderId) : undefined;
+
+  // Show spinner while fetching — avoids flash of "Order not found" on mobile
+  if (loading && !hasFetched) {
+    return (
+      <div className="min-h-screen relative flex items-center justify-center">
+        <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">
+          <img src={bgCotton1} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
+        </div>
+        <div className="flex flex-col items-center gap-4 text-muted-foreground animate-pulse">
+          <div className="w-14 h-14 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+          <p className="text-sm font-medium">Loading order details…</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!order) {
     return (

@@ -86,7 +86,7 @@ const Cart = () => {
                 >
                   <div className="flex gap-3 sm:gap-4">
                     <Link 
-                      to={`/products/${item.productId}${item.selectedColor ? `?color=${encodeURIComponent(item.selectedColor)}` : ''}`}
+                      to={`/product/${item.productId}${item.selectedColor ? `?color=${encodeURIComponent(item.selectedColor)}` : ''}`}
                       className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg flex-shrink-0 bg-accent/70 border border-border flex items-center justify-center text-[10px] sm:text-xs text-muted-foreground overflow-hidden hover:opacity-80 transition-opacity block"
                     >
                       {resolveItemImage(item) ? (
@@ -101,7 +101,7 @@ const Cart = () => {
                     </Link>
                     <div className="flex-1 min-w-0">
                       <Link 
-                        to={`/products/${item.productId}${item.selectedColor ? `?color=${encodeURIComponent(item.selectedColor)}` : ''}`}
+                        to={`/product/${item.productId}${item.selectedColor ? `?color=${encodeURIComponent(item.selectedColor)}` : ''}`}
                         className="hover:text-primary transition-colors block"
                       >
                         <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{item.name}</h3>

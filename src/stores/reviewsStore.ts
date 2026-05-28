@@ -61,6 +61,7 @@ export const useReviewsStore = create<ReviewsState>()(
               content: review.content,
               date: new Date(review.createdAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
               productId: review.productId,
+              images: review.images || [],
             }));
             
             set(state => ({

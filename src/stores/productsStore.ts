@@ -11,6 +11,7 @@ interface ProductsState {
     metaDescription?: string;
     subcategories: string[];
   }>;
+  categoriesLoading: boolean;
   loading: boolean;
   error: string | null;
   lastFetchedProducts: number;
@@ -30,6 +31,7 @@ interface ProductsState {
 export const useProductsStore = create<ProductsState>((set, get) => ({
   products: [],
   categories: {},
+  categoriesLoading: false,
   loading: false,
   error: null,
   lastFetchedProducts: 0,
@@ -77,25 +79,25 @@ export const useProductsStore = create<ProductsState>((set, get) => ({
   },
 
   fetchCategories: async (force = false) => {
-    const { lastFetchedCategories, loading } = get();
+    const { lastFetchedCategories, categoriesLoading } = get();
     const now = Date.now();
     const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-    if (!force && !loading && (now - lastFetchedCategories < CACHE_DURATION)) {
+    if (!force && !categoriesLoading && (now - lastFetchedCategories < CACHE_DURATION)) {
       return; 
     }
 
-    set({ loading: true, error: null });
+    set({ categoriesLoading: true, error: null });
     try {
       const categories = await productsAPI.getCategories();
       set({ 
         categories, 
-        loading: false,
+        categoriesLoading: false,
         lastFetchedCategories: now
       });
     } catch (error) {
       console.error('Failed to fetch categories:', error);
-      set({ error: error instanceof Error ? error.message : 'Failed to fetch categories', loading: false });
+      set({ error: error instanceof Error ? error.message : 'Failed to fetch categories', categoriesLoading: false });
     }
   },
 

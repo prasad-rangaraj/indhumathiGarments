@@ -147,7 +147,7 @@ const Checkout = () => {
     try {
       // COD: direct order creation, no payment gateway
       if (paymentMethod === 'cod') {
-        const fullOrderData = {
+        const tempOrderData = {
           orderId: `IND${Date.now()}`,
           ...orderData,
           total: finalTotal,
@@ -156,8 +156,14 @@ const Checkout = () => {
           status: 'Pending' as const,
           trackingNumber: `TRK${Date.now().toString().slice(-6)}`,
         };
-        await createOrder(fullOrderData);
-        localStorage.setItem('lastOrder', JSON.stringify(fullOrderData));
+        await createOrder(tempOrderData);
+        // After createOrder, read the real order saved by the backend from the store
+        const { orders: updatedOrders } = await import('@/stores/ordersStore').then(m => ({ orders: m.useOrdersStore.getState().orders }));
+        const realOrder = updatedOrders[0]; // createOrder prepends to array
+        const lastOrderToSave = realOrder
+          ? { ...tempOrderData, orderId: realOrder.orderId, trackingNumber: realOrder.trackingNumber }
+          : tempOrderData;
+        localStorage.setItem('lastOrder', JSON.stringify(lastOrderToSave));
         await clearCart();
         // Force-refresh orders so Profile/My Orders shows this order immediately
         fetchOrders(undefined, true);

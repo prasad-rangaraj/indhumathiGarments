@@ -87,6 +87,17 @@ const ProductDetail = () => {
   }, [product?.colors, selectedColor]);
 
 
+  if (productsLoading && !product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4 text-muted-foreground animate-pulse">
+          <div className="w-14 h-14 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+          <p className="text-sm font-medium">Loading product…</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!product) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -171,19 +182,6 @@ const ProductDetail = () => {
         navigate('/cart');
     }
   };
-
-  if (!product) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">Product not found</h2>
-          <button onClick={() => navigate('/products')} className="btn-primary">
-            Back to Products
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   const wishlistStatus = isInWishlist(product.id);
 

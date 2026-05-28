@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { Tag, Clock, X, Copy, Check, ChevronUp, ChevronDown, Sparkles } from 'lucide-react';
 import { couponsAPI } from '@/lib/api';
 import { format } from 'date-fns';
@@ -21,6 +21,15 @@ const CouponBanner = () => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const { toast } = useToast();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const sparkles = useMemo(() => {
+    return Array.from({ length: 20 }).map(() => ({
+      top: Math.random() * 100,
+      left: Math.random() * 100,
+      duration: 2 + Math.random() * 2,
+      delay: Math.random() * 2,
+    }));
+  }, []);
 
   useEffect(() => {
     couponsAPI.getActive()
@@ -74,18 +83,18 @@ const CouponBanner = () => {
       {/* 2. SPARKLING STARS EFFECT */}
       <div className="absolute inset-0 opacity-40 pointer-events-none overflow-hidden">
         <div className="stars-container w-[200%] h-full flex animate-stars-scroll">
-          {[...Array(20)].map((_, i) => (
+          {sparkles.map((s, i) => (
              <Sparkles key={i} className="text-white/40 w-2 h-2 absolute" style={{ 
-               top: `${Math.random() * 100}%`, 
-               left: `${Math.random() * 100}%`,
-               animation: `pulse ${2 + Math.random() * 2}s infinite ${Math.random() * 2}s`
+               top: `${s.top}%`, 
+               left: `${s.left}%`,
+               animation: `pulse ${s.duration}s infinite ${s.delay}s`
              }} />
           ))}
-          {[...Array(20)].map((_, i) => (
+          {sparkles.map((s, i) => (
              <Sparkles key={`clone-${i}`} className="text-white/40 w-2 h-2 absolute" style={{ 
-               top: `${Math.random() * 100}%`, 
-               left: `${100 + Math.random() * 100}%`,
-               animation: `pulse ${2 + Math.random() * 2}s infinite ${Math.random() * 2}s`
+               top: `${s.top}%`, 
+               left: `${100 + s.left}%`,
+               animation: `pulse ${s.duration}s infinite ${s.delay}s`
              }} />
           ))}
         </div>

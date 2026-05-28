@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,14 +16,16 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/';
   const { toast } = useToast();
   const { isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/", { replace: true });
+      navigate(redirectTo, { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, redirectTo]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,10 +58,10 @@ const Login = () => {
           description: "Redirecting to admin dashboard...",
         });
       } else {
-        navigate("/");
+        navigate(redirectTo, { replace: true });
         toast({
           title: "Welcome Back",
-          description: "Redirecting to your account...",
+          description: "Redirecting...",
         });
       }
     } catch (error) {
@@ -85,7 +87,7 @@ const Login = () => {
       if (user?.role === "admin" || user?.role === "super_admin") {
         navigate("/admin");
       } else {
-        navigate("/");
+        navigate(redirectTo, { replace: true });
       }
       toast({
         title: "Welcome",

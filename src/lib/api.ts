@@ -85,7 +85,7 @@ export const productsAPI = {
     );
   },
   getById: (id: string) => apiRequest<any>(`/products/${id}`),
-  getCategories: () => apiRequest<Record<string, string[]>>('/products/categories/list'),
+  getCategories: () => apiRequest<Record<string, { name: string; image?: string; metaTitle?: string; metaDescription?: string; subcategories: string[] }>>('/products/categories/list'),
   create: (data: any) => apiRequest<any>('/admin/products', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, data: any) => apiRequest<any>(`/admin/products/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   delete: (id: string) => apiRequest<{ message: string }>(`/admin/products/${id}`, { method: 'DELETE' }),

@@ -22,6 +22,10 @@ const Navigation = () => {
     fetchWishlist();
   }, [fetchCart, fetchWishlist]);
 
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
   const isActive = (path: string) => location.pathname === path;
 
   // Products section is active on the gender select, shop, category, and product detail pages

@@ -559,8 +559,8 @@ export default function Profile() {
                             <div className="flex justify-between items-start mb-2">
                               <span className="bg-pink-600 text-white font-bold px-3 py-1 rounded text-sm uppercase tracking-wider">{coupon.code}</span>
                             </div>
-                            <h3 className="font-bold text-gray-800 text-lg">{coupon.discountPercentage}% OFF</h3>
-                            <p className="text-sm text-gray-600 mt-1">{coupon.description || `Get ${coupon.discountPercentage}% off on your purchase.`}</p>
+                            <h3 className="font-bold text-gray-800 text-lg">{coupon.discount}% OFF</h3>
+                            <p className="text-sm text-gray-600 mt-1">{coupon.description || `Get ${coupon.discount}% off on your purchase.`}</p>
                           </div>
                           <div className="mt-4 pt-4 border-t border-pink-200/50 flex justify-between items-center">
                             <span className="text-xs text-gray-500 font-medium">
