@@ -185,6 +185,35 @@ const ProductDetail = () => {
 
   const wishlistStatus = isInWishlist(product.id);
 
+  const renderColorSelection = (className: string) => {
+    if (!product.colors || product.colors.length === 0) return null;
+    return (
+      <div className={className}>
+        <h3 className="font-semibold text-foreground mb-3">Select Color</h3>
+        <div className="flex items-center gap-3 flex-wrap">
+          {product.colors.map((colorObj) => (
+            <button
+              key={colorObj.name}
+              type="button"
+              onClick={() => {
+                setSelectedColor(colorObj.name);
+                handleImageChange(0); // Reset image index when changing color
+              }}
+              className={`w-8 h-8 rounded-full border-2 shadow-sm transition-all duration-200 ${
+                selectedColor === colorObj.name
+                  ? 'border-primary ring-2 ring-primary ring-offset-2'
+                  : 'border-black/10 hover:border-primary/50'
+              }`}
+              style={{ backgroundColor: colorObj.hex || '#000000' }}
+              title={colorObj.name}
+              aria-label={`Select color ${colorObj.name}`}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const handleWishlistToggle = () => {
     if (!isAuthenticated) {
       toast({
@@ -354,6 +383,9 @@ const ProductDetail = () => {
                         ))}
                       </div>
                     )}
+                    
+                    {/* Mobile Color Selection */}
+                    {renderColorSelection("block md:hidden pt-2 pb-2")}
                   </div>
                 );
               })()}
@@ -411,32 +443,8 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              {/* Color Selection */}
-              {product.colors && product.colors.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="font-semibold text-foreground mb-3">Select Color</h3>
-                  <div className="flex items-center gap-3 flex-wrap">
-                    {product.colors.map((colorObj) => (
-                      <button
-                        key={colorObj.name}
-                        type="button"
-                        onClick={() => {
-                          setSelectedColor(colorObj.name);
-                          handleImageChange(0); // Reset image index when changing color
-                        }}
-                        className={`w-8 h-8 rounded-full border-2 shadow-sm transition-all duration-200 ${
-                          selectedColor === colorObj.name
-                            ? 'border-primary ring-2 ring-primary ring-offset-2'
-                            : 'border-black/10 hover:border-primary/50'
-                        }`}
-                        style={{ backgroundColor: colorObj.hex || '#000000' }}
-                        title={colorObj.name}
-                        aria-label={`Select color ${colorObj.name}`}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Color Selection (Desktop) */}
+              {renderColorSelection("mb-6 hidden md:block")}
 
               {/* Size Selection */}
               <div className="mb-6">
