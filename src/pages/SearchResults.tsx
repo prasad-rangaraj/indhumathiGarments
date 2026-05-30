@@ -168,14 +168,35 @@ const SearchResults = () => {
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       {product.colors && product.colors.length > 0 ? (
-                        product.colors.map((color: any, idx: number) => (
-                          <div
-                            key={idx}
-                            className="w-5 h-5 rounded-full border border-border shadow-sm flex-shrink-0"
-                            style={{ backgroundColor: color.hex || '#ccc' }}
-                            title={color.name}
-                          />
-                        ))
+                        product.colors.map((color: any, idx: number) => {
+                          const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
+                          const toUrl = (src: string) => {
+                            if (!src) return '';
+                            if (src.startsWith('http')) return src;
+                            const prefix = BASE.endsWith('/') ? BASE.slice(0, -1) : BASE;
+                            return `${prefix}${src.startsWith('/') ? src : `/${src}`}`;
+                          };
+                          const thumbSrc = color.primaryImage || color.images?.[0];
+                          if (product.showColorThumbnails && thumbSrc) {
+                            return (
+                              <div
+                                key={idx}
+                                className="w-7 h-7 rounded-md border border-border/60 shadow-sm overflow-hidden flex-shrink-0"
+                                title={color.name}
+                              >
+                                <img src={toUrl(thumbSrc)} alt={color.name} className="w-full h-full object-cover" />
+                              </div>
+                            );
+                          }
+                          return (
+                            <div
+                              key={idx}
+                              className="w-5 h-5 rounded-full border border-border shadow-sm flex-shrink-0"
+                              style={{ backgroundColor: color.hex || '#ccc' }}
+                              title={color.name}
+                            />
+                          );
+                        })
                       ) : (
                         <div className="w-5 h-5 rounded-full border border-border bg-slate-200" />
                       )}

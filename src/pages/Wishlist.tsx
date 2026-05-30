@@ -153,14 +153,28 @@ const Wishlist = () => {
 
                   {product.colors && product.colors.length > 0 && (
                     <div className="flex gap-2 mb-4 flex-wrap">
-                      {product.colors.map((colorObj) => (
-                        <div
-                          key={colorObj.name}
-                          className="w-6 h-6 rounded-full border border-black/10 shadow-sm"
-                          style={{ backgroundColor: colorObj.hex || '#000000' }}
-                          title={colorObj.name}
-                        />
-                      ))}
+                      {product.colors.map((colorObj) => {
+                        const thumbSrc = colorObj.primaryImage || colorObj.images?.[0];
+                        if (product.showColorThumbnails && thumbSrc) {
+                          return (
+                            <div
+                              key={colorObj.name}
+                              className="w-8 h-8 rounded-md border border-border/60 shadow-sm overflow-hidden flex-shrink-0"
+                              title={colorObj.name}
+                            >
+                              <img src={toUrl(thumbSrc)} alt={colorObj.name} className="w-full h-full object-cover" />
+                            </div>
+                          );
+                        }
+                        return (
+                          <div
+                            key={colorObj.name}
+                            className="w-6 h-6 rounded-full border border-black/10 shadow-sm"
+                            style={{ backgroundColor: colorObj.hex || '#000000' }}
+                            title={colorObj.name}
+                          />
+                        );
+                      })}
                     </div>
                   )}
 

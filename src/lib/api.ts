@@ -200,7 +200,7 @@ export const adminAPI = {
   getReviews: () => apiRequest<any[]>('/admin/reviews'),
   updateReview: (id: string, data: { isApproved: boolean }) =>
     apiRequest<any>(`/admin/reviews/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-  getOrders: () => apiRequest<any[]>('/admin/orders'),
+  getOrders: () => apiRequest<any[]>('/orders'),
 };
 
 // Customer API

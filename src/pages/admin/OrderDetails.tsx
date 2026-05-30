@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Package, Truck, CheckCircle, Clock, Download, MapPin, Phone, Mail } from 'lucide-react';
+import { ArrowLeft, Package, Truck, CheckCircle, Clock, Download, MapPin, Phone, Mail, ShoppingBag } from 'lucide-react';
+import { resolveItemImage } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -219,24 +220,103 @@ const OrderDetails = () => {
           {/* Order Items */}
           <Card>
             <CardHeader>
-              <CardTitle>Order Items</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>Order Items</CardTitle>
+                <span className="text-sm text-muted-foreground font-medium">{order.items.length} item{order.items.length !== 1 ? 's' : ''}</span>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {order.items.map((item: any, idx) => (
-                  <div key={idx} className="flex gap-4 p-4 bg-muted/30 rounded-lg">
-                    <div className="w-16 h-16 rounded bg-accent/70 flex items-center justify-center">
-                      <Package className="w-6 h-6 text-muted-foreground" />
+            <CardContent className="p-0">
+              <div className="divide-y divide-border">
+                {order.items.map((item: any, idx) => {
+                  const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
+                  const toUrl = (src: string) => {
+                    if (!src) return '';
+                    if (src.startsWith('http')) return src;
+                    const prefix = BASE.endsWith('/') ? BASE.slice(0, -1) : BASE;
+                    return `${prefix}${src.startsWith('/') ? src : `/${src}`}`;
+                  };
+                  const imgSrc = resolveItemImage(item);
+                  const colorName = item.selectedColor || item.color;
+                  const unitPrice = item.price;
+                  const subtotal = item.price * item.quantity;
+                  
+                  let thumbSrc = null;
+                  let colorHex = '#000000';
+                  if (colorName && item.colors && Array.isArray(item.colors)) {
+                    const colorObj = item.colors.find((c: any) => c.name === colorName);
+                    if (colorObj) {
+                      thumbSrc = colorObj.primaryImage || colorObj.images?.[0] || null;
+                      colorHex = colorObj.hex || '#000000';
+                    }
+                  }
+                  const showColorThumbnails = item.product?.showColorThumbnails;
+
+                  return (
+                    <div key={idx} className="flex gap-4 p-4 sm:p-5 hover:bg-muted/20 transition-colors">
+                      {/* Product Image */}
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg border border-border bg-accent/30 flex-shrink-0 overflow-hidden">
+                        {imgSrc ? (
+                          <img
+                            src={toUrl(imgSrc)}
+                            alt={item.name || 'Product'}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <ShoppingBag className="w-8 h-8 text-muted-foreground/40" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Item Details */}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-foreground text-sm sm:text-base line-clamp-2 mb-2">
+                          {item.name || (item.product?.name) || 'Product'}
+                        </p>
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {/* Size badge */}
+                          <span className="inline-flex items-center gap-1 text-xs bg-muted px-2 py-0.5 rounded font-medium">
+                            Size: <strong>{item.selectedSize || item.size || '—'}</strong>
+                          </span>
+                          {/* Color / Style badge */}
+                          {colorName && (
+                            <span className="inline-flex items-center gap-1.5 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded font-medium capitalize">
+                              {showColorThumbnails && thumbSrc ? (
+                                <img
+                                  src={toUrl(thumbSrc)}
+                                  alt={colorName}
+                                  className="w-3.5 h-3.5 rounded-sm object-cover border border-primary/20"
+                                />
+                              ) : (
+                                <span 
+                                  className="w-2.5 h-2.5 rounded-full border border-primary/20 shadow-sm"
+                                  style={{ backgroundColor: colorHex }}
+                                />
+                              )}
+                              <span>Style: <strong>{colorName}</strong></span>
+                            </span>
+                          )}
+                          {/* Category */}
+                          {item.category && (
+                            <span className="inline-flex items-center text-xs bg-accent/60 text-muted-foreground px-2 py-0.5 rounded">
+                              {item.category}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <span>Qty: <strong className="text-foreground">{item.quantity}</strong></span>
+                          <span>Unit: <strong className="text-foreground">₹{unitPrice}</strong></span>
+                        </div>
+                      </div>
+
+                      {/* Subtotal */}
+                      <div className="text-right flex-shrink-0 flex flex-col justify-center">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Subtotal</p>
+                        <p className="font-bold text-foreground text-base sm:text-lg">₹{subtotal}</p>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-foreground">{item.name || (item.product && item.product.name) || 'Product'}</p>
-                      <p className="text-sm text-muted-foreground">Size: {item.selectedSize || item.size} × {item.quantity}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium text-foreground">₹{item.price * item.quantity}</p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>

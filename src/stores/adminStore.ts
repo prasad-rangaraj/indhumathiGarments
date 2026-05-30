@@ -182,7 +182,9 @@ export const useAdminStore = create<AdminState>((set, get) => ({
           quantity: item.quantity,
           selectedSize: item.size,
           selectedColor: item.color,
-          image: item.image,
+          image: item.image,        // pre-signed URL from mapOrderAsync
+          category: item.product?.category || item.category,
+          colors: item.product?.colors || [],  // resolved color images for thumbnail lookup
           product: item.product,
         })),
         total: order.total,

@@ -185,30 +185,49 @@ const ProductDetail = () => {
 
   const wishlistStatus = isInWishlist(product.id);
 
+  const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
+  const toUrl = (src: string) => {
+    if (!src) return '';
+    if (src.startsWith('http')) return src;
+    const prefix = BASE.endsWith('/') ? BASE.slice(0, -1) : BASE;
+    const path = src.startsWith('/') ? src : `/${src}`;
+    return `${prefix}${path}`;
+  };
+
   const renderColorSelection = (className: string) => {
     if (!product.colors || product.colors.length === 0) return null;
     return (
       <div className={className}>
-        <h3 className="font-semibold text-foreground mb-3">Select Color</h3>
+        <h3 className="font-semibold text-foreground mb-3">{product.showColorThumbnails ? "Select Style" : "Select Color"}</h3>
         <div className="flex items-center gap-3 flex-wrap">
-          {product.colors.map((colorObj) => (
-            <button
-              key={colorObj.name}
-              type="button"
-              onClick={() => {
-                setSelectedColor(colorObj.name);
-                handleImageChange(0); // Reset image index when changing color
-              }}
-              className={`w-8 h-8 rounded-full border-2 shadow-sm transition-all duration-200 ${
-                selectedColor === colorObj.name
-                  ? 'border-primary ring-2 ring-primary ring-offset-2'
-                  : 'border-black/10 hover:border-primary/50'
-              }`}
-              style={{ backgroundColor: colorObj.hex || '#000000' }}
-              title={colorObj.name}
-              aria-label={`Select color ${colorObj.name}`}
-            />
-          ))}
+          {product.colors.map((colorObj) => {
+            const isSelected = selectedColor === colorObj.name;
+            const hasThumbnail = product.showColorThumbnails && (colorObj.primaryImage || colorObj.images?.[0]);
+            const thumbUrl = hasThumbnail ? toUrl((colorObj.primaryImage || colorObj.images[0]) as string) : undefined;
+            
+            return (
+              <button
+                key={colorObj.name}
+                type="button"
+                onClick={() => {
+                  setSelectedColor(colorObj.name);
+                  handleImageChange(0); // Reset image index when changing color
+                }}
+                className={`transition-all duration-200 border-2 shadow-sm ${
+                  product.showColorThumbnails
+                    ? `w-14 h-14 rounded-lg overflow-hidden ${isSelected ? 'border-primary ring-2 ring-primary ring-offset-2' : 'border-border/50 hover:border-primary/50'}`
+                    : `w-8 h-8 rounded-full ${isSelected ? 'border-primary ring-2 ring-primary ring-offset-2' : 'border-black/10 hover:border-primary/50'}`
+                }`}
+                style={!product.showColorThumbnails ? { backgroundColor: colorObj.hex || '#000000' } : {}}
+                title={colorObj.name}
+                aria-label={`Select color ${colorObj.name}`}
+              >
+                {product.showColorThumbnails && thumbUrl && (
+                  <img src={thumbUrl} alt={colorObj.name} className="w-full h-full object-cover" />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
     );
@@ -260,14 +279,6 @@ const ProductDetail = () => {
             {/* Product Image Carousel */}
             <div className="animate-fade-in min-w-1">
               {(() => {
-                const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
-                const toUrl = (src: string) => {
-                  if (!src) return '';
-                  if (src.startsWith('http')) return src;
-                  const prefix = BASE.endsWith('/') ? BASE.slice(0, -1) : BASE;
-                  const path = src.startsWith('/') ? src : `/${src}`;
-                  return `${prefix}${path}`;
-                };
                 const selectedColorObj = product.colors?.find(c => c.name === selectedColor);
                 const colorImages = selectedColorObj?.images || [];
                 // Build image list: prefer selected color images, fallback to images[], fallback to [image]

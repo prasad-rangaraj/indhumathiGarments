@@ -150,9 +150,7 @@ const OrderHistory = () => {
                             <div className="text-[10px] text-muted-foreground flex flex-wrap items-center gap-1 mt-0.5">
                               <span>Size: {item.selectedSize || item.size}</span>
                               {(item.selectedColor || item.color) && (
-                                <span className="flex items-center gap-0.5 ml-1">
-                                  Color: <span className="w-2.5 h-2.5 rounded-full border border-border shadow-sm inline-block" style={{ backgroundColor: item.selectedColor || item.color }} title={item.selectedColor || item.color} />
-                                </span>
+                                <span className="ml-1 capitalize">· {item.selectedColor || item.color}</span>
                               )}
                               <span className="ml-1">× {item.quantity}</span>
                             </div>

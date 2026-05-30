@@ -312,9 +312,9 @@ const OrderDetails = () => {
                       <h3 className="font-bold text-foreground">{item.name}</h3>
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2">
                         <p className="text-sm text-muted-foreground flex items-center gap-1">Size: <span className="font-semibold text-foreground bg-muted px-1.5 py-0.5 rounded">{item.selectedSize || item.size}</span></p>
-                        {item.color && (
-                          <p className="text-sm text-muted-foreground flex items-center gap-1">Color: 
-                            <span className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border border-border shadow-sm inline-block ml-0.5" style={{ backgroundColor: item.color }} title={item.color} />
+                        {(item.color || item.selectedColor) && (
+                          <p className="text-sm text-muted-foreground flex items-center gap-1">
+                            Style: <span className="font-semibold text-foreground bg-muted px-1.5 py-0.5 rounded capitalize">{item.color || item.selectedColor}</span>
                           </p>
                         )}
                         <p className="text-sm text-muted-foreground flex items-center gap-1">Qty: <span className="font-semibold text-foreground">{item.quantity}</span></p>

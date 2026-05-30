@@ -9,7 +9,7 @@ const About = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative min-h-[calc(100dvh-4rem)] flex items-center px-4 pb-10 sm:py-9 md:py-9 overflow-hidden">
+      <section className="relative min-h-[calc(100dvh-4rem)] flex items-center px-4 pb-10 sm:py-5 md:py-5 overflow-hidden">
         {/* Rotating Background Images - Fixed */}
         <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">
           <div

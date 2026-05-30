@@ -408,7 +408,7 @@ const Checkout = () => {
                             <h4 className="font-semibold text-foreground text-sm sm:text-base line-clamp-2 mb-1">{item.name}</h4>
                             <div className="text-xs sm:text-sm text-muted-foreground flex flex-wrap items-center gap-2 sm:gap-4 mb-2">
                               {item.selectedSize && <span className="bg-muted px-2 py-0.5 rounded">Size: {item.selectedSize}</span>}
-                              {item.selectedColor && <span className="bg-muted px-2 py-0.5 rounded flex items-center gap-1">Color: <span className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border border-border shadow-sm" style={{ backgroundColor: item.selectedColor }} /></span>}
+                              {item.selectedColor && <span className="bg-muted px-2 py-0.5 rounded capitalize">Style: {item.selectedColor}</span>}
                               <span>Qty: <span className="font-medium text-foreground">{item.quantity}</span></span>
                             </div>
                             <div className="flex items-center gap-2">

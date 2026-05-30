@@ -241,17 +241,44 @@ const CategoryProducts = () => {
                   {/* Color options */}
                   {product.colors && product.colors.length > 0 && (
                     <div className="mb-4">
-                      <p className="text-xs text-muted-foreground mb-2">Available colors</p>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        {product.showColorThumbnails ? 'Available styles' : 'Available colors'}
+                      </p>
                       <div className="flex flex-wrap gap-2">
-                        {product.colors.map((colorObj) => (
-                          <div
-                            key={colorObj.name}
-                            className="w-6 h-6 rounded-full border border-black/10 shadow-sm flex-shrink-0"
-                            style={{ backgroundColor: colorObj.hex || '#000000' }}
-                            title={colorObj.name}
-                            aria-label={colorObj.name}
-                          />
-                        ))}
+                        {product.colors.map((colorObj) => {
+                          const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
+                          const toUrl = (src: string) => {
+                            if (!src) return '';
+                            if (src.startsWith('http')) return src;
+                            const prefix = BASE.endsWith('/') ? BASE.slice(0, -1) : BASE;
+                            return `${prefix}${src.startsWith('/') ? src : `/${src}`}`;
+                          };
+                          const thumbSrc = colorObj.primaryImage || colorObj.images?.[0];
+                          if (product.showColorThumbnails && thumbSrc) {
+                            return (
+                              <div
+                                key={colorObj.name}
+                                className="w-8 h-8 rounded-md border border-border/60 shadow-sm flex-shrink-0 overflow-hidden"
+                                title={colorObj.name}
+                              >
+                                <img
+                                  src={toUrl(thumbSrc)}
+                                  alt={colorObj.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            );
+                          }
+                          return (
+                            <div
+                              key={colorObj.name}
+                              className="w-6 h-6 rounded-full border border-black/10 shadow-sm flex-shrink-0"
+                              style={{ backgroundColor: colorObj.hex || '#000000' }}
+                              title={colorObj.name}
+                              aria-label={colorObj.name}
+                            />
+                          );
+                        })}
                       </div>
                     </div>
                   )}

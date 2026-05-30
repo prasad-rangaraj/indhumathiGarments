@@ -14,6 +14,7 @@ export interface Product {
     gender?: 'women' | 'men' | 'unisex';
     colors?: { name: string; hex?: string; images: string[]; primaryImage?: string }[];
     images?: string[];
+    showColorThumbnails?: boolean;
     metaTitle?: string;
     metaDescription?: string;
     wishlistColor?: string;

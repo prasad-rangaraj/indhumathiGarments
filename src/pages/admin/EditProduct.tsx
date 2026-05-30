@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { productsAPI } from "@/lib/api";
 import { useProductsStore } from "@/stores/productsStore";
@@ -53,6 +54,7 @@ const EditProduct = () => {
     image: "" as string | File,
     images: [] as (string | File)[],
     colors: [] as { name: string; hex?: string; images: (string | File)[]; primaryImage?: string | File }[],
+    showColorThumbnails: false,
     metaTitle: "",
     metaDescription: "",
     gender: "women" as "women" | "men" | "unisex",
@@ -85,6 +87,7 @@ const EditProduct = () => {
                       ...c,
                       primaryImage: c.primaryImage || (c.images && c.images.length > 1 ? c.images[1] : c.images?.[0]),
                     })),
+                    showColorThumbnails: product.showColorThumbnails || false,
                     metaTitle: product.metaTitle || "",
                     metaDescription: product.metaDescription || "",
                     gender: (product.gender || "women") as "women" | "men" | "unisex",
@@ -220,6 +223,7 @@ const EditProduct = () => {
         image: (primaryImageKey as string) || null,
         images: additionalImageKeys as string[] || [],
         colors: uploadedColors,
+        showColorThumbnails: formData.showColorThumbnails,
         isActive: true,
         metaTitle: formData.metaTitle,
         metaDescription: formData.metaDescription,
@@ -347,8 +351,18 @@ const EditProduct = () => {
           </Card>
 
           <Card className="bg-card border-border/50">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-lg">Product Colors</CardTitle>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="showColorThumbnails" className="text-sm text-muted-foreground cursor-pointer">
+                  Use Image Thumbnails instead of Color Dots
+                </Label>
+                <Switch
+                  id="showColorThumbnails"
+                  checked={formData.showColorThumbnails}
+                  onCheckedChange={(checked) => setFormData({ ...formData, showColorThumbnails: checked })}
+                />
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               {formData.colors.map((color, index) => (
