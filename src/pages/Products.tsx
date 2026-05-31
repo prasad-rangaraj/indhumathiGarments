@@ -112,7 +112,7 @@ const Products = () => {
                 return (
                   <Link
                     key={category}
-                    to={`/category/${encodeURIComponent(category)}`}
+                    to={`/category/${encodeURIComponent(category)}${gender ? `?gender=${gender}` : ''}`}
                     className="block group"
                     style={{ animationDelay: `${index * 0.06}s` }}
                   >

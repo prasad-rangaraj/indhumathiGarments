@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Link, useParams, Navigate } from 'react-router-dom';
+import { Link, useParams, Navigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, SlidersHorizontal, ArrowUpDown, Heart } from 'lucide-react';
 import { useProductsStore } from '@/stores/productsStore';
 import { useWishlistStore } from '@/stores/wishlistStore';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import bgFashionModel from '@/assets/bg-fashion-model.png';
-
-
-
+import bgMensFashionModel from '@/assets/bg-mens-fashion-model.png';
 
 const CategoryProducts = () => {
   const { category, subcategory } = useParams<{ category: string; subcategory?: string }>();
+  const [searchParams] = useSearchParams();
+  const gender = searchParams.get('gender') as 'women' | 'men' | null;
   const { products, categories, loading, fetchProducts, getProductsByCategory, getProductsBySubcategory } = useProductsStore();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlistStore();
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
@@ -57,6 +57,10 @@ const CategoryProducts = () => {
     ? getProductsBySubcategory(decodedCategory, decodedSubcategory)
     : getProductsByCategory(decodedCategory);
 
+  if (gender) {
+    categoryProducts = categoryProducts.filter(p => p.gender === gender || p.gender === 'unisex' || !p.gender);
+  }
+
   // Apply price filter
   if (priceFilter !== 'all') {
     categoryProducts = categoryProducts.filter(p => {
@@ -101,7 +105,7 @@ const CategoryProducts = () => {
       {/* Background with blur - Fixed */}
       <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">
         <img
-          src={bgFashionModel}
+          src={gender === 'men' ? bgMensFashionModel : bgFashionModel}
           alt=""
           className="w-full h-full object-cover transition-opacity duration-500"
           style={{ objectPosition: 'center 25%' }}
@@ -126,7 +130,7 @@ const CategoryProducts = () => {
             <div className="mb-6">
               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide md:justify-center md:flex-wrap">
                 <Link
-                  to={`/category/${encodeURIComponent(decodedCategory)}`}
+                  to={`/category/${encodeURIComponent(decodedCategory)}${gender ? `?gender=${gender}` : ''}`}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
                     !decodedSubcategory 
                       ? 'bg-primary text-primary-foreground' 
@@ -138,7 +142,7 @@ const CategoryProducts = () => {
                 {subcategories.map((sub) => (
                   <Link
                     key={sub}
-                    to={`/category/${encodeURIComponent(decodedCategory)}/${encodeURIComponent(sub)}`}
+                    to={`/category/${encodeURIComponent(decodedCategory)}/${encodeURIComponent(sub)}${gender ? `?gender=${gender}` : ''}`}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
                       decodedSubcategory === sub 
                         ? 'bg-primary text-primary-foreground' 
