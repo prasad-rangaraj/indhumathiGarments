@@ -11,6 +11,7 @@ import ReviewForm from '@/components/ReviewForm';
 import RelatedProducts from '@/components/RelatedProducts';
 import StarRating from '@/components/StarRating';
 import bgFashionModel from '@/assets/bg-fashion-model.png';
+import bgMensFashionModel from '@/assets/bg-mens-fashion-model.png';
 
 
 
@@ -264,7 +265,7 @@ const ProductDetail = () => {
       {/* Background with blur - Fixed */}
       <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">
         <img
-          src={bgFashionModel}
+          src={product.gender === 'men' ? bgMensFashionModel : bgFashionModel}
           alt=""
           className="w-full h-full object-cover transition-opacity duration-500"
           style={{ objectPosition: 'center 25%' }}
