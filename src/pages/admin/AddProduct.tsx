@@ -123,14 +123,14 @@ const AddProduct = () => {
     try {
       let primaryImageKey = formData.image;
       if (formData.image instanceof File) {
-        const res = await adminAPI.uploadImage(formData.image, 'products');
+        const res = await adminAPI.uploadImage(formData.image, `products/${formData.name}`);
         primaryImageKey = res.key;
       }
 
       const additionalImageKeys = await Promise.all(
         formData.images.map(async (img) => {
           if (img instanceof File) {
-            const res = await adminAPI.uploadImage(img, 'products');
+            const res = await adminAPI.uploadImage(img, `products/${formData.name}`);
             return res.key;
           }
           return img;
@@ -142,7 +142,7 @@ const AddProduct = () => {
           const colorImagesKeys = await Promise.all(
             colorObj.images.map(async (img) => {
               if (img instanceof File) {
-                const res = await adminAPI.uploadImage(img, 'products');
+                const res = await adminAPI.uploadImage(img, `products/${formData.name}`);
                 return res.key;
               }
               return img;
