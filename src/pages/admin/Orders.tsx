@@ -134,9 +134,15 @@ const Orders = () => {
     setBulkUpdating(true);
     const promises = Array.from(selectedIds).map(id => updateOrderStatus(id, bulkStatus as Order['status']));
     await Promise.all(promises);
+    await fetchOrders(); // Sync adminStore
     setSelectedIds(new Set());
     setBulkStatus("");
     setBulkUpdating(false);
+  };
+
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
+    await updateOrderStatus(orderId, newStatus as Order['status']);
+    await fetchOrders(); // Sync adminStore
   };
 
   const allSelected = filteredOrders.length > 0 && selectedIds.size === filteredOrders.length;
@@ -267,7 +273,7 @@ const Orders = () => {
                         <td className="py-3 px-4 text-sm text-foreground hidden sm:table-cell">{order.items.length}</td>
                         <td className="py-3 px-4 text-sm font-medium text-foreground">₹{Number(order.total).toLocaleString()}</td>
                         <td className="py-3 px-4">
-                          <Select value={order.status} onValueChange={(v) => updateOrderStatus(order.orderId, v as Order['status'])}>
+                          <Select value={order.status} onValueChange={(v) => handleStatusChange(order.orderId, v)}>
                             <SelectTrigger className={`w-[140px] h-8 border ${statusConfig.border} ${statusConfig.bg}`}>
                               <div className="flex items-center gap-2">
                                 <div className={`w-2 h-2 rounded-full ${statusConfig.dot}`} />

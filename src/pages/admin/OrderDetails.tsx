@@ -66,6 +66,7 @@ const OrderDetails = () => {
     setUpdating(true);
     try {
       await updateOrderStatus(orderId, newStatus as Order['status']);
+      await fetchOrders(); // Sync adminStore
       toast({
         title: "Status updated",
         description: `Order status changed to ${newStatus}`,
@@ -100,6 +101,7 @@ const OrderDetails = () => {
         delayedDeliveryDate: delayDate || null,
         delayReason: delayReasonText || null
       });
+      await fetchOrders(); // Sync adminStore
       toast({
         title: "Delay updated",
         description: "Delivery delay details saved successfully"

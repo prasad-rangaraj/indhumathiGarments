@@ -6,6 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useProductsStore } from "@/stores/productsStore";
 import { useToast } from "@/hooks/use-toast";
 
+const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
+const toUrl = (src: string) => {
+  if (!src) return '';
+  if (src.startsWith('http') || src.startsWith('data:')) return src;
+  if (src.startsWith('products/') || src.startsWith('categories/')) {
+    return `https://indhumathi-garments-images.s3.ap-south-1.amazonaws.com/${src}`;
+  }
+  const prefix = BASE.endsWith('/') ? BASE.slice(0, -1) : BASE;
+  const path = src.startsWith('/') ? src : `/${src}`;
+  return `${prefix}${path}`;
+};
+
 const Inventory = () => {
   const { products, fetchProducts, updateProduct, loading } = useProductsStore();
   const [searchTerm, setSearchTerm] = useState("");
@@ -155,13 +167,13 @@ const Inventory = () => {
                       <tr key={item.id} className="border-b border-border/30 hover:bg-muted/30">
                         <td className="py-3 px-2 sm:px-4">
                           <div className="flex items-center gap-2 sm:gap-3">
-                            {/* {item.image && (
+                            {item.image && (
                               <img
-                                src={item.image}
+                                src={toUrl(item.image)}
                                 alt={item.name}
-                                className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                                className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-border"
                               />
-                            )} */}
+                            )}
                             <div className="min-w-0">
                               <span className="text-xs sm:text-sm font-medium text-foreground block truncate">{item.name}</span>
                               <span className="text-xs text-muted-foreground md:hidden">{item.category}</span>

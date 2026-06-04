@@ -108,9 +108,10 @@ export const ordersAPI = {
     const queryParams = new URLSearchParams();
     if (userId) queryParams.append('userId', userId);
     if (status) queryParams.append('status', status);
+    queryParams.append('t', Date.now().toString());
     return apiRequest<any[]>(`/orders?${queryParams.toString()}`);
   },
-  getById: (orderId: string) => apiRequest<any>(`/orders/${orderId}`),
+  getById: (orderId: string) => apiRequest<any>(`/orders/${orderId}?t=${Date.now()}`),
   create: (order: any) => apiRequest<any>('/orders', { method: 'POST', body: JSON.stringify(order) }),
   updateStatus: (orderId: string, status: string) =>
     apiRequest<any>(`/orders/${orderId}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
@@ -121,7 +122,7 @@ export const ordersAPI = {
   requestReturn: (orderId: string, data: { reason: string; images?: string[] }) =>
     apiRequest<any>(`/orders/${orderId}/return`, { method: 'POST', body: JSON.stringify(data) }),
   trackOrder: (trackingNumber: string) =>
-    apiRequest<any>(`/public/track/${trackingNumber}`),
+    apiRequest<any>(`/public/track/${trackingNumber}?t=${Date.now()}`),
 };
 
 // Wishlist API
@@ -135,7 +136,7 @@ export const wishlistAPI = {
 
 // Reviews API
 export const reviewsAPI = {
-  getByProduct: (productId: string) => apiRequest<any[]>(`/reviews/product/${productId}`),
+  getByProduct: (productId: string) => apiRequest<any[]>(`/reviews/product/${productId}?t=${Date.now()}`),
   create: (review: any) => apiRequest<any>('/reviews', { method: 'POST', body: JSON.stringify(review) }),
 };
 
@@ -200,7 +201,7 @@ export const adminAPI = {
   getReviews: () => apiRequest<any[]>('/admin/reviews'),
   updateReview: (id: string, data: { isApproved: boolean }) =>
     apiRequest<any>(`/admin/reviews/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-  getOrders: () => apiRequest<any[]>('/orders'),
+  getOrders: () => apiRequest<any[]>(`/orders?t=${Date.now()}`),
 };
 
 // Customer API
@@ -215,7 +216,7 @@ export const customerAPI = {
     apiRequest<any>(`/customers/addresses/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   deleteAddress: (id: string) =>
     apiRequest<{ message: string }>(`/customers/addresses/${id}`, { method: 'DELETE' }),
-  getOrders: (userId: string) => apiRequest<any[]>(`/customers/orders/${userId}`),
+  getOrders: (userId: string) => apiRequest<any[]>(`/customers/orders/${userId}?t=${Date.now()}`),
   uploadImagePublic: async (file: File, folder?: string) => {
     const formData = new FormData();
     formData.append('file', file);
