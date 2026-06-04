@@ -117,34 +117,30 @@ const Navigation = () => {
             </button>
 
             {/* Wishlist */}
-            {isAuthenticated && (
-              <Link
-                to="/wishlist"
-                className="relative p-2 hover:bg-accent rounded-lg transition-colors"
-              >
-                <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
-                {wishlistItems.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                    {wishlistItems.length}
-                  </span>
-                )}
-              </Link>
-            )}
+            <Link
+              to="/wishlist"
+              className="relative p-2 hover:bg-accent rounded-lg transition-colors"
+            >
+              <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
+              {wishlistItems.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                  {wishlistItems.length}
+                </span>
+              )}
+            </Link>
 
             {/* Cart Icon */}
-            {isAuthenticated && (
-              <Link
-                to="/cart"
-                className="relative p-2 hover:bg-accent rounded-lg transition-colors"
-              >
-                <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
-                {getItemCount() > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                    {getItemCount()}
-                  </span>
-                )}
-              </Link>
-            )}
+            <Link
+              to="/cart"
+              className="relative p-2 hover:bg-accent rounded-lg transition-colors"
+            >
+              <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
+              {getItemCount() > 0 && (
+                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                  {getItemCount()}
+                </span>
+              )}
+            </Link>
 
             {/* Profile / Login Icon */}
             {isAuthenticated ? (
@@ -229,6 +225,15 @@ const Navigation = () => {
                     }`}
                   >
                     My Orders
+                  </Link>
+                  <Link
+                    to="/wishlist"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`text-base font-medium transition-colors hover:text-primary py-2 ${
+                      isActive('/wishlist') ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    My Wishlist
                   </Link>
                   <Link
                     to="/profile"

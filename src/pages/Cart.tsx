@@ -10,7 +10,10 @@ import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
 const toUrl = (src: string) => {
   if (!src) return '';
-  if (src.startsWith('http')) return src;
+  if (src.startsWith('http') || src.startsWith('data:')) return src;
+  if (src.startsWith('products/') || src.startsWith('categories/')) {
+    return `https://indhumathi-garments-images.s3.ap-south-1.amazonaws.com/${src}`;
+  }
   const prefix = BASE.endsWith('/') ? BASE.slice(0, -1) : BASE;
   const path = src.startsWith('/') ? src : `/${src}`;
   return `${prefix}${path}`;

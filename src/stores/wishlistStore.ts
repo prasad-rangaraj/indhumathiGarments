@@ -23,9 +23,7 @@ const getUserId = (): string => {
   return user?.id || 'guest';
 };
 
-export const useWishlistStore = create<WishlistState>()(
-  persist(
-    (set, get) => ({
+export const useWishlistStore = create<WishlistState>((set, get) => ({
       items: [],
       loading: false,
       error: null,
@@ -137,10 +135,5 @@ export const useWishlistStore = create<WishlistState>()(
       getItemCount: () => {
         return get().items.length;
       },
-    }),
-    {
-      name: 'wishlist-storage',
-    }
-  )
-);
+    }));
 

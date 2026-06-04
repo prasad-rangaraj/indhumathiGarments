@@ -48,7 +48,7 @@ const apiRequest = async <T>(
 export const authAPI = {
   login: (data: any) => apiRequest<any>('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
   register: (data: any) => apiRequest<any>('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
-  verifyOtp: (data: { email: string; otp: string }) => 
+  verifyOtp: (data: { email: string; otp: string }) =>
     apiRequest<any>('/auth/verify-otp', { method: 'POST', body: JSON.stringify(data) }),
   forgotPassword: (email: string) =>
     apiRequest<{ message: string }>('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
@@ -61,7 +61,7 @@ export const authAPI = {
 // User API
 export const userAPI = {
   getProfile: (id: string) => apiRequest<any>(`/users/${id}`),
-  updateProfile: (data: any) => 
+  updateProfile: (data: any) =>
     apiRequest<any>('/users/profile', { method: 'PATCH', body: JSON.stringify(data) }),
   updatePassword: (data: any) =>
     apiRequest<any>('/users/update-password', { method: 'PATCH', body: JSON.stringify(data) }),
@@ -79,7 +79,7 @@ export const productsAPI = {
     if (params?.category) queryParams.append('category', params.category);
     if (params?.subcategory) queryParams.append('subcategory', params.subcategory);
     if (params?.search) queryParams.append('search', params.search);
-    
+
     return apiRequest<{ products: any[]; total: number }>(
       `/products?${queryParams.toString()}`
     );
@@ -170,7 +170,7 @@ export const adminAPI = {
   getNotifications: () => apiRequest<any[]>('/admin/notifications'),
   markNotificationRead: (id: string) => apiRequest<any>(`/admin/notifications/${id}/read`, { method: 'PATCH' }),
   getReturns: () => apiRequest<any[]>('/admin/returns'),
-  updateReturnStatus: (id: string, data: { status: string, adminNotes?: string }) => 
+  updateReturnStatus: (id: string, data: { status: string, adminNotes?: string }) =>
     apiRequest<any>(`/admin/returns/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   getDashboardStats: (range: string) => apiRequest<any>(`/admin/dashboard?range=${range}`),
   seedProducts: (data: any) => apiRequest<any>('/admin/seed-products', { method: 'POST', body: JSON.stringify(data) }),
@@ -260,10 +260,10 @@ export const settingsAPI = {
 // Payments (Razorpay) API
 export const paymentsAPI = {
   // Server calculates actual price from DB — we send items, not a raw amount
-  createOrder: (items: any[], couponDiscount?: number) =>
+  createOrder: (items: any[], couponCode?: string | null) =>
     apiRequest<{ razorpayOrderId: string; amount: number; currency: string; serverTotal: number; keyId: string }>(
       '/payments/create-order',
-      { method: 'POST', body: JSON.stringify({ items, couponDiscount }) }
+      { method: 'POST', body: JSON.stringify({ items, couponCode }) }
     ),
   verify: (data: {
     razorpay_order_id: string;

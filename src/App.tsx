@@ -64,7 +64,7 @@ const queryClient = new QueryClient();
 const AppInner = () => {
   const { refreshUser, isAuthenticated } = useAuthStore();
   useEffect(() => {
-    if (isAuthenticated) refreshUser();
+    refreshUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return null;
@@ -117,7 +117,7 @@ const App = () => (
                 <Route element={<StoreLayout />}>
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/checkout" element={<Checkout />} />
-                  <Route path="/confirmation" element={<Confirmation />} />
+                  <Route path="/confirmation/:orderId" element={<Confirmation />} />
                   <Route path="/wishlist" element={<Wishlist />} />
                   <Route path="/orders" element={<Navigate to="/profile?tab=orders" replace />} />
                   <Route path="/order/:orderId" element={<OrderDetails />} />

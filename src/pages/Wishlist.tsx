@@ -12,7 +12,10 @@ import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
 const toUrl = (src: string) => {
   if (!src) return '';
-  if (src.startsWith('http')) return src;
+  if (src.startsWith('http') || src.startsWith('data:')) return src;
+  if (src.startsWith('products/') || src.startsWith('categories/')) {
+    return `https://indhumathi-garments-images.s3.ap-south-1.amazonaws.com/${src}`;
+  }
   const prefix = BASE.endsWith('/') ? BASE.slice(0, -1) : BASE;
   const path = src.startsWith('/') ? src : `/${src}`;
   return `${prefix}${path}`;
@@ -93,7 +96,7 @@ const Wishlist = () => {
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <Link 
-                  to={`/products/${product.id}${product.wishlistColor ? `?color=${encodeURIComponent(product.wishlistColor)}` : ''}`}
+                  to={`/product/${product.id}${product.wishlistColor ? `?color=${encodeURIComponent(product.wishlistColor)}` : ''}`}
                   className="relative overflow-hidden aspect-[4/5] bg-accent/60 flex items-center justify-center block"
                 >
                   {resolveItemImage(product) ? (
@@ -130,7 +133,7 @@ const Wishlist = () => {
 
                 <div className="p-4 sm:p-6">
                   <Link 
-                    to={`/products/${product.id}${product.wishlistColor ? `?color=${encodeURIComponent(product.wishlistColor)}` : ''}`}
+                    to={`/product/${product.id}${product.wishlistColor ? `?color=${encodeURIComponent(product.wishlistColor)}` : ''}`}
                   >
                     <h3 className="text-lg sm:text-xl font-semibold mb-2 text-foreground group-hover:text-primary transition-colors">
                       {product.name}

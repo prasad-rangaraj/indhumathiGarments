@@ -42,9 +42,7 @@ interface OrdersState {
 }
 
 import { ordersAPI } from '@/lib/api';
-export const useOrdersStore = create<OrdersState>()(
-  persist(
-    (set, get) => ({
+export const useOrdersStore = create<OrdersState>((set, get) => ({
       orders: [],
       loading: false,
       error: null,
@@ -92,12 +90,12 @@ export const useOrdersStore = create<OrdersState>()(
               orderId: order.orderId,
               items: order.items.map((item: any) => ({
                 id: item.productId || item.product?.id,
-                name: item.product?.name || 'Product',
+                name: item.product?.name || item.name || 'Product',
                 price: item.price,
                 quantity: item.quantity,
-                selectedSize: item.size,
-                selectedColor: item.color,
-                image: item.image, // Prefer the item's saved image which can be resolved later
+                selectedSize: item.size || item.selectedSize,
+                selectedColor: item.color || item.selectedColor,
+                image: item.image,
                 product: item.product,
               })),
               total: order.total,
@@ -113,7 +111,12 @@ export const useOrdersStore = create<OrdersState>()(
                 email: order.customerEmail || '',
               },
               paymentMethod: order.paymentMethod,
-              orderDate: order.orderDate,
+              // orderDate may come as Date object or ISO string — normalise to string
+              orderDate: order.orderDate
+                ? new Date(order.orderDate).toISOString()
+                : order.createdAt
+                  ? new Date(order.createdAt).toISOString()
+                  : new Date().toISOString(),
               status: order.status,
               trackingNumber: order.trackingNumber,
               delayedDeliveryDate: order.delayedDeliveryDate,
@@ -248,14 +251,5 @@ export const useOrdersStore = create<OrdersState>()(
       getOrdersByStatus: (status: Order['status'] | string) => {
         return get().orders.filter(o => o.status === status);
       },
-    }),
-    {
-      name: 'orders-storage',
-      // Do NOT persist orders or lastFetched — always re-fetch from server on reload
-      partialize: (state) => ({
-        // Persist nothing — all order data must come from the server
-      }),
-    }
-  )
-);
+    }));
 

@@ -73,7 +73,7 @@ const OrderDetails = () => {
   const order = orderId ? getOrderById(orderId) : undefined;
 
   // Show spinner while fetching — avoids flash of "Order not found" on mobile
-  if (loading && !hasFetched) {
+  if (!hasFetched) {
     return (
       <div className="min-h-screen relative flex items-center justify-center">
         <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">
@@ -105,7 +105,8 @@ const OrderDetails = () => {
     );
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return '—';
     return new Date(dateString).toLocaleDateString('en-IN', {
       year: 'numeric',
       month: 'long',
@@ -135,7 +136,8 @@ const OrderDetails = () => {
   const statusConfig = getStatusConfig(order.status);
   const StatusIcon = statusConfig.icon;
 
-  const isWithin24Hours = (dateString: string) => {
+  const isWithin24Hours = (dateString: string | null | undefined) => {
+    if (!dateString) return false;
     const orderDate = new Date(dateString).getTime();
     const now = new Date().getTime();
     const hours24 = 24 * 60 * 60 * 1000;

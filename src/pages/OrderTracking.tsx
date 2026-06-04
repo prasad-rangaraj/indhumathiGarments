@@ -195,14 +195,17 @@ const OrderTracking = () => {
       ? (currentStep / (activeSteps.length - 1)) * 100
       : 0;
 
-  const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
+  const formatDate = (d: string | null | undefined) =>
+    d
+      ? new Date(d).toLocaleDateString('en-IN', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })
+      : '—';
 
-  const isWithin24Hours = (dateString: string) => {
+  const isWithin24Hours = (dateString: string | null | undefined) => {
+    if (!dateString) return false;
     const orderDate = new Date(dateString).getTime();
     const now = new Date().getTime();
     const hours24 = 24 * 60 * 60 * 1000;
@@ -210,7 +213,7 @@ const OrderTracking = () => {
   };
 
   // ── Loading ──────────────────────────────────────────────────────────────
-  if (loading || !hasFetched) {
+  if (!hasFetched) {
     return (
       <div className="min-h-screen relative flex items-center justify-center">
         <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">

@@ -32,20 +32,7 @@ const Checkout = () => {
   const { toast } = useToast();
 
   const [customerInfo, setCustomerInfo] = useState(() => {
-    // 1. Check for last order
-    const lastOrderStr = localStorage.getItem('lastOrder');
-    if (lastOrderStr) {
-      try {
-        const lastOrder = JSON.parse(lastOrderStr);
-        if (lastOrder && lastOrder.customerInfo) {
-          return lastOrder.customerInfo;
-        }
-      } catch (e) {
-        console.error("Failed to parse last order", e);
-      }
-    }
-
-    // 2. Fallback to authStore user
+    // Fallback to authStore user — address pre-fill comes from DB via useEffect
     const { user } = useAuthStore.getState();
     return {
       name: user?.name || '',
@@ -69,10 +56,26 @@ const Checkout = () => {
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load saved addresses
-    const saved = localStorage.getItem('savedAddresses');
-    if (saved) {
-      setSavedAddresses(JSON.parse(saved));
+    // Pre-fill from last order in DB (first order in store, most recent)
+    const { orders } = useOrdersStore.getState();
+    if (orders.length > 0) {
+      const last = orders[0];
+      if (last.customerInfo) {
+        setCustomerInfo(prev => ({
+          ...prev,
+          ...last.customerInfo,
+        }));
+      }
+    }
+
+    // Load saved addresses from DB
+    const { user } = useAuthStore.getState();
+    if (user?.id) {
+      import('@/lib/api').then(({ customerAPI }) => {
+        customerAPI.getAddresses(user.id)
+          .then((addrs: any[]) => setSavedAddresses(addrs))
+          .catch(() => {}); // silently fail — non-critical
+      });
     }
 
     // Fetch active coupons
@@ -157,18 +160,13 @@ const Checkout = () => {
           trackingNumber: `TRK${Date.now().toString().slice(-6)}`,
         };
         await createOrder(tempOrderData);
-        // After createOrder, read the real order saved by the backend from the store
-        const { orders: updatedOrders } = await import('@/stores/ordersStore').then(m => ({ orders: m.useOrdersStore.getState().orders }));
-        const realOrder = updatedOrders[0]; // createOrder prepends to array
-        const lastOrderToSave = realOrder
-          ? { ...tempOrderData, orderId: realOrder.orderId, trackingNumber: realOrder.trackingNumber }
-          : tempOrderData;
-        localStorage.setItem('lastOrder', JSON.stringify(lastOrderToSave));
+        // Read the real order saved by the backend from the store (prepended by createOrder)
+        const { orders: updatedOrders } = useOrdersStore.getState();
+        const realOrderId = updatedOrders[0]?.orderId || tempOrderData.orderId;
         await clearCart();
-        // Force-refresh orders so Profile/My Orders shows this order immediately
         fetchOrders(undefined, true);
         toast({ title: 'Order placed!', description: 'Your COD order is confirmed.' });
-        navigate('/confirmation');
+        navigate(`/confirmation/${realOrderId}`);
         return;
       }
 
@@ -181,7 +179,7 @@ const Checkout = () => {
       // Create Razorpay order on backend (server recalculates price from DB)
       const { razorpayOrderId, amount, currency, serverTotal, keyId } = await paymentsAPI.createOrder(
         items,
-        appliedCoupon?.discount
+        appliedCoupon?.code
       );
 
       return new Promise<void>((resolve, reject) => {
@@ -219,16 +217,11 @@ const Checkout = () => {
                 razorpay_signature: response.razorpay_signature,
                 orderData,
               });
-              localStorage.setItem('lastOrder', JSON.stringify({
-                ...orderData,
-                orderId: result.orderId,
-                trackingNumber: result.trackingNumber,
-              }));
               await clearCart();
               // Force-refresh orders so Profile/My Orders shows this order immediately
               fetchOrders(undefined, true);
               toast({ title: '🎉 Payment Successful!', description: `Order ${result.orderId} confirmed.` });
-              navigate('/confirmation');
+              navigate(`/confirmation/${result.orderId}`);
               resolve();
             } catch (err: any) {
               toast({ title: 'Payment verification failed', description: err.message, variant: 'destructive' });

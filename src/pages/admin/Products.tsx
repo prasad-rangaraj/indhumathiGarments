@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useProductsStore } from "@/stores/productsStore";
+import { useAuthStore } from "@/stores/authStore";
 import { useToast } from "@/hooks/use-toast";
 import * as XLSX from 'xlsx';
 
@@ -89,7 +90,7 @@ const Products = () => {
           method: 'POST',
           headers: {
              'Content-Type': 'application/json',
-             'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? JSON.parse(localStorage.getItem('auth-storage')!).state.token : ''}`
+             'Authorization': `Bearer ${useAuthStore.getState().token || ''}`
           },
           body: JSON.stringify({ products: formattedData })
         });

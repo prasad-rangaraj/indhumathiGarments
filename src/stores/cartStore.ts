@@ -39,9 +39,7 @@ const getUserId = (): string => {
   return user?.id || 'guest';
 };
 
-export const useCartStore = create<CartState>()(
-  persist(
-    (set, get) => ({
+export const useCartStore = create<CartState>((set, get) => ({
       items: [],
       total: 0,
       loading: false,
@@ -246,10 +244,5 @@ export const useCartStore = create<CartState>()(
       getItemCount: () => {
         return get().items.reduce((sum, item) => sum + item.quantity, 0);
       },
-    }),
-    {
-      name: 'cart-storage-v3',
-    }
-  )
-);
+    }));
 

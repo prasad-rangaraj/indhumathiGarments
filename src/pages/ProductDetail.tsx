@@ -189,7 +189,7 @@ const ProductDetail = () => {
   const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
   const toUrl = (src: string) => {
     if (!src) return '';
-    if (src.startsWith('http')) return src;
+    if (src.startsWith('http') || src.startsWith('data:')) return src;
     const prefix = BASE.endsWith('/') ? BASE.slice(0, -1) : BASE;
     const path = src.startsWith('/') ? src : `/${src}`;
     return `${prefix}${path}`;

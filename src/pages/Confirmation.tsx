@@ -1,25 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { CheckCircle, Package, Clock, Phone, Info } from 'lucide-react';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
-import type { CartItem } from '@/stores/cartStore';
 import { resolveItemImage } from '@/lib/utils';
-
-interface OrderData {
-  orderId: string;
-  items: CartItem[];
-  total: number;
-  customerInfo: {
-    name: string;
-    address: string;
-    city: string;
-    pincode: string;
-    phone: string;
-    email: string;
-  };
-  paymentMethod: 'upi' | 'card' | 'cod';
-  orderDate: string;
-}
+import { useOrdersStore, Order } from '@/stores/ordersStore';
+import type { CartItem } from '@/stores/cartStore';
 
 const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
 const toUrl = (src: string) => {
@@ -31,14 +16,32 @@ const toUrl = (src: string) => {
 };
 
 const Confirmation = () => {
-  const [orderData, setOrderData] = useState<OrderData | null>(null);
+  const { orderId } = useParams<{ orderId: string }>();
+  const { orders, fetchOrders, loading } = useOrdersStore();
+  const [hasFetched, setHasFetched] = useState(false);
 
   useEffect(() => {
-    const savedOrder = localStorage.getItem('lastOrder');
-    if (savedOrder) {
-      setOrderData(JSON.parse(savedOrder));
-    }
-  }, []);
+    // Always fetch fresh from DB — no localStorage involved
+    fetchOrders(undefined, true).finally(() => setHasFetched(true));
+  }, [fetchOrders]);
+
+  const orderData: Order | undefined = orders.find(o => o.orderId === orderId);
+
+  // Show spinner until first fetch completes
+  if (!hasFetched) {
+    return (
+      <div className="min-h-screen relative flex items-center justify-center">
+        <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">
+          <img src={bgCotton1} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
+        </div>
+        <div className="flex flex-col items-center gap-4 text-muted-foreground">
+          <div className="w-14 h-14 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+          <p className="text-sm font-medium">Loading your order…</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!orderData) {
     return (
@@ -49,7 +52,8 @@ const Confirmation = () => {
         </div>
         <div className="flex items-center justify-center px-4 min-h-screen">
           <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">No order found</h2>
+            <h2 className="text-2xl font-bold mb-4">Order not found</h2>
+            <p className="text-muted-foreground mb-6">This order does not exist or you do not have access to it.</p>
             <Link to="/" className="btn-primary">Go Home</Link>
           </div>
         </div>
@@ -57,7 +61,8 @@ const Confirmation = () => {
     );
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return '—';
     return new Date(dateString).toLocaleDateString('en-IN', {
       year: 'numeric',
       month: 'long',
