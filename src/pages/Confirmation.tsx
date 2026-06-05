@@ -51,10 +51,17 @@ const Confirmation = () => {
           <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
         </div>
         <div className="flex items-center justify-center px-4 min-h-screen">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">Order not found</h2>
-            <p className="text-muted-foreground mb-6">This order does not exist or you do not have access to it.</p>
-            <Link to="/" className="btn-primary">Go Home</Link>
+          <div className="text-center max-w-md">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-6">
+              <CheckCircle className="h-10 w-10 text-green-600" />
+            </div>
+            <h2 className="text-2xl font-bold mb-3">Order Placed Successfully!</h2>
+            <p className="text-muted-foreground mb-2">Your order <span className="font-mono font-semibold text-foreground">{orderId}</span> has been confirmed.</p>
+            <p className="text-sm text-muted-foreground mb-8">We are loading your order details. If this takes too long, visit <strong>My Orders</strong> to view it.</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link to="/orders" className="btn-primary">View My Orders</Link>
+              <Link to="/" className="btn-secondary">Go Home</Link>
+            </div>
           </div>
         </div>
       </div>

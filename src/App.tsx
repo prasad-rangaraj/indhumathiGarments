@@ -109,7 +109,6 @@ const App = () => (
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/cart" element={<Cart />} />
-                <Route path="/track/:orderId" element={<OrderTracking />} />
               </Route>
 
               {/* Protected Store Routes */}
@@ -121,6 +120,7 @@ const App = () => (
                   <Route path="/wishlist" element={<Wishlist />} />
                   <Route path="/orders" element={<Navigate to="/profile?tab=orders" replace />} />
                   <Route path="/order/:orderId" element={<OrderDetails />} />
+                  <Route path="/track/:orderId" element={<OrderTracking />} />
                 </Route>
               </Route>
 

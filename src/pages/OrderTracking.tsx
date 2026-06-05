@@ -21,7 +21,6 @@ import {
   XCircle,
 } from 'lucide-react';
 import { useOrdersStore, Order } from '@/stores/ordersStore';
-import { useAuthStore } from '@/stores/authStore';
 import { resolveItemImage } from '@/lib/utils';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 
@@ -131,9 +130,8 @@ const toUrl = (src: string) => {
 
 const OrderTracking = () => {
   const { orderId } = useParams<{ orderId: string }>();
-  const { orders, loading, fetchOrders, cancelOrder, requestReturn } = useOrdersStore();
-  const { isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
+  const { orders, loading, authError, fetchOrders, cancelOrder, requestReturn } = useOrdersStore();
   const { toast } = useToast();
   const [hasFetched, setHasFetched] = useState(false);
   
@@ -173,14 +171,16 @@ const OrderTracking = () => {
   };
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      // Not logged in — redirect to login, then come back
-      navigate(`/login?redirect=/track/${orderId}`, { replace: true });
-      return;
-    }
     // Force a fresh fetch on page load to see the latest status
     fetchOrders(undefined, true).finally(() => setHasFetched(true));
-  }, [fetchOrders, isAuthenticated, orderId, navigate]);
+  }, [fetchOrders]);
+
+  // Redirect to login if auth failed (401)
+  useEffect(() => {
+    if (hasFetched && authError) {
+      navigate(`/login?redirect=/track/${orderId}`, { replace: true });
+    }
+  }, [hasFetched, authError, navigate, orderId]);
 
   const order: Order | undefined = orders.find((o) => o.orderId === orderId);
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Package, Truck, CheckCircle, MapPin, Phone, Mail, RotateCcw, AlertTriangle, Camera, XCircle } from 'lucide-react';
 import { useOrdersStore, Order } from '@/stores/ordersStore';
 import { Button } from '@/components/ui/button';
@@ -28,7 +28,8 @@ const toUrl = (src: string) => {
 
 const OrderDetails = () => {
   const { orderId } = useParams();
-  const { orders, loading, fetchOrders, getOrderById, cancelOrder, requestReturn } = useOrdersStore();
+  const navigate = useNavigate();
+  const { orders, loading, error, authError, fetchOrders, getOrderById, cancelOrder, requestReturn } = useOrdersStore();
   const { toast } = useToast();
   const [hasFetched, setHasFetched] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
@@ -69,6 +70,13 @@ const OrderDetails = () => {
     // Force a fresh fetch on page load to see the latest status
     fetchOrders(undefined, true).finally(() => setHasFetched(true));
   }, [fetchOrders]);
+
+  // Redirect to login if auth failed
+  useEffect(() => {
+    if (hasFetched && authError) {
+      navigate(`/login?redirect=/order/${orderId}`, { replace: true });
+    }
+  }, [hasFetched, authError, navigate, orderId]);
 
   const order = orderId ? getOrderById(orderId) : undefined;
 

@@ -29,6 +29,7 @@ interface OrdersState {
   orders: Order[];
   loading: boolean;
   error: string | null;
+  authError: boolean;
   lastFetched: number;
   abortController: AbortController | null;
   fetchOrders: (userId?: string, force?: boolean) => Promise<void>;
@@ -46,6 +47,7 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
       orders: [],
       loading: false,
       error: null,
+      authError: false,
       lastFetched: 0,
       abortController: null,
 
@@ -136,7 +138,15 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
            if (error instanceof Error && error.name === 'AbortError') {
             return;
           }
-          set({ error: error instanceof Error ? error.message : 'Failed to fetch orders', loading: false, abortController: null });
+          const errMsg = error instanceof Error ? error.message : 'Failed to fetch orders';
+          // Detect authentication failures
+          const isAuthError = errMsg.includes('401') || errMsg.includes('Not authorized') || errMsg.includes('token') || errMsg.toLowerCase().includes('unauthorized');
+          set({ 
+            error: errMsg, 
+            loading: false, 
+            abortController: null,
+            authError: isAuthError,
+          });
         }
       },
 
