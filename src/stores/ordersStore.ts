@@ -68,12 +68,18 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
 
         try {
           // Logic to determine userId
+          const { user } = await import('@/stores/authStore').then(m => m.useAuthStore.getState());
           let targetUserId = userId;
+          
+          // Only pass userId if an admin is requesting it, or if explicitly provided.
+          // The backend automatically filters by the logged-in customer's ID,
+          // so passing `userId` for customers is redundant and can trigger adblockers.
           if (userId === undefined) {
-            const { user } = await import('@/stores/authStore').then(m => m.useAuthStore.getState());
-            // Only force customer filter if the user is a customer. Admins fetch all orders.
-            if (user && user.role === 'customer') {
-              targetUserId = user.id;
+            if (user && (user.role === 'admin' || user.role === 'super_admin')) {
+              // Admins fetch all orders by default if no userId is provided, so targetUserId remains undefined
+            } else {
+              // Customers don't need to pass userId, backend handles it securely
+              targetUserId = undefined; 
             }
           }
           

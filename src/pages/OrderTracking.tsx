@@ -213,7 +213,7 @@ const OrderTracking = () => {
   };
 
   // ── Loading ──────────────────────────────────────────────────────────────
-  if (!hasFetched) {
+  if (!hasFetched || loading) {
     return (
       <div className="min-h-screen relative flex items-center justify-center">
         <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">
