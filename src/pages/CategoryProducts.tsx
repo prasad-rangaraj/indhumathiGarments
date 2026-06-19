@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import bgFashionModel from '@/assets/bg-fashion-model.png';
 import bgMensFashionModel from '@/assets/bg-mens-fashion-model.png';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const CategoryProducts = () => {
   const { category, subcategory } = useParams<{ category: string; subcategory?: string }>();
@@ -45,7 +46,6 @@ const CategoryProducts = () => {
       document.title = 'Indhumathi Garments';
     };
   }, [categoryData]);
-  
   if (!category) {
     return <Navigate to="/products" replace />;
   }
@@ -165,7 +165,21 @@ const CategoryProducts = () => {
 
           {/* Products Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 lg:gap-8">
-            {categoryProducts.map((product, index) => (
+            {loading && categoryProducts.length === 0 ? (
+              // Skeleton loading grid
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="card-product group overflow-hidden">
+                  <Skeleton className="w-full aspect-[4/5] rounded-none bg-white/40" />
+                  <div className="p-4 sm:p-6 space-y-3 bg-card">
+                    <Skeleton className="h-6 w-3/4 bg-white/40" />
+                    <Skeleton className="h-4 w-full bg-white/40" />
+                    <Skeleton className="h-4 w-2/3 bg-white/40" />
+                    <Skeleton className="h-10 w-full mt-4 bg-white/40" />
+                  </div>
+                </div>
+              ))
+            ) : (
+              categoryProducts.map((product, index) => (
               <div
                 key={product.id}
                 className="card-product group overflow-hidden"
@@ -295,7 +309,7 @@ const CategoryProducts = () => {
                   </Link>
                 </div>
               </div>
-            ))}
+            )))}
           </div>
         </div>
       </div>

@@ -8,6 +8,7 @@ import { useAuthStore } from "./stores/authStore";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import Navigation from "./components/Navigation";
 import { PullToRefresh } from "./components/PullToRefresh";
+import { PremiumLoader } from "./components/ui/PremiumLoader";
 
 // Layouts and Auth
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -79,14 +80,7 @@ const App = () => (
         <PullToRefresh>
           <BrowserRouter>
             <AppInner />
-          <Suspense fallback={
-            <div className="flex h-screen w-full items-center justify-center bg-background">
-              <div className="animate-pulse flex flex-col items-center">
-                <div className="h-12 w-12 rounded-full border-4 border-pink-600 border-t-transparent animate-spin mb-4"></div>
-                <p className="text-muted-foreground text-sm font-medium">Loading Application...</p>
-              </div>
-            </div>
-          }>
+          <Suspense fallback={<PremiumLoader text="Loading Application..." />}>
             <Routes>
               {/* Public Auth Routes */}
               <Route path="/" element={<About />} />

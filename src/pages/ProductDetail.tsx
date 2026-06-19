@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import ReviewForm from '@/components/ReviewForm';
 import RelatedProducts from '@/components/RelatedProducts';
 import StarRating from '@/components/StarRating';
+import { Skeleton } from '@/components/ui/skeleton';
 import bgFashionModel from '@/assets/bg-fashion-model.png';
 import bgMensFashionModel from '@/assets/bg-mens-fashion-model.png';
 
@@ -90,10 +91,35 @@ const ProductDetail = () => {
 
   if (productsLoading && !product) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4 text-muted-foreground animate-pulse">
-          <div className="w-14 h-14 rounded-full border-4 border-primary border-t-transparent animate-spin" />
-          <p className="text-sm font-medium">Loading product…</p>
+      <div className="min-h-screen relative overflow-x-hidden">
+        <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-[2px]" />
+        </div>
+        <div className="py-6 sm:py-8 px-2 sm:px-6 relative z-10">
+          <div className="mx-4 sm:mx-auto max-w-6xl">
+            <div className="grid md:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-12">
+              <div className="space-y-3">
+                <Skeleton className="w-full aspect-[6/6] rounded-xl bg-white/40" />
+                <div className="flex gap-2">
+                  <Skeleton className="w-16 h-16 rounded-lg bg-white/40" />
+                  <Skeleton className="w-16 h-16 rounded-lg bg-white/40" />
+                  <Skeleton className="w-16 h-16 rounded-lg bg-white/40" />
+                </div>
+              </div>
+              <div>
+                <Skeleton className="h-10 w-3/4 mb-4 bg-white/40" />
+                <Skeleton className="h-6 w-1/3 mb-6 bg-white/40" />
+                <Skeleton className="h-24 w-full mb-6 bg-white/40" />
+                <Skeleton className="h-10 w-1/4 mb-6 bg-white/40" />
+                <Skeleton className="h-12 w-full mb-6 bg-white/40" />
+                <Skeleton className="h-24 w-full mb-6 bg-white/40" />
+                <div className="flex gap-4">
+                  <Skeleton className="h-12 flex-1 bg-white/40" />
+                  <Skeleton className="h-12 flex-1 bg-white/40" />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );

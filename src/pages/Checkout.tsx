@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { couponsAPI, paymentsAPI } from '@/lib/api';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
+import indianStatesData from '@/lib/indianStates.json';
 
 // Load Razorpay script dynamically
 const loadRazorpayScript = (): Promise<boolean> => {
@@ -40,9 +41,15 @@ const Checkout = () => {
       phone: user?.phone || '',
       address: user?.address || '',
       city: '',
+      state: '',
+      district: '',
+      landmark: '',
       pincode: ''
     };
   });
+
+  const [isFetchingPincode, setIsFetchingPincode] = useState(false);
+  const [availableDistricts, setAvailableDistricts] = useState<string[]>([]);
 
   const [currentStep, setCurrentStep] = useState<number>(2); // 1 = Auth(done), 2 = Address, 3 = Summary, 4 = Payment
   const [paymentMethod, setPaymentMethod] = useState('online');
@@ -54,6 +61,7 @@ const Checkout = () => {
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
   const [useSavedAddress, setUseSavedAddress] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
 
   useEffect(() => {
     // Pre-fill from last order in DB (first order in store, most recent)
@@ -73,7 +81,26 @@ const Checkout = () => {
     if (user?.id) {
       import('@/lib/api').then(({ customerAPI }) => {
         customerAPI.getAddresses(user.id)
-          .then((addrs: any[]) => setSavedAddresses(addrs))
+          .then((addrs: any[]) => {
+            const data = Array.isArray(addrs) ? addrs : ((addrs as any).addresses || []);
+            setSavedAddresses(data);
+            if (data.length > 0) {
+              const defaultAddr = data.find((a: any) => a.isDefault) || data[0];
+              setSelectedAddressId(defaultAddr.id || defaultAddr._id);
+              setUseSavedAddress(true);
+              setCustomerInfo(prev => ({
+                ...prev,
+                name: defaultAddr.name || '',
+                phone: defaultAddr.phone || '',
+                pincode: defaultAddr.pincode || '',
+                state: defaultAddr.state || '',
+                district: defaultAddr.district || '',
+                city: defaultAddr.city || '',
+                address: defaultAddr.address || '',
+                landmark: defaultAddr.landmark || '',
+              }));
+            }
+          })
           .catch(() => {}); // silently fail — non-critical
       });
     }
@@ -129,10 +156,80 @@ const Checkout = () => {
   const finalTotal = total - calculateDiscount();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    if (name === 'pincode') {
+      const val = value.replace(/\D/g, '').slice(0, 6);
+      setCustomerInfo(prev => ({ ...prev, pincode: val }));
+      if (val.length === 6) {
+        fetchPincodeDetails(val);
+      }
+    } else if (name === 'phone') {
+      let val = value.replace(/\D/g, '');
+      if (val.length > 10 && val.startsWith('91')) val = val.slice(2);
+      val = val.slice(0, 10);
+      setCustomerInfo(prev => ({ ...prev, phone: val }));
+    } else {
+      setCustomerInfo(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };
+
+  const fetchPincodeDetails = async (pincodeStr: string) => {
+    setIsFetchingPincode(true);
+    try {
+      const response = await fetch(`https://api.postalpincode.in/pincode/${pincodeStr}`);
+      const data = await response.json();
+      if (data && data[0] && data[0].Status === 'Success') {
+        const postOffice = data[0].PostOffice[0];
+        const fetchedState = postOffice.State;
+        const fetchedDistrict = postOffice.District;
+
+        setCustomerInfo(prev => ({
+          ...prev,
+          state: fetchedState,
+          district: fetchedDistrict,
+          city: prev.city || postOffice.Block || postOffice.Name
+        }));
+
+        const stateData = indianStatesData.states.find(s => s.state.toLowerCase() === fetchedState.toLowerCase());
+        if (stateData) {
+          setAvailableDistricts(stateData.districts);
+        } else {
+          setAvailableDistricts([fetchedDistrict]);
+        }
+        
+        toast({
+          title: "Location Found",
+          description: `${fetchedDistrict}, ${fetchedState}`,
+        });
+      } else {
+        toast({
+          title: "Invalid Pincode",
+          description: "Please check the pincode or enter state/district manually.",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching pincode details", err);
+    } finally {
+      setIsFetchingPincode(false);
+    }
+  };
+
+  const handleStateChange = (stateName: string) => {
+    const stateData = indianStatesData.states.find(s => s.state === stateName);
+    setAvailableDistricts(stateData ? stateData.districts : []);
     setCustomerInfo(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      state: stateName,
+      district: ''
     }));
+  };
+
+  const handleDistrictChange = (districtName: string) => {
+    setCustomerInfo(prev => ({ ...prev, district: districtName }));
   };
 
   const orderData = {
@@ -313,7 +410,71 @@ const Checkout = () => {
 
                 {currentStep === 2 ? (
                   <div className="p-4 sm:p-6 animate-in slide-in-from-top-2 duration-300">
-                    <div className="grid sm:grid-cols-2 gap-5">
+                    {savedAddresses.length > 0 && (
+                      <div className="mb-6 space-y-3">
+                        <label className="text-sm font-semibold text-foreground block mb-2">Select Delivery Address</label>
+                        {savedAddresses.map((addr) => (
+                          <div key={addr.id || addr._id} className={`p-4 border rounded-xl cursor-pointer transition-all ${selectedAddressId === (addr.id || addr._id) ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border hover:bg-muted/50'}`} onClick={() => {
+                            setSelectedAddressId(addr.id || addr._id);
+                            setUseSavedAddress(true);
+                            setCustomerInfo(prev => ({
+                              ...prev,
+                              name: addr.name || '',
+                              phone: addr.phone || '',
+                              pincode: addr.pincode || '',
+                              state: addr.state || '',
+                              district: addr.district || '',
+                              city: addr.city || '',
+                              address: addr.address || '',
+                              landmark: addr.landmark || '',
+                            }));
+                          }}>
+                            <div className="flex gap-3">
+                              <input type="radio" checked={selectedAddressId === (addr.id || addr._id)} readOnly className="mt-1 accent-primary" />
+                              <div className="flex-1">
+                                <div className="flex justify-between items-start">
+                                  <p className="font-semibold text-sm text-foreground">{addr.name} {addr.isDefault && <span className="ml-2 text-[10px] font-bold bg-pink-50 text-pink-600 px-2 py-0.5 rounded-full border border-pink-100 tracking-wider">DEFAULT</span>} <span className="font-normal text-muted-foreground ml-2">{addr.phone}</span></p>
+                                  {selectedAddressId === (addr.id || addr._id) && (
+                                    <button type="button" className="text-[11px] text-pink-600 font-bold hover:underline tracking-wider uppercase px-2 py-1 bg-pink-50 rounded" onClick={(e) => {
+                                      e.stopPropagation();
+                                      setUseSavedAddress(false);
+                                      setEditingAddressId(addr.id || addr._id);
+                                    }}>Edit</button>
+                                  )}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                                  {[addr.address, addr.city, addr.landmark ? `(Near ${addr.landmark})` : ''].filter(Boolean).join(', ')} <br/>
+                                  {[addr.district, addr.state].filter(Boolean).join(', ')} {addr.pincode ? `- ` : ''}<span className="font-medium text-foreground">{addr.pincode}</span>
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        
+                        <div className={`p-4 border rounded-xl cursor-pointer transition-all ${!useSavedAddress && !editingAddressId ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border hover:bg-muted/50'}`} onClick={() => {
+                          setUseSavedAddress(false);
+                          setSelectedAddressId(null);
+                          setEditingAddressId(null);
+                          setCustomerInfo(prev => ({
+                            ...prev,
+                            address: '',
+                            city: '',
+                            state: '',
+                            district: '',
+                            landmark: '',
+                            pincode: ''
+                          }));
+                        }}>
+                          <div className="flex gap-3 items-center">
+                            <input type="radio" checked={!useSavedAddress && !editingAddressId} readOnly className="accent-primary" />
+                            <span className="font-semibold text-sm text-foreground">+ Add New Address</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {(!savedAddresses.length || !useSavedAddress) && (
+                      <div className="grid sm:grid-cols-2 gap-5 animate-in slide-in-from-top-2">
                       <div className="space-y-1.5">
                         <label className="text-sm font-semibold text-foreground">Name</label>
                         <input type="text" name="name" value={customerInfo.name} onChange={handleInputChange} required className="w-full px-3 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors text-sm" placeholder="Full name" />
@@ -324,21 +485,58 @@ const Checkout = () => {
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-sm font-semibold text-foreground">Phone</label>
-                        <input type="tel" name="phone" value={customerInfo.phone} onChange={handleInputChange} required className="w-full px-3 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors text-sm" placeholder="10-digit number" />
+                        <div className="relative flex items-center">
+                          <span className="absolute left-3 text-sm text-muted-foreground">+91</span>
+                          <input type="tel" name="phone" value={customerInfo.phone} onChange={handleInputChange} required maxLength={10} className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors text-sm" placeholder="10-digit mobile number" />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5 sm:col-span-2">
+                        <label className="text-sm font-semibold text-foreground">Pincode</label>
+                        <div className="relative">
+                          <input type="text" name="pincode" value={customerInfo.pincode} onChange={handleInputChange} required className="w-full px-3 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors text-sm" placeholder="6 digits [0-9]" />
+                          {isFetchingPincode && <span className="absolute right-3 top-2.5 text-xs text-muted-foreground animate-pulse">Fetching...</span>}
+                        </div>
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-sm font-semibold text-foreground">Pincode</label>
-                        <input type="text" name="pincode" value={customerInfo.pincode} onChange={handleInputChange} required className="w-full px-3 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors text-sm" placeholder="6 digits [0-9]" />
+                        <label className="text-sm font-semibold text-foreground">State</label>
+                        <Select value={customerInfo.state} onValueChange={handleStateChange}>
+                          <SelectTrigger className="w-full h-[42px]">
+                            <SelectValue placeholder="Select State" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {indianStatesData.states.map((s) => (
+                              <SelectItem key={s.state} value={s.state}>{s.state}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-semibold text-foreground">District</label>
+                        <Select value={customerInfo.district} onValueChange={handleDistrictChange} disabled={!customerInfo.state}>
+                          <SelectTrigger className="w-full h-[42px]">
+                            <SelectValue placeholder="Select District" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableDistricts.map((d) => (
+                              <SelectItem key={d} value={d}>{d}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="space-y-1.5 sm:col-span-2">
-                        <label className="text-sm font-semibold text-foreground">Address (Area and Street)</label>
-                        <textarea name="address" value={customerInfo.address} onChange={handleInputChange} required rows={3} className="w-full px-3 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors resize-none text-sm" />
+                        <label className="text-sm font-semibold text-foreground">Flat, House no., Building, Company, Apartment</label>
+                        <input type="text" name="address" value={customerInfo.address} onChange={handleInputChange} required className="w-full px-3 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors text-sm" placeholder="e.g. 123, Rose Apartments" />
                       </div>
                       <div className="space-y-1.5 sm:col-span-2">
-                        <label className="text-sm font-semibold text-foreground">City/District/Town</label>
-                        <input type="text" name="city" value={customerInfo.city} onChange={handleInputChange} required className="w-full px-3 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors text-sm" />
+                        <label className="text-sm font-semibold text-foreground">Area, Street, Sector, Village</label>
+                        <input type="text" name="city" value={customerInfo.city} onChange={handleInputChange} required className="w-full px-3 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors text-sm" placeholder="e.g. MG Road, Indira Nagar" />
                       </div>
-                    </div>
+                      <div className="space-y-1.5 sm:col-span-2">
+                        <label className="text-sm font-semibold text-foreground">Landmark (Optional)</label>
+                        <input type="text" name="landmark" value={customerInfo.landmark} onChange={handleInputChange} className="w-full px-3 py-2.5 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors text-sm" placeholder="e.g. Near Apollo Hospital" />
+                      </div>
+                      </div>
+                    )}
                     <div className="mt-6 pt-4 border-t border-border flex justify-end">
                       <Button
                         type="button"
@@ -348,11 +546,65 @@ const Checkout = () => {
                             form.reportValidity();
                             return;
                           }
+                          
+                          const phoneRegex = /^[6-9]\d{9}$/;
+                          if (!phoneRegex.test(customerInfo.phone)) {
+                            toast({
+                              title: "Invalid Phone Number",
+                              description: "Please enter a valid 10-digit Indian mobile number starting with 6-9.",
+                              variant: "destructive"
+                            });
+                            return;
+                          }
+
+                          if (customerInfo.pincode.length !== 6) {
+                            toast({
+                              title: "Invalid Pincode",
+                              description: "Please enter a valid 6-digit pincode.",
+                              variant: "destructive"
+                            });
+                            return;
+                          }
+
+                          if (!customerInfo.state || !customerInfo.district) {
+                            toast({
+                              title: "Incomplete Address",
+                              description: "Please select both State and District.",
+                              variant: "destructive"
+                            });
+                            return;
+                          }
+
+                          const isNewAddress = !useSavedAddress && !editingAddressId;
+                          const isEditing = !useSavedAddress && editingAddressId;
+
+                          if (user?.id && (isNewAddress || isEditing)) {
+                            const addressPayload = {
+                              name: customerInfo.name,
+                              phone: customerInfo.phone,
+                              address: customerInfo.address,
+                              city: customerInfo.city,
+                              state: customerInfo.state,
+                              district: customerInfo.district,
+                              landmark: customerInfo.landmark,
+                              pincode: customerInfo.pincode,
+                              userId: user.id
+                            };
+                            
+                            import('@/lib/api').then(({ customerAPI }) => {
+                              if (isEditing) {
+                                customerAPI.updateAddress(editingAddressId, addressPayload).catch(console.error);
+                              } else {
+                                customerAPI.createAddress(addressPayload).catch(console.error);
+                              }
+                            });
+                          }
+
                           setCurrentStep(3);
                         }}
                         className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 py-6 rounded-lg text-base shadow-md"
                       >
-                        Deliver Here
+                        {(!useSavedAddress && editingAddressId) ? "Update & Deliver Here" : "Deliver Here"}
                       </Button>
                     </div>
                   </div>
@@ -363,7 +615,12 @@ const Checkout = () => {
                         <MapPin className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
                         <div>
                           <p className="font-semibold mb-1">{customerInfo.name} <span className="font-normal text-muted-foreground ml-2">{customerInfo.phone}</span></p>
-                          <p className="text-muted-foreground leading-relaxed">{customerInfo.address}, {customerInfo.city} - <span className="font-medium text-foreground">{customerInfo.pincode}</span></p>
+                          <p className="text-muted-foreground leading-relaxed">
+                            {customerInfo.address}, {customerInfo.city}
+                            {customerInfo.landmark ? ` (Near ${customerInfo.landmark})` : ''} <br/>
+                            {customerInfo.district && customerInfo.state ? `${customerInfo.district}, ${customerInfo.state} - ` : ''}
+                            <span className="font-medium text-foreground">{customerInfo.pincode}</span>
+                          </p>
                         </div>
                       </div>
                     </div>

@@ -54,7 +54,15 @@ const Signup = () => {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
+    const { id, value } = e.target;
+    if (id === 'phone') {
+      let val = value.replace(/\D/g, '');
+      if (val.length > 10 && val.startsWith('91')) val = val.slice(2);
+      val = val.slice(0, 10);
+      setFormData({ ...formData, phone: val });
+    } else {
+      setFormData({ ...formData, [id]: value });
+    }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -64,6 +72,16 @@ const Signup = () => {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(formData.phone)) {
+      toast({
+        title: "Invalid Phone Number",
+        description: "Please enter a valid 10-digit Indian mobile number.",
         variant: "destructive",
       });
       return;
@@ -184,15 +202,17 @@ const Signup = () => {
 
                 <div className="space-y-1.5 sm:col-span-1">
                   <Label htmlFor="phone" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Phone <span className="text-red-500">*</span></Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70" />
+                  <div className="relative flex items-center">
+                    <span className="absolute left-10 text-sm text-muted-foreground z-10">+91</span>
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70 z-10" />
                     <Input 
                       id="phone" 
                       value={formData.phone} 
                       onChange={handleInputChange} 
-                      placeholder="9876543210" 
+                      placeholder="10-digit number" 
                       required 
-                      className="pl-10 h-11 bg-background/60 border-border/60 hover:border-pink-200 focus:border-pink-400 focus:ring-pink-400/20 transition-all text-sm rounded-xl"
+                      maxLength={10}
+                      className="pl-[4.5rem] h-11 bg-background/60 border-border/60 hover:border-pink-200 focus:border-pink-400 focus:ring-pink-400/20 transition-all text-sm rounded-xl"
                     />
                   </div>
                 </div>

@@ -23,6 +23,7 @@ export interface Order {
   delayedDeliveryDate?: string | null;
   delayReason?: string | null;
   cancelReason?: string | null;
+  updatedAt?: string;
 }
 
 interface OrdersState {
@@ -130,6 +131,7 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
               delayedDeliveryDate: order.delayedDeliveryDate,
               delayReason: order.delayReason,
               cancelReason: order.cancelReason,
+              updatedAt: order.updatedAt ? new Date(order.updatedAt).toISOString() : undefined,
             }));
             
             set({ orders, loading: false, lastFetched: now, abortController: null });

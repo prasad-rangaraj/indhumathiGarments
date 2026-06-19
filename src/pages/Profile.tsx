@@ -9,6 +9,8 @@ import { useToast } from '../components/ui/use-toast';
 import { Loader2, User, MapPin, Package, Heart, LogOut, ChevronRight, ChevronLeft, Save, Plus, Trash2, Edit2, Ticket, Headphones, RotateCcw } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import indianStatesData from '@/lib/indianStates.json';
 
 const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
 const toUrl = (src: string) => {
@@ -145,7 +147,9 @@ export default function Profile() {
   const [addresses, setAddresses] = useState<any[]>([]);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<any>(null);
-  const [addressForm, setAddressForm] = useState({ name: '', phone: '', address: '', city: '', state: '', pincode: '', isDefault: false });
+  const [addressForm, setAddressForm] = useState({ name: '', phone: '', address: '', city: '', state: '', district: '', landmark: '', pincode: '', isDefault: false });
+  const [isFetchingPincode, setIsFetchingPincode] = useState(false);
+  const [availableDistricts, setAvailableDistricts] = useState<string[]>([]);
   const [showMobileMenu, setShowMobileMenu] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     return !params.has('tab');
@@ -213,9 +217,62 @@ export default function Profile() {
     }
   };
 
+  const fetchPincodeDetails = async (pincodeStr: string) => {
+    setIsFetchingPincode(true);
+    try {
+      const response = await fetch(`https://api.postalpincode.in/pincode/${pincodeStr}`);
+      const data = await response.json();
+      if (data && data[0] && data[0].Status === 'Success') {
+        const postOffice = data[0].PostOffice[0];
+        const fetchedState = postOffice.State;
+        const fetchedDistrict = postOffice.District;
+
+        setAddressForm(prev => ({
+          ...prev,
+          state: fetchedState,
+          district: fetchedDistrict,
+          city: prev.city || postOffice.Block || postOffice.Name
+        }));
+
+        const stateData = indianStatesData.states.find(s => s.state.toLowerCase() === fetchedState.toLowerCase());
+        setAvailableDistricts(stateData ? stateData.districts : [fetchedDistrict]);
+        
+        toast({ title: "Location Found", description: `${fetchedDistrict}, ${fetchedState}` });
+      } else {
+        toast({ title: "Invalid Pincode", description: "Please enter state/district manually.", variant: "destructive" });
+      }
+    } catch (err) {
+      console.error("Error fetching pincode", err);
+    } finally {
+      setIsFetchingPincode(false);
+    }
+  };
+
+  const handlePhoneChange = (val: string, setForm: any) => {
+    let cleanVal = val.replace(/\D/g, '');
+    if (cleanVal.length > 10 && cleanVal.startsWith('91')) cleanVal = cleanVal.slice(2);
+    cleanVal = cleanVal.slice(0, 10);
+    setForm(prev => ({ ...prev, phone: cleanVal }));
+  };
+
   const handleSaveAddress = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user?.id) return;
+    
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(addressForm.phone)) {
+      toast({ title: "Invalid Phone Number", description: "Enter a valid 10-digit Indian mobile number.", variant: "destructive" });
+      return;
+    }
+    if (addressForm.pincode.length !== 6) {
+      toast({ title: "Invalid Pincode", description: "Enter a valid 6-digit pincode.", variant: "destructive" });
+      return;
+    }
+    if (!addressForm.state || !addressForm.district) {
+      toast({ title: "Incomplete Address", description: "Please select State and District.", variant: "destructive" });
+      return;
+    }
+
     setLoading(true);
     try {
       if (editingAddress) {
@@ -266,6 +323,11 @@ export default function Profile() {
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(formData.phone)) {
+      toast({ title: "Invalid Phone Number", description: "Enter a valid 10-digit Indian mobile number.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
     try {
       const updatedUser = await userAPI.updateProfile(formData);
@@ -408,13 +470,11 @@ export default function Profile() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm text-gray-500">Mobile Number</label>
-                      <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className="w-full border border-gray-200 rounded-sm bg-gray-50 p-2.5 focus:bg-white focus:ring-1 focus:ring-pink-500 transition-all" required />
+                      <div className="relative flex items-center">
+                        <span className="absolute left-3 text-sm text-gray-500">+91</span>
+                        <input type="tel" maxLength={10} value={formData.phone} onChange={e => handlePhoneChange(e.target.value, setFormData)} className="w-full border border-gray-200 rounded-sm bg-gray-50 py-2.5 pl-10 pr-2 focus:bg-white focus:ring-1 focus:ring-pink-500 transition-all" required />
+                      </div>
                     </div>
-                    <div className="space-y-2 md:col-span-2">
-                      <label className="text-sm text-gray-500">Default Shipping Address</label>
-                      <textarea value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className="w-full border border-gray-200 rounded-sm bg-gray-50 p-2.5 focus:bg-white focus:ring-1 focus:ring-pink-500 transition-all" rows={3} />
-                    </div>
-
                     <div className="md:col-span-2 mt-4">
                       <Button type="submit" disabled={loading} className="px-8 bg-pink-600 hover:bg-pink-700 text-white rounded-sm font-bold transition-all transform hover:scale-105 active:scale-95 shadow-md hover:shadow-pink-200">
                         {loading ? <Loader2 className="animate-spin mr-2" /> : "SAVE CHANGES"}
@@ -480,7 +540,7 @@ export default function Profile() {
                           return;
                         }
                         setEditingAddress(null);
-                        setAddressForm({ name: '', phone: '', address: '', city: '', state: '', pincode: '', isDefault: addresses.length === 0 });
+                        setAddressForm({ name: '', phone: '', address: '', city: '', state: '', district: '', landmark: '', pincode: '', isDefault: addresses.length === 0 });
                         setIsAddressModalOpen(true);
                       }}
                       variant="outline"
@@ -493,18 +553,17 @@ export default function Profile() {
                   {loading ? (
                     <div className="flex justify-center py-10"><Loader2 className="animate-spin text-pink-600" size={32} /></div>
                   ) : addresses.length === 0 ? (
-                    <div>
-                      {/* Fallback to profile address if no dedicated addresses exist */}
-                      <div className="border border-pink-100 rounded-sm p-5 relative hover:shadow-md transition-all bg-white">
-                        <span className="absolute top-4 right-4 text-[10px] font-bold bg-pink-50 text-pink-600 px-2.5 py-1 rounded-full border border-pink-100 tracking-wider">DEFAULT</span>
-                        <div className="flex gap-4">
-                          <MapPin className="text-pink-600 mt-1" />
-                          <div>
-                            <p className="font-bold text-gray-800">{user.name} <span className="ml-4 font-normal text-gray-500 text-sm">{user.phone}</span></p>
-                            <p className="text-sm text-gray-600 mt-2 max-w-md leading-relaxed">{user.address || 'No address added yet. Please edit your primary address in Profile Information.'}</p>
-                          </div>
-                        </div>
-                      </div>
+                    <div className="flex flex-col items-center justify-center py-16 text-center bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
+                      <MapPin size={48} className="text-gray-300 mb-4" />
+                      <h3 className="text-lg font-medium text-gray-800">No Saved Addresses</h3>
+                      <p className="text-gray-500 text-sm mt-2 max-w-sm mb-6">You haven't added any delivery addresses yet. Add one now to make your next checkout faster and easier.</p>
+                      <Button onClick={() => {
+                        setEditingAddress(null);
+                        setAddressForm({ name: '', phone: '', address: '', city: '', state: '', district: '', landmark: '', pincode: '', isDefault: true });
+                        setIsAddressModalOpen(true);
+                      }} className="bg-pink-600 hover:bg-pink-700 text-white shadow-sm font-bold tracking-wide rounded-sm px-6">
+                        + ADD NEW ADDRESS
+                      </Button>
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -515,7 +574,9 @@ export default function Profile() {
                           <div className="absolute bottom-4 right-4 sm:opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
                             <button onClick={() => {
                               setEditingAddress(addr);
-                              setAddressForm({ name: addr.name || '', phone: addr.phone || '', address: addr.address || '', city: addr.city || '', state: addr.state || '', pincode: addr.pincode || '', isDefault: addr.isDefault || false });
+                              setAddressForm({ name: addr.name || '', phone: addr.phone || '', address: addr.address || '', city: addr.city || '', state: addr.state || '', district: addr.district || '', landmark: addr.landmark || '', pincode: addr.pincode || '', isDefault: addr.isDefault || false });
+                              const stateData = indianStatesData.states.find(s => s.state === addr.state);
+                              setAvailableDistricts(stateData ? stateData.districts : (addr.district ? [addr.district] : []));
                               setIsAddressModalOpen(true);
                             }} className="p-1.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded-full transition-colors bg-white shadow-sm sm:shadow-none"><Edit2 size={16} /></button>
                             <button onClick={() => handleDeleteAddress(addr.id || addr._id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors bg-white shadow-sm sm:shadow-none"><Trash2 size={16} /></button>
@@ -528,7 +589,8 @@ export default function Profile() {
                             <div>
                               <p className="font-bold text-gray-800">{addr.name || user.name} <span className="ml-4 font-normal text-gray-500 text-sm">{addr.phone || user.phone}</span></p>
                               <p className="text-sm text-gray-600 mt-2 max-w-md leading-relaxed">
-                                {[addr.address, addr.city, addr.state].filter(Boolean).join(', ')} {addr.pincode && <span>- <span className="font-bold text-pink-600">{addr.pincode}</span></span>}
+                                {[addr.address, addr.city, addr.landmark ? `(Near ${addr.landmark})` : ''].filter(Boolean).join(', ')} <br/>
+                                {[addr.district, addr.state].filter(Boolean).join(', ')} {addr.pincode && <span>- <span className="font-bold text-pink-600">{addr.pincode}</span></span>}
                               </p>
                             </div>
                           </div>
@@ -714,29 +776,67 @@ export default function Profile() {
               </div>
               <div className="space-y-2">
                 <label className="text-xs text-gray-500 font-bold">Phone</label>
-                <input type="tel" value={addressForm.phone} onChange={e => setAddressForm({ ...addressForm, phone: e.target.value })} className="w-full border border-gray-200 rounded-sm bg-gray-50 p-2 text-sm focus:bg-white focus:ring-1 focus:ring-pink-500" required />
+                <div className="relative flex items-center">
+                  <span className="absolute left-3 text-xs text-gray-500">+91</span>
+                  <input type="tel" maxLength={10} value={addressForm.phone} onChange={e => handlePhoneChange(e.target.value, setAddressForm)} className="w-full border border-gray-200 rounded-sm bg-gray-50 py-2 pl-9 pr-2 text-sm focus:bg-white focus:ring-1 focus:ring-pink-500" required />
+                </div>
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-xs text-gray-500 font-bold">Street Address</label>
+              <label className="text-xs text-gray-500 font-bold">Pincode</label>
+              <div className="relative">
+                <input type="text" value={addressForm.pincode} onChange={e => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                  setAddressForm({ ...addressForm, pincode: val });
+                  if (val.length === 6) fetchPincodeDetails(val);
+                }} className="w-full border border-gray-200 rounded-sm bg-gray-50 p-2 text-sm focus:bg-white focus:ring-1 focus:ring-pink-500" required placeholder="6 digits" />
+                {isFetchingPincode && <span className="absolute right-3 top-2 text-xs text-gray-400 animate-pulse">Fetching...</span>}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs text-gray-500 font-bold">State</label>
+                <Select value={addressForm.state} onValueChange={(val) => {
+                  const stateData = indianStatesData.states.find(s => s.state === val);
+                  setAvailableDistricts(stateData ? stateData.districts : []);
+                  setAddressForm({ ...addressForm, state: val, district: '' });
+                }}>
+                  <SelectTrigger className="w-full h-[38px] text-sm bg-gray-50 rounded-sm border-gray-200">
+                    <SelectValue placeholder="Select State" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {indianStatesData.states.map(s => <SelectItem key={s.state} value={s.state}>{s.state}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs text-gray-500 font-bold">District</label>
+                <Select value={addressForm.district} onValueChange={(val) => setAddressForm({ ...addressForm, district: val })} disabled={!addressForm.state}>
+                  <SelectTrigger className="w-full h-[38px] text-sm bg-gray-50 rounded-sm border-gray-200">
+                    <SelectValue placeholder="Select District" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs text-gray-500 font-bold">Flat, House no., Building, Apartment</label>
               <textarea value={addressForm.address} onChange={e => setAddressForm({ ...addressForm, address: e.target.value })} className="w-full border border-gray-200 rounded-sm bg-gray-50 p-2 text-sm focus:bg-white focus:ring-1 focus:ring-pink-500" rows={2} required />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-xs text-gray-500 font-bold">City</label>
+                <label className="text-xs text-gray-500 font-bold">Area, Street, Village</label>
                 <input type="text" value={addressForm.city} onChange={e => setAddressForm({ ...addressForm, city: e.target.value })} className="w-full border border-gray-200 rounded-sm bg-gray-50 p-2 text-sm focus:bg-white focus:ring-1 focus:ring-pink-500" required />
               </div>
               <div className="space-y-2">
-                <label className="text-xs text-gray-500 font-bold">State</label>
-                <input type="text" value={addressForm.state} onChange={e => setAddressForm({ ...addressForm, state: e.target.value })} className="w-full border border-gray-200 rounded-sm bg-gray-50 p-2 text-sm focus:bg-white focus:ring-1 focus:ring-pink-500" required />
+                <label className="text-xs text-gray-500 font-bold">Landmark (Optional)</label>
+                <input type="text" value={addressForm.landmark} onChange={e => setAddressForm({ ...addressForm, landmark: e.target.value })} className="w-full border border-gray-200 rounded-sm bg-gray-50 p-2 text-sm focus:bg-white focus:ring-1 focus:ring-pink-500" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-xs text-gray-500 font-bold">Pincode</label>
-                <input type="text" value={addressForm.pincode} onChange={e => setAddressForm({ ...addressForm, pincode: e.target.value })} className="w-full border border-gray-200 rounded-sm bg-gray-50 p-2 text-sm focus:bg-white focus:ring-1 focus:ring-pink-500" required />
-              </div>
-              <div className="flex items-center gap-2 mt-6">
+            <div className="grid grid-cols-1 gap-4">
+              <div className="flex items-center gap-2 mt-4">
                 <input type="checkbox" id="isDefault" checked={addressForm.isDefault} onChange={e => setAddressForm({ ...addressForm, isDefault: e.target.checked })} className="accent-pink-600 w-4 h-4" />
                 <label htmlFor="isDefault" className="text-sm font-medium text-gray-700 cursor-pointer">Set as Default Address</label>
               </div>

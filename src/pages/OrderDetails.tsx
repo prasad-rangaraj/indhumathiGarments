@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 
 const BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
@@ -82,18 +83,7 @@ const OrderDetails = () => {
 
   // Show spinner while fetching — avoids flash of "Order not found" on mobile
   if (!hasFetched || loading) {
-    return (
-      <div className="min-h-screen relative flex items-center justify-center">
-        <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">
-          <img src={bgCotton1} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
-        </div>
-        <div className="flex flex-col items-center gap-4 text-muted-foreground animate-pulse">
-          <div className="w-14 h-14 rounded-full border-4 border-primary border-t-transparent animate-spin" />
-          <p className="text-sm font-medium">Loading order details…</p>
-        </div>
-      </div>
-    );
+    return <PremiumLoader text="Loading Order Details..." />;
   }
 
   if (!order) {
@@ -150,6 +140,16 @@ const OrderDetails = () => {
     const now = new Date().getTime();
     const hours24 = 24 * 60 * 60 * 1000;
     return (now - orderDate) < hours24;
+  };
+
+  const isReturnWindowOpen = (order: Order) => {
+    if (order.status !== 'Delivered') return false;
+    const deliveredDateString = order.updatedAt || order.orderDate;
+    if (!deliveredDateString) return false;
+    const deliveredDate = new Date(deliveredDateString).getTime();
+    const now = new Date().getTime();
+    const days7 = 7 * 24 * 60 * 60 * 1000;
+    return (now - deliveredDate) <= days7;
   };
 
   return (
@@ -355,7 +355,7 @@ const OrderDetails = () => {
         </div>
       </div>
 
-      {order.status === 'Delivered' && (
+      {isReturnWindowOpen(order) && (
         <div className="mx-4 sm:mx-auto max-w-4xl px-4 sm:px-6 mb-8">
           <div className="card-elegant p-6 border-blue-200 bg-blue-50/50">
             <div className="flex items-start gap-4">

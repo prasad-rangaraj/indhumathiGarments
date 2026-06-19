@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { useProductsStore } from '@/stores/productsStore';
 import CouponBanner from '@/components/CouponBanner';
+import { Skeleton } from '@/components/ui/skeleton';
 import bgFashionModel from '@/assets/bg-fashion-model.png';
 import bgMensFashionModel from '@/assets/bg-mens-fashion-model.png';
 
@@ -32,21 +33,6 @@ const Products = () => {
   const themeAccent = 'hsl(var(--primary))';
   const themeAccentFaint = 'hsl(var(--primary) / 0.2)';
   const themeAccentHover = 'hsl(var(--primary) / 0.5)';
-
-  // Loading state
-  if (loading && mainCategories.length === 0) {
-    return (
-      <div className="min-h-screen relative">
-        <div className="fixed top-0 left-0 w-full h-[100dvh] -z-10 pointer-events-none">
-          <img src={gender === 'men' ? bgMensFashionModel : bgFashionModel} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px]" />
-        </div>
-        <div className="py-8 px-4 relative z-10 text-center">
-          <p className="text-muted-foreground">Loading products...</p>
-        </div>
-      </div>
-    );
-  }
 
   // Error state
   if (error) {
@@ -102,7 +88,12 @@ const Products = () => {
 
           {/* Categories */}
           <div className="max-w-3xl mx-auto space-y-4 sm:space-y-5 sm:px-0">
-            {mainCategories.length === 0 ? (
+            {loading && mainCategories.length === 0 ? (
+              // Skeletons
+              Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-28 w-full rounded-2xl bg-white/40" />
+              ))
+            ) : mainCategories.length === 0 ? (
               <p className="text-center text-muted-foreground">No categories available. Add products via the admin panel.</p>
             ) : (
               mainCategories.map((category, index) => {
