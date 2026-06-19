@@ -169,12 +169,12 @@ const CategoryProducts = () => {
               // Skeleton loading grid
               Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="card-product group overflow-hidden">
-                  <Skeleton className="w-full aspect-[4/5] rounded-none bg-white/40" />
+                  <Skeleton className="w-full aspect-[4/5] rounded-none" />
                   <div className="p-4 sm:p-6 space-y-3 bg-card">
-                    <Skeleton className="h-6 w-3/4 bg-white/40" />
-                    <Skeleton className="h-4 w-full bg-white/40" />
-                    <Skeleton className="h-4 w-2/3 bg-white/40" />
-                    <Skeleton className="h-10 w-full mt-4 bg-white/40" />
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="h-10 w-full mt-4" />
                   </div>
                 </div>
               ))

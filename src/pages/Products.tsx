@@ -91,7 +91,7 @@ const Products = () => {
             {loading && mainCategories.length === 0 ? (
               // Skeletons
               Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-28 w-full rounded-2xl bg-white/40" />
+                <Skeleton key={i} className="h-28 w-full rounded-2xl" />
               ))
             ) : mainCategories.length === 0 ? (
               <p className="text-center text-muted-foreground">No categories available. Add products via the admin panel.</p>

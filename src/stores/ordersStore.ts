@@ -202,6 +202,7 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
           set({ orders: updatedOrders, loading: false, lastFetched: 0 });
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to create order', loading: false });
+          throw error;
         }
       },
 

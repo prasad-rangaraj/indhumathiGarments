@@ -122,7 +122,7 @@ export const ordersAPI = {
   requestReturn: (orderId: string, data: { reason: string; images?: string[] }) =>
     apiRequest<any>(`/orders/${orderId}/return`, { method: 'POST', body: JSON.stringify(data) }),
   trackOrder: (trackingNumber: string) =>
-    apiRequest<any>(`/public/track/${trackingNumber}?t=${Date.now()}`),
+    apiRequest<any>(`/public/order-status/${trackingNumber}?t=${Date.now()}`),
 };
 
 // Wishlist API
