@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ArrowRight, ArrowLeft } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useProductsStore } from '@/stores/productsStore';
 import CouponBanner from '@/components/CouponBanner';
 import { Skeleton } from '@/components/ui/skeleton';
 import bgFashionModel from '@/assets/bg-fashion-model.png';
 import bgMensFashionModel from '@/assets/bg-mens-fashion-model.png';
+import { motion } from 'framer-motion';
 
 const Products = () => {
   const { products, categories, loading, error, fetchProducts, fetchCategories } = useProductsStore();
@@ -70,12 +71,22 @@ const Products = () => {
 
 
           {/* Header */}
-          <div className="text-center mb-10 sm:mb-14">
+          <motion.div
+            className="text-center mb-10 sm:mb-14"
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          >
             {gender && (
               <div className="flex justify-center mb-4">
-                <span className={`px-5 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase bg-white/70 backdrop-blur-sm border border-primary/20 text-primary shadow-sm`}>
+                <motion.span
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+                  className={`px-5 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase bg-white/70 backdrop-blur-sm border border-primary/20 text-primary shadow-sm`}
+                >
                   {gender === 'women' ? '♀  She — For Her' : '♂  He — For Him'}
-                </span>
+                </motion.span>
               </div>
             )}
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-foreground/90">
@@ -84,7 +95,7 @@ const Products = () => {
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
               Choose a type to explore all products and styles
             </p>
-          </div>
+          </motion.div>
 
           {/* Categories */}
           <div className="max-w-3xl mx-auto space-y-4 sm:space-y-5 sm:px-0">
@@ -101,37 +112,43 @@ const Products = () => {
                 const subTypeCount = getSubTypeCount(category);
 
                 return (
-                  <Link
+                  <motion.div
                     key={category}
-                    to={`/category/${encodeURIComponent(category)}${gender ? `?gender=${gender}` : ''}`}
-                    className="block group"
-                    style={{ animationDelay: `${index * 0.06}s` }}
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.45, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                    whileHover={{ x: 6, transition: { duration: 0.2 } }}
                   >
-                    <div
-                      className="bg-white rounded-2xl px-6 sm:px-8 py-4 sm:py-5 flex items-center justify-between gap-4 transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1 border border-pink-100 hover:border-pink-300"
+                    <Link
+                      to={`/category/${encodeURIComponent(category)}${gender ? `?gender=${gender}` : ''}`}
+                      className="block group"
                     >
-                      <div>
-                        <h2 className="text-lg sm:text-xl font-semibold text-foreground transition-colors group-hover:text-primary">
-                          {category}
-                        </h2>
-                        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                          {productCount} {productCount === 1 ? 'product' : 'products'} · {subTypeCount}{' '}
-                          {subTypeCount === 1 ? 'style' : 'styles'}
-                        </p>
-                      </div>
+                      <div className="bg-white rounded-2xl px-6 sm:px-8 py-4 sm:py-5 flex items-center justify-between gap-4 transition-all duration-300 shadow-sm hover:shadow-xl border border-pink-100 hover:border-pink-300">
+                        <div>
+                          <h2 className="text-lg sm:text-xl font-semibold text-foreground transition-colors group-hover:text-primary">
+                            {category}
+                          </h2>
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                            {productCount} {productCount === 1 ? 'product' : 'products'} · {subTypeCount}{' '}
+                            {subTypeCount === 1 ? 'style' : 'styles'}
+                          </p>
+                        </div>
 
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <span className="text-xs sm:text-sm font-medium group-hover:underline text-primary">
-                          View products
-                        </span>
-                        <div
-                          className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 bg-primary/20"
-                        >
-                          <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform text-primary" />
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className="text-xs sm:text-sm font-medium group-hover:underline text-primary">
+                            View products
+                          </span>
+                          <motion.div
+                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center bg-primary/20"
+                            whileHover={{ scale: 1.15, backgroundColor: 'hsl(var(--primary) / 0.35)' }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform text-primary" />
+                          </motion.div>
                         </div>
                       </div>
-                    </div>
-                  </Link>
+                    </Link>
+                  </motion.div>
                 );
               })
             )}

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import bgFashionModel from '@/assets/bg-fashion-model.png';
 import bgMensFashionModel from '@/assets/bg-mens-fashion-model.png';
 import { Skeleton } from '@/components/ui/skeleton';
+import { motion } from 'framer-motion';
 
 const CategoryProducts = () => {
   const { category, subcategory } = useParams<{ category: string; subcategory?: string }>();
@@ -180,10 +181,13 @@ const CategoryProducts = () => {
               ))
             ) : (
               categoryProducts.map((product, index) => (
-              <div
+              <motion.div
                 key={product.id}
                 className="card-product group overflow-hidden"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.07, ease: [0.22, 1, 0.36, 1] }}
+                whileHover={{ y: -6, transition: { duration: 0.25, ease: 'easeOut' } }}
                 onMouseEnter={() => setHoveredProduct(product.id)}
                 onMouseLeave={() => setHoveredProduct(null)}
               >
@@ -308,7 +312,7 @@ const CategoryProducts = () => {
                     View Details
                   </Link>
                 </div>
-              </div>
+              </motion.div>
             )))}
           </div>
         </div>

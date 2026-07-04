@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Package,
@@ -66,8 +66,14 @@ const allNavItems = [
 
 export function AdminSidebar() {
   const location = useLocation();
-  const { user } = useAuthStore();
+  const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
   const isSuperAdmin = user?.role === 'super_admin';
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login', { replace: true });
+  };
 
   const mainNavItems = allNavItems.filter(item => !item.superAdminOnly || isSuperAdmin);
 
@@ -151,13 +157,13 @@ export function AdminSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-border/30">
-        <NavLink
-          to="/login"
-          className="flex items-center gap-3 px-3 py-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
         >
           <LogOut className="w-4 h-4" />
           Logout
-        </NavLink>
+        </button>
       </SidebarFooter>
     </Sidebar>
   );

@@ -1,15 +1,25 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import { useOrdersStore } from '../stores/ordersStore';
+import { useEffect } from 'react';
 
 interface ProtectedRouteProps {
   adminOnly?: boolean;
 }
 
 export const ProtectedRoute = ({ adminOnly = false }: ProtectedRouteProps) => {
-  const { user, token } = useAuthStore();
+  const { user, token, isAuthenticated, logout } = useAuthStore();
+  const { authError } = useOrdersStore();
 
-  // Redirect to login if not authenticated
-  if (!user || !token) {
+  // If the backend returned 401 (expired/invalid token), clear auth and redirect
+  useEffect(() => {
+    if (authError && isAuthenticated) {
+      logout();
+    }
+  }, [authError, isAuthenticated, logout]);
+
+  // Redirect to login if not authenticated or no token
+  if (!isAuthenticated || !user || !token) {
     return <Navigate to="/login" replace />;
   }
 

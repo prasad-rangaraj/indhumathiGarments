@@ -13,9 +13,12 @@ const Navigation = () => {
   const navigate = useNavigate();
   const { getItemCount, fetchCart } = useCartStore();
   const { items: wishlistItems, fetchWishlist } = useWishlistStore();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, token } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // A user is truly logged in only when BOTH isAuthenticated flag and token are present
+  const isLoggedIn = isAuthenticated && !!token;
 
   useEffect(() => {
     fetchCart();
@@ -143,7 +146,7 @@ const Navigation = () => {
             </Link>
 
             {/* Profile / Login Icon */}
-            {isAuthenticated ? (
+            {isLoggedIn ? (
               <Link
                 to="/profile"
                 className="relative p-2 hover:bg-accent rounded-lg transition-colors hidden md:flex"
@@ -215,7 +218,7 @@ const Navigation = () => {
               >
                 FAQ
               </Link>
-              {isAuthenticated ? (
+              {isLoggedIn ? (
                 <>
                   <Link
                     to="/profile?tab=orders"
