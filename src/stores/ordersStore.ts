@@ -142,7 +142,7 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
           }
           const errMsg = error instanceof Error ? error.message : 'Failed to fetch orders';
           // Detect authentication failures
-          const isAuthError = errMsg.includes('401') || errMsg.includes('Not authorized') || errMsg.includes('token') || errMsg.toLowerCase().includes('unauthorized');
+          const isAuthError = errMsg.includes('401') || errMsg.includes('Not authorized') || errMsg.includes('token') || errMsg.toLowerCase().includes('unauthorized') || errMsg.toLowerCase().includes('session expired');
           set({ 
             error: errMsg, 
             loading: false, 
