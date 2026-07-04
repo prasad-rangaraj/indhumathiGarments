@@ -40,6 +40,9 @@ export const useAuthStore = create<AuthState>()(
 
         try {
           const data = await authAPI.login({ email, password });
+          // Reset any stale auth error from a previous session so ProtectedRoute doesn't log out immediately
+          const { useOrdersStore } = await import('./ordersStore');
+          useOrdersStore.setState({ authError: false });
           set({ user: data, token: data.token, isAuthenticated: true, loading: false });
         } catch (error) {
           set({ loading: false });
@@ -86,6 +89,11 @@ export const useAuthStore = create<AuthState>()(
           console.error('Logout failed', error);
         }
         set({ user: null, token: null, isAuthenticated: false });
+        // Reset orders auth error so there's no stale state on next login
+        try {
+          const { useOrdersStore } = await import('./ordersStore');
+          useOrdersStore.setState({ authError: false, orders: [], lastFetched: 0 });
+        } catch {}
       },
 
       setUser: (user: User) => {

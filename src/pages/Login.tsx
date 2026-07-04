@@ -19,13 +19,16 @@ const Login = () => {
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get('redirect') || '/';
   const { toast } = useToast();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, token } = useAuthStore();
 
+  // Only redirect if BOTH isAuthenticated AND a real token exist.
+  // If only isAuthenticated is true (stale persisted state, token missing/expired),
+  // let the user see the login form instead of bouncing them away.
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && token) {
       navigate(redirectTo, { replace: true });
     }
-  }, [isAuthenticated, navigate, redirectTo]);
+  }, [isAuthenticated, token, navigate, redirectTo]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

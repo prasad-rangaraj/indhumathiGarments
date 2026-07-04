@@ -67,7 +67,7 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
         }
 
         const newAbortController = new AbortController();
-        set({ loading: true, error: null, abortController: newAbortController });
+        set({ loading: true, error: null, authError: false, abortController: newAbortController });
 
         try {
           // Logic to determine userId
@@ -134,7 +134,7 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
               updatedAt: order.updatedAt ? new Date(order.updatedAt).toISOString() : undefined,
             }));
             
-            set({ orders, loading: false, lastFetched: now, abortController: null });
+            set({ orders, loading: false, lastFetched: now, abortController: null, authError: false });
           }
         } catch (error) {
            if (error instanceof Error && error.name === 'AbortError') {
