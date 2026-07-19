@@ -1,10 +1,20 @@
-import { useAuthStore } from '@/stores/authStore';
+
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Helper function to get auth headers (Optional now with Cookies)
 const getAuthHeaders = () => {
-  const { token } = useAuthStore.getState();
+  let token = null;
+  try {
+    const authStorage = localStorage.getItem('auth-storage');
+    if (authStorage) {
+      const parsed = JSON.parse(authStorage);
+      token = parsed.state?.token;
+    }
+  } catch (e) {
+    // Ignore parse errors
+  }
+
   return {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
