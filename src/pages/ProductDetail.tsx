@@ -423,8 +423,79 @@ const ProductDetail = () => {
                       </div>
                     )}
                     
-                    {/* Mobile Color Selection */}
-                    {renderColorSelection("block md:hidden pt-2 pb-2")}
+                    {/* Unified Selection Area below images */}
+                    <div className="mt-6">
+                      {/* Color Selection */}
+                      {renderColorSelection("mb-6")}
+
+                      {/* Size Selection */}
+                      <div className="mb-6">
+                        <h3 className="font-semibold text-foreground mb-3">Select Size</h3>
+                        <div className="flex flex-wrap gap-3">
+                          {(product.sizes ?? ['S', 'M', 'L', 'XL']).map((size) => (
+                            <button
+                              key={size}
+                              onClick={() => setSelectedSize(size)}
+                              className={`min-w-[3rem] h-12 px-3 rounded-lg border-2 font-semibold transition-all duration-200 flex items-center justify-center whitespace-nowrap shadow-sm ${selectedSize === size
+                                  ? 'border-primary bg-primary text-primary-foreground shadow-md'
+                                  : 'border-black/15 bg-background/60 text-foreground hover:border-primary/50 hover:bg-background/80'
+                                }`}
+                            >
+                              {size}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Quantity Selection */}
+                      <div className="mb-8">
+                        <h3 className="font-semibold text-foreground mb-3">Quantity</h3>
+                        <div className="flex items-center gap-4">
+                          <button
+                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                            className="w-10 h-10 rounded-lg border border-border hover:border-primary transition-colors flex items-center justify-center"
+                          >
+                            <Minus className="h-4 w-4" />
+                          </button>
+                          <span className="text-xl font-semibold w-12 text-center">{quantity}</span>
+                          <button
+                            onClick={() => setQuantity(quantity + 1)}
+                            className="w-10 h-10 rounded-lg border border-border hover:border-primary transition-colors flex items-center justify-center"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-2">
+                        <button
+                          onClick={handleAddToCart}
+                          disabled={!product.inStock}
+                          className={`flex-1 flex items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-2.5 transition-all duration-300 ${
+                            product.inStock 
+                              ? 'btn-secondary' 
+                              : 'bg-muted text-muted-foreground border border-border rounded-lg cursor-not-allowed opacity-70 grayscale'
+                          }`}
+                        >
+                          <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                          <span className="hidden sm:inline">{product.inStock ? 'Add to Cart' : 'No Stock'}</span>
+                          <span className="sm:hidden">{product.inStock ? 'Add' : 'No Stock'}</span>
+                        </button>
+                        <button
+                          onClick={handleBuyNow}
+                          disabled={!product.inStock}
+                          className={`flex-1 flex items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-2.5 transition-all duration-300 ${
+                            product.inStock 
+                              ? 'btn-primary' 
+                              : 'bg-muted text-muted-foreground border border-border rounded-lg cursor-not-allowed opacity-70 grayscale'
+                          }`}
+                        >
+                          <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                          <span>{product.inStock ? 'Buy Now' : 'No Stock'}</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 );
               })()}
@@ -482,76 +553,7 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              {/* Color Selection (Desktop) */}
-              {renderColorSelection("mb-6 hidden md:block")}
 
-              {/* Size Selection */}
-              <div className="mb-6">
-                <h3 className="font-semibold text-foreground mb-3">Select Size</h3>
-                <div className="flex flex-wrap gap-3">
-                  {(product.sizes ?? ['S', 'M', 'L', 'XL']).map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`min-w-[3rem] h-12 px-3 rounded-lg border-2 font-semibold transition-all duration-200 flex items-center justify-center whitespace-nowrap shadow-sm ${selectedSize === size
-                          ? 'border-primary bg-primary text-primary-foreground shadow-md'
-                          : 'border-black/15 bg-background/60 text-foreground hover:border-primary/50 hover:bg-background/80'
-                        }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Quantity Selection */}
-              <div className="mb-8">
-                <h3 className="font-semibold text-foreground mb-3">Quantity</h3>
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-10 h-10 rounded-lg border border-border hover:border-primary transition-colors flex items-center justify-center"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <span className="text-xl font-semibold w-12 text-center">{quantity}</span>
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="w-10 h-10 rounded-lg border border-border hover:border-primary transition-colors flex items-center justify-center"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8">
-                <button
-                  onClick={handleAddToCart}
-                  disabled={!product.inStock}
-                  className={`flex-1 flex items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-2.5 transition-all duration-300 ${
-                    product.inStock 
-                      ? 'btn-secondary' 
-                      : 'bg-muted text-muted-foreground border border-border rounded-lg cursor-not-allowed opacity-70 grayscale'
-                  }`}
-                >
-                  <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-                  <span className="hidden sm:inline">{product.inStock ? 'Add to Cart' : 'No Stock'}</span>
-                  <span className="sm:hidden">{product.inStock ? 'Add' : 'No Stock'}</span>
-                </button>
-                <button
-                  onClick={handleBuyNow}
-                  disabled={!product.inStock}
-                  className={`flex-1 flex items-center justify-center gap-2 text-sm sm:text-base py-3 sm:py-2.5 transition-all duration-300 ${
-                    product.inStock 
-                      ? 'btn-primary' 
-                      : 'bg-muted text-muted-foreground border border-border rounded-lg cursor-not-allowed opacity-70 grayscale'
-                  }`}
-                >
-                  <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-                  <span>{product.inStock ? 'Buy Now' : 'No Stock'}</span>
-                </button>
-              </div>
             </div>
             {/* Reviews */}
             <div className="md:col-span-2 mt-10">
