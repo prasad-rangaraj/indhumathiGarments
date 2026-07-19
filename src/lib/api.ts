@@ -155,7 +155,11 @@ export const adminAPI = {
   uploadImage: async (file: File, folder?: string) => {
     const formData = new FormData();
     formData.append('file', file);
-    const { token } = useAuthStore.getState();
+    let token = null;
+    try {
+      const authStorage = localStorage.getItem('auth-storage');
+      if (authStorage) token = JSON.parse(authStorage).state?.token;
+    } catch (e) {}
     const url = folder ? `${API_BASE_URL}/admin/upload?folder=${encodeURIComponent(folder)}` : `${API_BASE_URL}/admin/upload`;
     const response = await fetch(url, {
       method: 'POST',
@@ -230,7 +234,11 @@ export const customerAPI = {
   uploadImagePublic: async (file: File, folder?: string) => {
     const formData = new FormData();
     formData.append('file', file);
-    const { token } = useAuthStore.getState();
+    let token = null;
+    try {
+      const authStorage = localStorage.getItem('auth-storage');
+      if (authStorage) token = JSON.parse(authStorage).state?.token;
+    } catch (e) {}
     const url = folder ? `${API_BASE_URL}/public/upload?folder=${encodeURIComponent(folder)}` : `${API_BASE_URL}/public/upload`;
     const response = await fetch(url, {
       method: 'POST',
