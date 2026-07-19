@@ -119,31 +119,34 @@ const Navigation = () => {
               <Search className="h-5 w-5 text-foreground" />
             </button>
 
-            {/* Wishlist */}
-            <Link
-              to="/wishlist"
-              className="relative p-2 hover:bg-accent rounded-lg transition-colors"
-            >
-              <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
-              {wishlistItems.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                  {wishlistItems.length}
-                </span>
-              )}
-            </Link>
+            {/* Wishlist and Cart - Only for logged in users */}
+            {isLoggedIn && (
+              <>
+                <Link
+                  to="/wishlist"
+                  className="relative p-2 hover:bg-accent rounded-lg transition-colors"
+                >
+                  <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
+                  {wishlistItems.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                      {wishlistItems.length}
+                    </span>
+                  )}
+                </Link>
 
-            {/* Cart Icon */}
-            <Link
-              to="/cart"
-              className="relative p-2 hover:bg-accent rounded-lg transition-colors"
-            >
-              <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
-              {getItemCount() > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                  {getItemCount()}
-                </span>
-              )}
-            </Link>
+                <Link
+                  to="/cart"
+                  className="relative p-2 hover:bg-accent rounded-lg transition-colors"
+                >
+                  <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
+                  {getItemCount() > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                      {getItemCount()}
+                    </span>
+                  )}
+                </Link>
+              </>
+            )}
 
             {/* Profile / Login Icon */}
             {isLoggedIn ? (
