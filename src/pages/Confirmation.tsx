@@ -17,13 +17,17 @@ const toUrl = (src: string) => {
 
 const Confirmation = () => {
   const { orderId } = useParams<{ orderId: string }>();
-  const { orders, fetchOrders, loading } = useOrdersStore();
+  const { orders, fetchOrderById, loading } = useOrdersStore();
   const [hasFetched, setHasFetched] = useState(false);
 
   useEffect(() => {
     // Always fetch fresh from DB — no localStorage involved
-    fetchOrders(undefined, true).finally(() => setHasFetched(true));
-  }, [fetchOrders]);
+    if (orderId) {
+      fetchOrderById(orderId, true).finally(() => setHasFetched(true));
+    } else {
+      setHasFetched(true);
+    }
+  }, [fetchOrderById, orderId]);
 
   const orderData: Order | undefined = orders.find(o => o.orderId === orderId);
 

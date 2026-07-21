@@ -27,14 +27,18 @@ const loadRazorpayScript = (): Promise<boolean> => {
 
 const Checkout = () => {
   const { items, total, clearCart } = useCartStore();
-  const { createOrder, fetchOrders } = useOrdersStore();
+  const { createOrder } = useOrdersStore();
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const [customerInfo, setCustomerInfo] = useState(() => {
-    // Fallback to authStore user — address pre-fill comes from DB via useEffect
-    const { user } = useAuthStore.getState();
+    // Safely read user from persisted localStorage to avoid circular dep crash
+    let user: any = null;
+    try {
+      const authStorage = localStorage.getItem('auth-storage');
+      if (authStorage) user = JSON.parse(authStorage).state?.user;
+    } catch (e) {}
     return {
       name: user?.name || '',
       email: user?.email || '',
@@ -88,6 +92,11 @@ const Checkout = () => {
               const defaultAddr = data.find((a: any) => a.isDefault) || data[0];
               setSelectedAddressId(defaultAddr.id || defaultAddr._id);
               setUseSavedAddress(true);
+              // Populate districts for the saved address's state
+              if (defaultAddr.state) {
+                const stateData = indianStatesData.states.find((s: any) => s.state.toLowerCase() === defaultAddr.state.toLowerCase());
+                setAvailableDistricts(stateData ? stateData.districts : defaultAddr.district ? [defaultAddr.district] : []);
+              }
               setCustomerInfo(prev => ({
                 ...prev,
                 name: defaultAddr.name || '',
@@ -261,7 +270,7 @@ const Checkout = () => {
         const { orders: updatedOrders } = useOrdersStore.getState();
         const realOrderId = updatedOrders[0]?.orderId || tempOrderData.orderId;
         await clearCart();
-        fetchOrders(undefined, true);
+        // createOrder handles local store update
         toast({ title: 'Order placed!', description: 'Your COD order is confirmed.' });
         navigate(`/confirmation/${realOrderId}`);
         return;
@@ -315,8 +324,9 @@ const Checkout = () => {
                 orderData,
               });
               await clearCart();
-              // Force-refresh orders so Profile/My Orders shows this order immediately
-              fetchOrders(undefined, true);
+              // For online payments, we should probably fetch the newly created order into the local store,
+              // or just rely on the Confirmation page doing it.
+              // We'll let the Confirmation page handle fetching the new order.
               toast({ title: '🎉 Payment Successful!', description: `Order ${result.orderId} confirmed.` });
               navigate(`/confirmation/${result.orderId}`);
               resolve();
@@ -417,6 +427,11 @@ const Checkout = () => {
                           <div key={addr.id || addr._id} className={`p-4 border rounded-xl cursor-pointer transition-all ${selectedAddressId === (addr.id || addr._id) ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border hover:bg-muted/50'}`} onClick={() => {
                             setSelectedAddressId(addr.id || addr._id);
                             setUseSavedAddress(true);
+                            // Populate districts for the selected saved address's state
+                            if (addr.state) {
+                              const stateData = indianStatesData.states.find((s: any) => s.state.toLowerCase() === addr.state.toLowerCase());
+                              setAvailableDistricts(stateData ? stateData.districts : addr.district ? [addr.district] : []);
+                            }
                             setCustomerInfo(prev => ({
                               ...prev,
                               name: addr.name || '',
@@ -541,6 +556,12 @@ const Checkout = () => {
                       <Button
                         type="button"
                         onClick={(e) => {
+                          // If using a saved address, skip all validation and proceed
+                          if (useSavedAddress) {
+                            setCurrentStep(3);
+                            return;
+                          }
+
                           const form = e.currentTarget.closest('form');
                           if (form && !form.checkValidity()) {
                             form.reportValidity();

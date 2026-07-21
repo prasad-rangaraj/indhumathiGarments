@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://indhumathi-api.duckdns.org/api/:path*"
+      "destination": "https://api.indhumathigarments.com/api/:path*"
     },
     {
       "source": "/((?!api/).*)",

@@ -4,6 +4,7 @@ import indhumathiLogo from '@/assets/logo-new.png';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 import bgCotton2 from '@/assets/bg-cotton-2.jpg';
 import bgCotton3 from '@/assets/bg-cotton-3.jpg';
+import Footer from '@/components/Footer';
 
 const About = () => {
   return (
@@ -139,6 +140,7 @@ const About = () => {
           </div>
         </div>
       </section>
+      <Footer />
     </div>
   );
 };

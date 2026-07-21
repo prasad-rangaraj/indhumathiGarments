@@ -34,6 +34,7 @@ interface OrdersState {
   lastFetched: number;
   abortController: AbortController | null;
   fetchOrders: (userId?: string, force?: boolean) => Promise<void>;
+  fetchOrderById: (orderId: string, force?: boolean) => Promise<void>;
   getOrderById: (orderId: string) => Order | undefined;
   createOrder: (order: Order) => Promise<void>;
   cancelOrder: (orderId: string, reason?: string) => Promise<void>;
@@ -147,6 +148,78 @@ export const useOrdersStore = create<OrdersState>((set, get) => ({
             error: errMsg, 
             loading: false, 
             abortController: null,
+            authError: isAuthError,
+          });
+        }
+      },
+
+      fetchOrderById: async (orderId: string, force = false) => {
+        const existing = get().orders.find(o => o.orderId === orderId);
+        
+        // Return if not forced and we already have it
+        if (!force && existing) {
+          return;
+        }
+
+        set({ loading: true, error: null, authError: false });
+
+        try {
+          const orderData = await import('@/lib/api').then(m => m.ordersAPI.getById(orderId));
+          
+          const transformedOrder: Order = {
+            orderId: orderData.orderId,
+            items: orderData.items.map((item: any) => ({
+              id: item.productId || item.product?.id,
+              name: item.product?.name || item.name || 'Product',
+              price: item.price,
+              quantity: item.quantity,
+              selectedSize: item.size || item.selectedSize,
+              selectedColor: item.color || item.selectedColor,
+              image: item.image,
+              product: item.product,
+            })),
+            total: orderData.total,
+            originalTotal: orderData.originalTotal,
+            discount: orderData.discount,
+            couponCode: orderData.couponCode,
+            customerInfo: {
+              name: orderData.customerName || '',
+              address: orderData.customerAddress || '',
+              city: orderData.customerCity || '',
+              pincode: orderData.customerPincode || '',
+              phone: orderData.customerPhone || '',
+              email: orderData.customerEmail || '',
+            },
+            paymentMethod: orderData.paymentMethod,
+            orderDate: orderData.orderDate
+              ? new Date(orderData.orderDate).toISOString()
+              : orderData.createdAt
+                ? new Date(orderData.createdAt).toISOString()
+                : new Date().toISOString(),
+            status: orderData.status,
+            trackingNumber: orderData.trackingNumber,
+            delayedDeliveryDate: orderData.delayedDeliveryDate,
+            delayReason: orderData.delayReason,
+            cancelReason: orderData.cancelReason,
+            updatedAt: orderData.updatedAt ? new Date(orderData.updatedAt).toISOString() : undefined,
+          };
+          
+          set(state => {
+            const exists = state.orders.findIndex(o => o.orderId === orderId);
+            const newOrders = [...state.orders];
+            if (exists >= 0) {
+              newOrders[exists] = transformedOrder;
+            } else {
+              newOrders.push(transformedOrder);
+            }
+            return { orders: newOrders, loading: false };
+          });
+        } catch (error) {
+          const errMsg = error instanceof Error ? error.message : 'Failed to fetch order details';
+          const isAuthError = errMsg.includes('401') || errMsg.includes('Not authorized') || errMsg.includes('token') || errMsg.toLowerCase().includes('unauthorized') || errMsg.toLowerCase().includes('session expired');
+          set({ 
+            error: errMsg, 
+            loading: false,
             authError: isAuthError,
           });
         }

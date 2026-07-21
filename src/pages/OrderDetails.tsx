@@ -30,7 +30,7 @@ const toUrl = (src: string) => {
 const OrderDetails = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
-  const { orders, loading, error, authError, fetchOrders, getOrderById, cancelOrder, requestReturn } = useOrdersStore();
+  const { orders, loading, error, authError, fetchOrderById, getOrderById, cancelOrder, requestReturn } = useOrdersStore();
   const { toast } = useToast();
   const [hasFetched, setHasFetched] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
@@ -68,9 +68,12 @@ const OrderDetails = () => {
     setReturnImages(prev => prev.filter((_, i) => i !== index));
   };
   useEffect(() => {
-    // Force a fresh fetch on page load to see the latest status
-    fetchOrders(undefined, true).finally(() => setHasFetched(true));
-  }, [fetchOrders]);
+    if (orderId) {
+      fetchOrderById(orderId, true).finally(() => setHasFetched(true));
+    } else {
+      setHasFetched(true);
+    }
+  }, [fetchOrderById, orderId]);
 
   // Redirect to login if auth failed
   useEffect(() => {

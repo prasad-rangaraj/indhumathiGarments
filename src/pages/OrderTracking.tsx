@@ -132,7 +132,7 @@ const toUrl = (src: string) => {
 const OrderTracking = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
-  const { orders, loading, authError, fetchOrders, cancelOrder, requestReturn } = useOrdersStore();
+  const { orders, loading, authError, fetchOrderById, cancelOrder, requestReturn } = useOrdersStore();
   const { toast } = useToast();
   const [hasFetched, setHasFetched] = useState(false);
   
@@ -172,9 +172,12 @@ const OrderTracking = () => {
   };
 
   useEffect(() => {
-    // Force a fresh fetch on page load to see the latest status
-    fetchOrders(undefined, true).finally(() => setHasFetched(true));
-  }, [fetchOrders]);
+    if (orderId) {
+      fetchOrderById(orderId, true).finally(() => setHasFetched(true));
+    } else {
+      setHasFetched(true);
+    }
+  }, [fetchOrderById, orderId]);
 
   // Redirect to login if auth failed (401)
   useEffect(() => {

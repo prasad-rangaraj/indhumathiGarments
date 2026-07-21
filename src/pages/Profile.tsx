@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-import Footer from '../components/Footer';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
+import Footer from '@/components/Footer';
 import { useAuthStore } from '../stores/authStore';
 import { userAPI, customerAPI, ordersAPI, wishlistAPI, couponsAPI } from '../lib/api';
 import { useToast } from '../components/ui/use-toast';
@@ -374,73 +374,92 @@ export default function Profile() {
       <div className="flex-1 container mx-auto px-4 sm:px-4 py-4 sm:py-8 max-w-6xl relative z-10">
         <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
 
-          {/* LEFT SIDEBAR (FLIPKART STYLE) */}
-          <div className={`w-full md:w-1/4 space-y-4 ${!showMobileMenu ? 'hidden md:block' : 'block'}`}>
+          {/* LEFT SIDEBAR */}
+          <div className={`w-full md:w-1/4 space-y-3 ${!showMobileMenu ? 'hidden md:block' : 'block'}`}>
             {/* Header Box */}
-            <div className="bg-white rounded-md shadow-sm p-4 flex items-center gap-4 border border-pink-100">
-              <div className="h-12 w-12 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 font-bold text-xl">
+            <div className="bg-white rounded-xl shadow-sm p-4 flex items-center gap-4 border border-pink-100">
+              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white font-bold text-xl shadow-md">
                 {user.name.charAt(0).toUpperCase()}
               </div>
               <div>
-                <p className="text-xs text-gray-500">Hello,</p>
-                <h2 className="font-bold text-gray-800">{user.name}</h2>
+                <p className="text-xs text-gray-400 font-medium">Hello 👋</p>
+                <h2 className="font-bold text-gray-800 leading-tight">{user.name}</h2>
+                <p className="text-xs text-gray-400 truncate max-w-[140px]">{user.email}</p>
               </div>
             </div>
 
-            {/* Menu Box */}
-            <div className="bg-white rounded-md shadow-sm overflow-hidden border border-pink-100">
-              <div className="py-5 px-4 border-b border-pink-50">
-                <div className="flex items-center gap-3 text-gray-500 font-medium mb-3 uppercase text-xs tracking-wider">
-                  <User size={18} className="text-pink-500" /> Account Settings
-                </div>
-                <div className="pl-8 space-y-3 mt-3">
-                  <button onClick={() => navigate('/profile?tab=profile')} className={`block w-full text-left text-sm transition-colors ${activeTab === 'profile' && !showMobileMenu ? 'text-pink-600 font-bold' : 'text-gray-600 hover:text-pink-600'}`}>Profile Information</button>
-                  <button onClick={() => navigate('/profile?tab=addresses')} className={`block w-full text-left text-sm transition-colors ${activeTab === 'addresses' && !showMobileMenu ? 'text-pink-600 font-bold' : 'text-gray-600 hover:text-pink-600'}`}>Manage Addresses</button>
-                  <button onClick={() => navigate('/profile?tab=security')} className={`block w-full text-left text-sm transition-colors ${activeTab === 'security' && !showMobileMenu ? 'text-pink-600 font-bold' : 'text-gray-600 hover:text-pink-600'}`}>Security & Password</button>
-                </div>
+            {/* Navigation Menu */}
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-pink-100">
+              {/* Account Settings Section */}
+              <div className="px-4 pt-4 pb-1">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">Account Settings</p>
               </div>
 
-              <div className="py-5 px-4 border-b border-pink-50 cursor-pointer hover:bg-pink-50/30 transition-colors" onClick={() => navigate('/profile?tab=coupons')}>
-                <div className={`flex items-center justify-between text-sm ${activeTab === 'coupons' && !showMobileMenu ? 'text-pink-600 font-bold' : 'text-gray-600 font-medium'}`}>
-                  <div className="flex items-center gap-3">
-                    <Ticket size={18} className="text-pink-500" /> My Coupons
-                  </div>
-                  <ChevronRight size={16} />
-                </div>
-              </div>
+              {[
+                { tab: 'profile', label: 'Profile Information', icon: <User size={16} /> },
+                { tab: 'addresses', label: 'Manage Addresses', icon: <MapPin size={16} /> },
+                { tab: 'security', label: 'Security & Password', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> },
+              ].map(({ tab, label, icon }) => (
+                <button
+                  key={tab}
+                  onClick={() => navigate(`/profile?tab=${tab}`)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all duration-200 relative group
+                    ${activeTab === tab && !showMobileMenu
+                      ? 'bg-pink-50 text-pink-600 font-semibold'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-pink-500'
+                    }`}
+                >
+                  {/* Active left bar */}
+                  <span className={`absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-pink-500 transition-all duration-200 ${activeTab === tab && !showMobileMenu ? 'opacity-100' : 'opacity-0 group-hover:opacity-30'}`} />
+                  <span className={`flex-shrink-0 ${activeTab === tab && !showMobileMenu ? 'text-pink-500' : 'text-gray-400 group-hover:text-pink-400'}`}>{icon}</span>
+                  <span className="flex-1 text-left">{label}</span>
+                  <ChevronRight size={14} className={`flex-shrink-0 transition-opacity ${activeTab === tab && !showMobileMenu ? 'opacity-60' : 'opacity-0 group-hover:opacity-40'}`} />
+                </button>
+              ))}
 
-              <div className="py-5 px-4 border-b border-pink-50 cursor-pointer hover:bg-pink-50/30 transition-colors" onClick={() => navigate('/profile?tab=orders')}>
-                <div className={`flex items-center justify-between text-sm ${activeTab === 'orders' && !showMobileMenu ? 'text-pink-600 font-bold' : 'text-gray-600 font-medium'}`}>
-                  <div className="flex items-center gap-3">
-                    <Package size={18} className="text-pink-500" /> My Orders
-                  </div>
-                  <ChevronRight size={16} />
-                </div>
-              </div>
+              <div className="mx-4 my-2 border-t border-gray-100" />
 
-              <div className="py-5 px-4 border-b border-pink-50 cursor-pointer hover:bg-pink-50/30 transition-colors" onClick={() => navigate('/profile?tab=wishlist')}>
-                <div className={`flex items-center justify-between text-sm ${activeTab === 'wishlist' && !showMobileMenu ? 'text-pink-600 font-bold' : 'text-gray-600 font-medium'}`}>
-                  <div className="flex items-center gap-3">
-                    <Heart size={18} className="text-pink-500" /> My Wishlist
-                  </div>
-                  <ChevronRight size={16} />
-                </div>
-              </div>
+              {/* Other Sections */}
+              {[
+                { tab: 'coupons', label: 'My Coupons', icon: <Ticket size={16} /> },
+                { tab: 'orders', label: 'My Orders', icon: <Package size={16} /> },
+                { tab: 'wishlist', label: 'My Wishlist', icon: <Heart size={16} /> },
+              ].map(({ tab, label, icon }) => (
+                <button
+                  key={tab}
+                  onClick={() => navigate(`/profile?tab=${tab}`)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all duration-200 relative group
+                    ${activeTab === tab && !showMobileMenu
+                      ? 'bg-pink-50 text-pink-600 font-semibold'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-pink-500'
+                    }`}
+                >
+                  <span className={`absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-pink-500 transition-all duration-200 ${activeTab === tab && !showMobileMenu ? 'opacity-100' : 'opacity-0 group-hover:opacity-30'}`} />
+                  <span className={`flex-shrink-0 ${activeTab === tab && !showMobileMenu ? 'text-pink-500' : 'text-gray-400 group-hover:text-pink-400'}`}>{icon}</span>
+                  <span className="flex-1 text-left">{label}</span>
+                  <ChevronRight size={14} className={`flex-shrink-0 transition-opacity ${activeTab === tab && !showMobileMenu ? 'opacity-60' : 'opacity-0 group-hover:opacity-40'}`} />
+                </button>
+              ))}
 
-              <div className="py-5 px-4 border-b border-pink-50 cursor-pointer hover:bg-pink-50/30 transition-colors" onClick={() => navigate('/contact')}>
-                <div className={`flex items-center justify-between text-sm text-gray-600 font-medium`}>
-                  <div className="flex items-center gap-3">
-                    <Headphones size={18} className="text-pink-500" /> Help & Support
-                  </div>
-                  <ChevronRight size={16} />
-                </div>
-              </div>
+              <div className="mx-4 my-2 border-t border-gray-100" />
 
-              <div className="py-5 px-4 cursor-pointer hover:bg-red-50/50 transition-colors group" onClick={handleLogout}>
-                <div className="flex items-center gap-3 text-sm text-gray-600 font-medium">
-                  <LogOut size={18} className="text-pink-500" /> Logout
-                </div>
-              </div>
+              {/* Help & Logout */}
+              <button
+                onClick={() => navigate('/contact')}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-pink-500 transition-all duration-200 group"
+              >
+                <Headphones size={16} className="flex-shrink-0 text-gray-400 group-hover:text-pink-400" />
+                <span className="flex-1 text-left">Help & Support</span>
+                <ChevronRight size={14} className="flex-shrink-0 opacity-0 group-hover:opacity-40 transition-opacity" />
+              </button>
+
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-4 py-3 pb-4 text-sm font-medium text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all duration-200 group"
+              >
+                <LogOut size={16} className="flex-shrink-0 text-gray-400 group-hover:text-red-400" />
+                <span className="flex-1 text-left">Logout</span>
+              </button>
             </div>
           </div>
 
@@ -531,68 +550,107 @@ export default function Profile() {
               {/* Manage Addresses View */}
               {activeTab === 'addresses' && (
                 <div>
-                  <div className="flex items-center justify-between border-b border-pink-100 pb-4 mb-6">
-                    <h2 className="text-xl font-semibold">Manage Addresses</h2>
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">Saved Addresses</h2>
+                      <p className="text-xs text-gray-400 mt-0.5">{addresses.length} of 5 addresses saved</p>
+                    </div>
                     <Button
                       onClick={() => {
                         if (addresses.length >= 5) {
-                          toast({ title: 'Limit Reached', description: 'You can only store up to 5 multiple addresses.', variant: 'destructive' });
+                          toast({ title: 'Limit Reached', description: 'You can only store up to 5 addresses.', variant: 'destructive' });
                           return;
                         }
                         setEditingAddress(null);
                         setAddressForm({ name: '', phone: '', address: '', city: '', state: '', district: '', landmark: '', pincode: '', isDefault: addresses.length === 0 });
                         setIsAddressModalOpen(true);
                       }}
-                      variant="outline"
-                      className="text-pink-600 border-pink-200 hover:bg-pink-50 rounded-sm font-bold"
+                      className="bg-pink-600 hover:bg-pink-700 text-white font-semibold rounded-lg text-sm px-4 h-9 shadow-sm"
                     >
-                      <Plus size={16} className="mr-2" /> ADD A NEW ADDRESS
+                      <Plus size={15} className="mr-1.5" /> Add Address
                     </Button>
                   </div>
 
                   {loading ? (
-                    <div className="flex justify-center py-10"><Loader2 className="animate-spin text-pink-600" size={32} /></div>
+                    <div className="flex justify-center py-16">
+                      <Loader2 className="animate-spin text-pink-500" size={36} />
+                    </div>
                   ) : addresses.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
-                      <MapPin size={48} className="text-gray-300 mb-4" />
-                      <h3 className="text-lg font-medium text-gray-800">No Saved Addresses</h3>
-                      <p className="text-gray-500 text-sm mt-2 max-w-sm mb-6">You haven't added any delivery addresses yet. Add one now to make your next checkout faster and easier.</p>
+                    <div className="flex flex-col items-center justify-center py-16 text-center bg-gradient-to-br from-pink-50/60 to-rose-50/40 rounded-2xl border border-dashed border-pink-200">
+                      <div className="w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center mb-4">
+                        <MapPin size={30} className="text-pink-400" />
+                      </div>
+                      <h3 className="text-base font-bold text-gray-700">No Addresses Yet</h3>
+                      <p className="text-gray-400 text-sm mt-1.5 max-w-xs mb-6">Add a delivery address to make checkout faster.</p>
                       <Button onClick={() => {
                         setEditingAddress(null);
                         setAddressForm({ name: '', phone: '', address: '', city: '', state: '', district: '', landmark: '', pincode: '', isDefault: true });
                         setIsAddressModalOpen(true);
-                      }} className="bg-pink-600 hover:bg-pink-700 text-white shadow-sm font-bold tracking-wide rounded-sm px-6">
-                        + ADD NEW ADDRESS
+                      }} className="bg-pink-600 hover:bg-pink-700 text-white font-semibold rounded-lg">
+                        <Plus size={15} className="mr-1.5" /> Add New Address
                       </Button>
                     </div>
                   ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       {addresses.map((addr: any) => (
-                        <div key={addr.id} className="border border-pink-100 rounded-xl p-5 relative hover:shadow-md transition-all bg-white group">
-                          {addr.isDefault && <span className="absolute top-4 right-4 text-[10px] font-bold bg-pink-50 text-pink-600 px-2.5 py-1 rounded-full border border-pink-100 tracking-wider uppercase">DEFAULT</span>}
-
-                          <div className="absolute bottom-4 right-4 sm:opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                            <button onClick={() => {
-                              setEditingAddress(addr);
-                              setAddressForm({ name: addr.name || '', phone: addr.phone || '', address: addr.address || '', city: addr.city || '', state: addr.state || '', district: addr.district || '', landmark: addr.landmark || '', pincode: addr.pincode || '', isDefault: addr.isDefault || false });
-                              const stateData = indianStatesData.states.find(s => s.state === addr.state);
-                              setAvailableDistricts(stateData ? stateData.districts : (addr.district ? [addr.district] : []));
-                              setIsAddressModalOpen(true);
-                            }} className="p-1.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded-full transition-colors bg-white shadow-sm sm:shadow-none"><Edit2 size={16} /></button>
-                            <button onClick={() => handleDeleteAddress(addr.id || addr._id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors bg-white shadow-sm sm:shadow-none"><Trash2 size={16} /></button>
+                        <div
+                          key={addr.id}
+                          className={`relative rounded-xl border p-4 sm:p-5 transition-all bg-white ${
+                            addr.isDefault
+                              ? 'border-pink-300 ring-1 ring-pink-200 shadow-sm'
+                              : 'border-gray-200 hover:border-pink-200 hover:shadow-sm'
+                          }`}
+                        >
+                          {/* Top row: name + default badge */}
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold text-gray-800 text-sm">{addr.name || user.name}</span>
+                              <span className="text-gray-400 text-xs">·</span>
+                              <span className="text-gray-500 text-xs font-medium">{addr.phone || user.phone}</span>
+                              {addr.isDefault && (
+                                <span className="text-[10px] font-bold bg-pink-100 text-pink-600 px-2 py-0.5 rounded-full border border-pink-200 tracking-wide uppercase">
+                                  Default
+                                </span>
+                              )}
+                            </div>
                           </div>
 
-                          <div className="flex gap-4">
-                            <div className="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center flex-shrink-0">
-                              <MapPin className="text-pink-600 w-5 h-5" />
+                          {/* Address text */}
+                          <div className="flex gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-pink-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <MapPin className="text-pink-500 w-4 h-4" />
                             </div>
-                            <div>
-                              <p className="font-bold text-gray-800">{addr.name || user.name} <span className="ml-4 font-normal text-gray-500 text-sm">{addr.phone || user.phone}</span></p>
-                              <p className="text-sm text-gray-600 mt-2 max-w-md leading-relaxed">
-                                {[addr.address, addr.city, addr.landmark ? `(Near ${addr.landmark})` : ''].filter(Boolean).join(', ')} <br/>
-                                {[addr.district, addr.state].filter(Boolean).join(', ')} {addr.pincode && <span>- <span className="font-bold text-pink-600">{addr.pincode}</span></span>}
-                              </p>
-                            </div>
+                            <p className="text-sm text-gray-600 leading-relaxed">
+                              {[addr.address, addr.city, addr.landmark ? `Near ${addr.landmark}` : ''].filter(Boolean).join(', ')}
+                              <br />
+                              <span className="text-gray-500">
+                                {[addr.district, addr.state].filter(Boolean).join(', ')}
+                                {addr.pincode && <span className="font-semibold text-gray-700"> — {addr.pincode}</span>}
+                              </span>
+                            </p>
+                          </div>
+
+                          {/* Action buttons — always visible, not hover-only */}
+                          <div className="flex items-center gap-2 mt-4 pt-3 border-t border-gray-100">
+                            <button
+                              onClick={() => {
+                                setEditingAddress(addr);
+                                setAddressForm({ name: addr.name || '', phone: addr.phone || '', address: addr.address || '', city: addr.city || '', state: addr.state || '', district: addr.district || '', landmark: addr.landmark || '', pincode: addr.pincode || '', isDefault: addr.isDefault || false });
+                                const stateData = indianStatesData.states.find(s => s.state === addr.state);
+                                setAvailableDistricts(stateData ? stateData.districts : (addr.district ? [addr.district] : []));
+                                setIsAddressModalOpen(true);
+                              }}
+                              className="flex items-center gap-1.5 text-xs font-semibold text-pink-600 hover:text-pink-700 hover:bg-pink-50 px-3 py-1.5 rounded-lg transition-colors border border-pink-200"
+                            >
+                              <Edit2 size={13} /> Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteAddress(addr.id || addr._id)}
+                              className="flex items-center gap-1.5 text-xs font-semibold text-red-500 hover:text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors border border-red-200"
+                            >
+                              <Trash2 size={13} /> Remove
+                            </button>
                           </div>
                         </div>
                       ))}
@@ -764,90 +822,177 @@ export default function Profile() {
 
       {/* Address Form Dialog */}
       <Dialog open={isAddressModalOpen} onOpenChange={setIsAddressModalOpen}>
-        <DialogContent className="w-[95vw] max-w-md p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingAddress ? 'Edit Address' : 'Add New Address'}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSaveAddress} className="space-y-4 mt-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-xs text-gray-500 font-bold">Name</label>
-                <input type="text" value={addressForm.name} onChange={e => setAddressForm({ ...addressForm, name: e.target.value })} className="w-full border border-gray-200 rounded-sm bg-gray-50 p-2 text-sm focus:bg-white focus:ring-1 focus:ring-pink-500" required />
+        <DialogContent className="w-[95vw] max-w-lg p-0 max-h-[92vh] overflow-hidden flex flex-col rounded-2xl">
+          {/* Modal Header */}
+          <DialogHeader className="px-5 pt-5 pb-4 border-b border-gray-100 flex-shrink-0">
+            <DialogTitle className="text-lg font-bold text-gray-800 flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-pink-100 flex items-center justify-center">
+                <MapPin size={16} className="text-pink-600" />
               </div>
-              <div className="space-y-2">
-                <label className="text-xs text-gray-500 font-bold">Phone</label>
-                <div className="relative flex items-center">
-                  <span className="absolute left-3 text-xs text-gray-500">+91</span>
-                  <input type="tel" maxLength={10} value={addressForm.phone} onChange={e => handlePhoneChange(e.target.value, setAddressForm)} className="w-full border border-gray-200 rounded-sm bg-gray-50 py-2 pl-9 pr-2 text-sm focus:bg-white focus:ring-1 focus:ring-pink-500" required />
+              {editingAddress ? 'Edit Address' : 'Add New Address'}
+            </DialogTitle>
+            <p className="text-xs text-gray-400 mt-1 ml-10">Enter your complete delivery address below</p>
+          </DialogHeader>
+
+          {/* Scrollable form body */}
+          <div className="overflow-y-auto flex-1">
+            <form onSubmit={handleSaveAddress} className="p-5 space-y-5">
+
+              {/* Contact Info */}
+              <div>
+                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Contact Details</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-600">Full Name</label>
+                    <input
+                      type="text"
+                      value={addressForm.name}
+                      onChange={e => setAddressForm({ ...addressForm, name: e.target.value })}
+                      className="w-full border border-gray-200 rounded-lg bg-gray-50/80 px-3 py-2.5 text-sm focus:bg-white focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all"
+                      placeholder="Your full name"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-600">Mobile Number</label>
+                    <div className="relative flex items-center">
+                      <span className="absolute left-3 text-sm text-gray-400 font-medium">+91</span>
+                      <input
+                        type="tel"
+                        maxLength={10}
+                        value={addressForm.phone}
+                        onChange={e => handlePhoneChange(e.target.value, setAddressForm)}
+                        className="w-full border border-gray-200 rounded-lg bg-gray-50/80 py-2.5 pl-11 pr-3 text-sm focus:bg-white focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all"
+                        placeholder="10-digit number"
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs text-gray-500 font-bold">Pincode</label>
-              <div className="relative">
-                <input type="text" value={addressForm.pincode} onChange={e => {
-                  const val = e.target.value.replace(/\D/g, '').slice(0, 6);
-                  setAddressForm({ ...addressForm, pincode: val });
-                  if (val.length === 6) fetchPincodeDetails(val);
-                }} className="w-full border border-gray-200 rounded-sm bg-gray-50 p-2 text-sm focus:bg-white focus:ring-1 focus:ring-pink-500" required placeholder="6 digits" />
-                {isFetchingPincode && <span className="absolute right-3 top-2 text-xs text-gray-400 animate-pulse">Fetching...</span>}
+
+              {/* Location */}
+              <div>
+                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Location</p>
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-600">Pincode</label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={addressForm.pincode}
+                        onChange={e => {
+                          const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                          setAddressForm({ ...addressForm, pincode: val });
+                          if (val.length === 6) fetchPincodeDetails(val);
+                        }}
+                        className="w-full border border-gray-200 rounded-lg bg-gray-50/80 px-3 py-2.5 text-sm focus:bg-white focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all"
+                        placeholder="6-digit pincode (auto-fills state & district)"
+                        required
+                      />
+                      {isFetchingPincode && <span className="absolute right-3 top-2.5 text-xs text-pink-400 animate-pulse font-medium">Fetching…</span>}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-gray-600">State</label>
+                      <Select value={addressForm.state} onValueChange={(val) => {
+                        const stateData = indianStatesData.states.find(s => s.state === val);
+                        setAvailableDistricts(stateData ? stateData.districts : []);
+                        setAddressForm({ ...addressForm, state: val, district: '' });
+                      }}>
+                        <SelectTrigger className="w-full h-[42px] text-sm bg-gray-50 rounded-lg border-gray-200">
+                          <SelectValue placeholder="Select State" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {indianStatesData.states.map(s => <SelectItem key={s.state} value={s.state}>{s.state}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-gray-600">District</label>
+                      <Select value={addressForm.district} onValueChange={(val) => setAddressForm({ ...addressForm, district: val })} disabled={!addressForm.state}>
+                        <SelectTrigger className="w-full h-[42px] text-sm bg-gray-50 rounded-lg border-gray-200">
+                          <SelectValue placeholder="Select District" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-xs text-gray-500 font-bold">State</label>
-                <Select value={addressForm.state} onValueChange={(val) => {
-                  const stateData = indianStatesData.states.find(s => s.state === val);
-                  setAvailableDistricts(stateData ? stateData.districts : []);
-                  setAddressForm({ ...addressForm, state: val, district: '' });
-                }}>
-                  <SelectTrigger className="w-full h-[38px] text-sm bg-gray-50 rounded-sm border-gray-200">
-                    <SelectValue placeholder="Select State" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {indianStatesData.states.map(s => <SelectItem key={s.state} value={s.state}>{s.state}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+
+              {/* Address Details */}
+              <div>
+                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Address Details</p>
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-600">Flat / House No. / Building / Apartment</label>
+                    <textarea
+                      value={addressForm.address}
+                      onChange={e => setAddressForm({ ...addressForm, address: e.target.value })}
+                      className="w-full border border-gray-200 rounded-lg bg-gray-50/80 px-3 py-2.5 text-sm focus:bg-white focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all resize-none"
+                      rows={2}
+                      placeholder="e.g. 12B, Rose Apartments"
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-gray-600">Area / Street / Village</label>
+                      <input
+                        type="text"
+                        value={addressForm.city}
+                        onChange={e => setAddressForm({ ...addressForm, city: e.target.value })}
+                        className="w-full border border-gray-200 rounded-lg bg-gray-50/80 px-3 py-2.5 text-sm focus:bg-white focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all"
+                        placeholder="e.g. MG Road"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-gray-600">Landmark <span className="text-gray-400 font-normal">(Optional)</span></label>
+                      <input
+                        type="text"
+                        value={addressForm.landmark}
+                        onChange={e => setAddressForm({ ...addressForm, landmark: e.target.value })}
+                        className="w-full border border-gray-200 rounded-lg bg-gray-50/80 px-3 py-2.5 text-sm focus:bg-white focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all"
+                        placeholder="e.g. Near Bus Stop"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-xs text-gray-500 font-bold">District</label>
-                <Select value={addressForm.district} onValueChange={(val) => setAddressForm({ ...addressForm, district: val })} disabled={!addressForm.state}>
-                  <SelectTrigger className="w-full h-[38px] text-sm bg-gray-50 rounded-sm border-gray-200">
-                    <SelectValue placeholder="Select District" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableDistricts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+
+              {/* Default toggle */}
+              <label className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 bg-gray-50/60 cursor-pointer hover:bg-pink-50/40 hover:border-pink-200 transition-all">
+                <input
+                  type="checkbox"
+                  id="isDefault"
+                  checked={addressForm.isDefault}
+                  onChange={e => setAddressForm({ ...addressForm, isDefault: e.target.checked })}
+                  className="accent-pink-600 w-4 h-4 rounded"
+                />
+                <div>
+                  <p className="text-sm font-semibold text-gray-700">Set as Default Address</p>
+                  <p className="text-xs text-gray-400">This address will be auto-selected at checkout</p>
+                </div>
+              </label>
+
+              {/* Submit buttons */}
+              <div className="flex gap-3 pt-1">
+                <Button type="button" variant="outline" onClick={() => setIsAddressModalOpen(false)} className="flex-1 rounded-lg border-gray-200 text-gray-600">
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={loading} className="flex-1 bg-pink-600 hover:bg-pink-700 text-white font-semibold rounded-lg">
+                  {loading ? <Loader2 className="animate-spin" size={16} /> : (editingAddress ? 'Update Address' : 'Save Address')}
+                </Button>
               </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs text-gray-500 font-bold">Flat, House no., Building, Apartment</label>
-              <textarea value={addressForm.address} onChange={e => setAddressForm({ ...addressForm, address: e.target.value })} className="w-full border border-gray-200 rounded-sm bg-gray-50 p-2 text-sm focus:bg-white focus:ring-1 focus:ring-pink-500" rows={2} required />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-xs text-gray-500 font-bold">Area, Street, Village</label>
-                <input type="text" value={addressForm.city} onChange={e => setAddressForm({ ...addressForm, city: e.target.value })} className="w-full border border-gray-200 rounded-sm bg-gray-50 p-2 text-sm focus:bg-white focus:ring-1 focus:ring-pink-500" required />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs text-gray-500 font-bold">Landmark (Optional)</label>
-                <input type="text" value={addressForm.landmark} onChange={e => setAddressForm({ ...addressForm, landmark: e.target.value })} className="w-full border border-gray-200 rounded-sm bg-gray-50 p-2 text-sm focus:bg-white focus:ring-1 focus:ring-pink-500" />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 gap-4">
-              <div className="flex items-center gap-2 mt-4">
-                <input type="checkbox" id="isDefault" checked={addressForm.isDefault} onChange={e => setAddressForm({ ...addressForm, isDefault: e.target.checked })} className="accent-pink-600 w-4 h-4" />
-                <label htmlFor="isDefault" className="text-sm font-medium text-gray-700 cursor-pointer">Set as Default Address</label>
-              </div>
-            </div>
-            <div className="pt-4 flex justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => setIsAddressModalOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={loading} className="bg-pink-600 hover:bg-pink-700 text-white">
-                {loading ? <Loader2 className="animate-spin" size={16} /> : 'Save Address'}
-              </Button>
-            </div>
-          </form>
+
+            </form>
+          </div>
         </DialogContent>
       </Dialog>
       <Footer />

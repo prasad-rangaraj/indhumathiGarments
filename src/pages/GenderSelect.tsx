@@ -187,11 +187,12 @@ const GenderSelect = () => {
           </div>
 
           {/* Hover CTA */}
-          <div className="absolute top-[100%] pt-6 left-1/2 -translate-x-1/2 flex justify-center w-full" style={{
+          <div className="absolute top-[100%] pt-6 flex justify-center" style={{
             opacity: W ? 1 : 0,
             transform: W ? 'translateY(0)' : 'translateY(8px)',
             transition: 'all 0.45s ease 0.1s',
             pointerEvents: W ? 'auto' : 'none',
+            whiteSpace: 'nowrap',
           }}>
             <span style={{
               color: '#c2185b',
@@ -416,11 +417,12 @@ const GenderSelect = () => {
           </div>
 
           {/* Hover CTA */}
-          <div className="absolute top-[100%] pt-6 left-1/2 -translate-x-1/2 flex justify-center w-full" style={{
+          <div className="absolute top-[100%] pt-6 flex justify-center" style={{
             opacity: M ? 1 : 0,
             transform: M ? 'translateY(0)' : 'translateY(8px)',
             transition: 'all 0.45s ease 0.1s',
             pointerEvents: M ? 'auto' : 'none',
+            whiteSpace: 'nowrap',
           }}>
             <span style={{
               color: '#1565c0',

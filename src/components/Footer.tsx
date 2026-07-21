@@ -1,54 +1,105 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, Twitter, Mail } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Mail, CheckCircle2 } from 'lucide-react';
 import indhumathiLogo from '@/assets/logo-new.png';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useToast } from '@/components/ui/use-toast';
 
 const Footer = () => {
   const { settings } = useSiteSettings();
+  const { toast } = useToast();
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !email.includes('@')) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
+        variant: "destructive"
+      });
+      return;
+    }
+    setSubscribed(true);
+    toast({
+      title: "Subscribed Successfully!",
+      description: "Thank you for subscribing to Indhumathi Garments newsletter.",
+    });
+    setEmail('');
+    setTimeout(() => setSubscribed(false), 5000);
+  };
+
   return (
-    <footer className="bg-card border-t border-border/50 mt-auto">
-      <div className="container mx-auto px-4 py-8 sm:py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+    <footer className="relative bg-background/80 backdrop-blur-md border-t border-pink-200/40 mt-auto overflow-hidden">
+      {/* Decorative subtle top line */}
+      <div className="h-[2px] w-full bg-gradient-to-r from-pink-300/40 via-pink-500/40 to-rose-400/40" />
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
+          
           {/* Brand */}
-          <div>
-            <img src={indhumathiLogo} alt="Indhumathi" className="h-12 mb-4" />
-            <p className="text-sm text-muted-foreground mb-4">
+          <div className="space-y-4">
+            <Link to="/" className="inline-block transition-transform hover:scale-105">
+              <img src={indhumathiLogo} alt="Indhumathi Garments" className="h-10 sm:h-12 w-auto object-contain" />
+            </Link>
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
               Manufacturing high quality pure cotton women inners. Comfort and elegance for over two decades.
             </p>
-            <div className="flex gap-3">
-              <a href="#" className="p-2 rounded-lg bg-accent hover:bg-primary/10 transition-colors">
-                <Facebook className="w-4 h-4 text-muted-foreground" />
+            <div className="flex items-center gap-3 pt-1">
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+                className="w-9 h-9 rounded-full bg-pink-50 hover:bg-pink-600 text-pink-600 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+              >
+                <Facebook className="w-4 h-4" />
               </a>
-              <a href="#" className="p-2 rounded-lg bg-accent hover:bg-primary/10 transition-colors">
-                <Instagram className="w-4 h-4 text-muted-foreground" />
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                className="w-9 h-9 rounded-full bg-pink-50 hover:bg-pink-600 text-pink-600 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+              >
+                <Instagram className="w-4 h-4" />
               </a>
-              <a href="#" className="p-2 rounded-lg bg-accent hover:bg-primary/10 transition-colors">
-                <Twitter className="w-4 h-4 text-muted-foreground" />
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Twitter"
+                className="w-9 h-9 rounded-full bg-pink-50 hover:bg-pink-600 text-pink-600 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+              >
+                <Twitter className="w-4 h-4" />
               </a>
             </div>
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h3 className="font-semibold text-foreground mb-4">Quick Links</h3>
-            <ul className="space-y-2">
+          <div className="space-y-3 sm:space-y-4">
+            <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">
+              Quick Links
+            </h3>
+            <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/" className="text-muted-foreground hover:text-pink-600 transition-colors inline-block py-0.5">
                   About Us
                 </Link>
               </li>
               <li>
-                <Link to="/products" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/products" className="text-muted-foreground hover:text-pink-600 transition-colors inline-block py-0.5">
                   Products
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/contact" className="text-muted-foreground hover:text-pink-600 transition-colors inline-block py-0.5">
                   Contact
                 </Link>
               </li>
               <li>
-                <Link to="/faq" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/faq" className="text-muted-foreground hover:text-pink-600 transition-colors inline-block py-0.5">
                   FAQ
                 </Link>
               </li>
@@ -56,61 +107,82 @@ const Footer = () => {
           </div>
 
           {/* Customer Service */}
-          <div>
-            <h3 className="font-semibold text-foreground mb-4">Customer Service</h3>
-            <ul className="space-y-2">
+          <div className="space-y-3 sm:space-y-4">
+            <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">
+              Customer Service
+            </h3>
+            <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/orders" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/profile?tab=orders" className="text-muted-foreground hover:text-pink-600 transition-colors inline-block py-0.5">
                   Order History
                 </Link>
               </li>
               <li>
-                <Link to="/terms" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/terms" className="text-muted-foreground hover:text-pink-600 transition-colors inline-block py-0.5">
                   Terms & Conditions
                 </Link>
               </li>
               <li>
-                <Link to="/privacy" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/privacy" className="text-muted-foreground hover:text-pink-600 transition-colors inline-block py-0.5">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <a href="/contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/contact" className="text-muted-foreground hover:text-pink-600 transition-colors inline-block py-0.5">
                   Returns & Exchanges
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
 
           {/* Newsletter */}
-          <div>
-            <h3 className="font-semibold text-foreground mb-4">Newsletter</h3>
-            <p className="text-sm text-muted-foreground mb-4">
+          <div className="space-y-3 sm:space-y-4">
+            <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">
+              Newsletter
+            </h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
               Subscribe to get updates on new products and exclusive offers.
             </p>
-            <form className="flex gap-2">
-              <input
-                type="email"
-                placeholder="Your email"
-                className="flex-1 px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              />
-              <button
-                type="submit"
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-              >
-                <Mail className="w-4 h-4" />
-              </button>
+            <form onSubmit={handleSubscribe} className="space-y-2">
+              <div className="relative flex items-center">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Your email"
+                  className="w-full pl-4 pr-12 py-2.5 rounded-xl border border-pink-100 bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all shadow-xs"
+                  required
+                />
+                <button
+                  type="submit"
+                  aria-label="Subscribe"
+                  className="absolute right-1.5 p-2 bg-gradient-to-r from-pink-600 to-rose-600 text-white rounded-lg hover:shadow-md hover:scale-105 active:scale-95 transition-all duration-200"
+                >
+                  {subscribed ? <CheckCircle2 className="w-4 h-4" /> : <Mail className="w-4 h-4" />}
+                </button>
+              </div>
+              {subscribed && (
+                <p className="text-xs font-medium text-green-600 flex items-center gap-1 animate-fade-in pl-1">
+                  <CheckCircle2 className="w-3 h-3" /> Subscribed successfully!
+                </p>
+              )}
             </form>
           </div>
+
         </div>
 
-        <div className="border-t border-border/50 mt-8 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted-foreground text-center sm:text-left">
-          © {new Date().getFullYear()} {settings.siteName}. All rights reserved.
+        {/* Bottom Bar */}
+        <div className="border-t border-pink-100/80 mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
+          <p className="text-center sm:text-left">
+            © {new Date().getFullYear()} {settings?.siteName || 'Indhumathi'}. All rights reserved.
           </p>
-          <div className="flex gap-6 text-sm text-muted-foreground">
-            <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>
-            <Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+          <div className="flex gap-6">
+            <Link to="/terms" className="hover:text-pink-600 transition-colors">
+              Terms
+            </Link>
+            <Link to="/privacy" className="hover:text-pink-600 transition-colors">
+              Privacy
+            </Link>
           </div>
         </div>
       </div>
