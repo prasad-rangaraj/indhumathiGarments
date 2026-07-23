@@ -4,8 +4,10 @@ import { Facebook, Instagram, Twitter, Mail, CheckCircle2 } from 'lucide-react';
 import indhumathiLogo from '@/assets/logo-new.png';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useToast } from '@/components/ui/use-toast';
+import { useTranslation } from 'react-i18next';
 
 const Footer = () => {
+  const { t } = useTranslation();
   const { settings } = useSiteSettings();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
@@ -41,10 +43,10 @@ const Footer = () => {
           {/* Brand */}
           <div className="space-y-4">
             <Link to="/" className="inline-block transition-transform hover:scale-105">
-              <img src={indhumathiLogo} alt="Indhumathi Garments" className="h-10 sm:h-12 w-auto object-contain" />
+              <img src={indhumathiLogo} alt={t('about.title')} className="h-10 sm:h-12 w-auto object-contain" />
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
-              Manufacturing high quality pure cotton women inners. Comfort and elegance for over two decades.
+              {t('footer.brandDesc')}
             </p>
             <div className="flex items-center gap-3 pt-1">
               <a
@@ -80,27 +82,27 @@ const Footer = () => {
           {/* Quick Links */}
           <div className="space-y-3 sm:space-y-4">
             <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">
-              Quick Links
+              {t('footer.quickLinks')}
             </h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/" className="text-muted-foreground hover:text-pink-600 transition-colors inline-block py-0.5">
-                  About Us
+                  {t('footer.aboutUs')}
                 </Link>
               </li>
               <li>
                 <Link to="/products" className="text-muted-foreground hover:text-pink-600 transition-colors inline-block py-0.5">
-                  Products
+                  {t('nav.products')}
                 </Link>
               </li>
               <li>
                 <Link to="/contact" className="text-muted-foreground hover:text-pink-600 transition-colors inline-block py-0.5">
-                  Contact
+                  {t('nav.contact')}
                 </Link>
               </li>
               <li>
                 <Link to="/faq" className="text-muted-foreground hover:text-pink-600 transition-colors inline-block py-0.5">
-                  FAQ
+                  {t('nav.faq')}
                 </Link>
               </li>
             </ul>
@@ -109,27 +111,27 @@ const Footer = () => {
           {/* Customer Service */}
           <div className="space-y-3 sm:space-y-4">
             <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">
-              Customer Service
+              {t('footer.customerService')}
             </h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/profile?tab=orders" className="text-muted-foreground hover:text-pink-600 transition-colors inline-block py-0.5">
-                  Order History
+                  {t('footer.orderHistory')}
                 </Link>
               </li>
               <li>
                 <Link to="/terms" className="text-muted-foreground hover:text-pink-600 transition-colors inline-block py-0.5">
-                  Terms & Conditions
+                  {t('footer.terms')}
                 </Link>
               </li>
               <li>
                 <Link to="/privacy" className="text-muted-foreground hover:text-pink-600 transition-colors inline-block py-0.5">
-                  Privacy Policy
+                  {t('footer.privacy')}
                 </Link>
               </li>
               <li>
                 <Link to="/contact" className="text-muted-foreground hover:text-pink-600 transition-colors inline-block py-0.5">
-                  Returns & Exchanges
+                  {t('footer.returnsExchanges')}
                 </Link>
               </li>
             </ul>
@@ -138,10 +140,10 @@ const Footer = () => {
           {/* Newsletter */}
           <div className="space-y-3 sm:space-y-4">
             <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">
-              Newsletter
+              {t('footer.newsletter')}
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Subscribe to get updates on new products and exclusive offers.
+              {t('footer.newsletterDesc')}
             </p>
             <form onSubmit={handleSubscribe} className="space-y-2">
               <div className="relative flex items-center">
@@ -149,7 +151,7 @@ const Footer = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Your email"
+                  placeholder={t('footer.emailPlaceholder')}
                   className="w-full pl-4 pr-12 py-2.5 rounded-xl border border-pink-100 bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all shadow-xs"
                   required
                 />
@@ -163,7 +165,7 @@ const Footer = () => {
               </div>
               {subscribed && (
                 <p className="text-xs font-medium text-green-600 flex items-center gap-1 animate-fade-in pl-1">
-                  <CheckCircle2 className="w-3 h-3" /> Subscribed successfully!
+                  <CheckCircle2 className="w-3 h-3" /> {t('footer.subscribedSuccess')}
                 </p>
               )}
             </form>
@@ -174,14 +176,14 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-pink-100/80 mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
           <p className="text-center sm:text-left">
-            © {new Date().getFullYear()} {settings?.siteName || 'Indhumathi'}. All rights reserved.
+            {t('footer.copyright', { year: new Date().getFullYear(), siteName: settings?.siteName || 'Indhumathi' })}
           </p>
           <div className="flex gap-6">
             <Link to="/terms" className="hover:text-pink-600 transition-colors">
-              Terms
+              {t('footer.terms')}
             </Link>
             <Link to="/privacy" className="hover:text-pink-600 transition-colors">
-              Privacy
+              {t('footer.privacy')}
             </Link>
           </div>
         </div>

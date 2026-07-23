@@ -7,8 +7,11 @@ import { useAuthStore } from '@/stores/authStore';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import imgLogo from '@/assets/img-logo.png';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 const Navigation = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { getItemCount, fetchCart } = useCartStore();
@@ -48,51 +51,54 @@ const Navigation = () => {
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50">
-      <div className="container mx-auto px-4">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
-            <img 
-              src={imgLogo} 
-              alt="Indhumathi" 
-              className="h-12 sm:h-16 w-auto object-contain"
-            />
-          </Link>
+          {/* Left Side: Logo and Navigation Links */}
+          <div className="flex items-center gap-8 md:gap-12">
+            {/* Logo */}
+            <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
+              <img 
+                src={imgLogo} 
+                alt="Indhumathi" 
+                className="h-12 sm:h-16 w-auto object-contain"
+              />
+            </Link>
 
-          {/* Desktop Navigation Links */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link
-              to="/"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive('/') ? 'text-primary' : 'text-muted-foreground'
-              }`}
-            >
-              About
-            </Link>
-            <Link
-              to="/products"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isProductsActive ? 'text-primary' : 'text-muted-foreground'
-              }`}
-            >
-              Products
-            </Link>
-            <Link
-              to="/contact"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive('/contact') ? 'text-primary' : 'text-muted-foreground'
-              }`}
-            >
-              Contact
-            </Link>
-            <Link
-              to="/faq"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive('/faq') ? 'text-primary' : 'text-muted-foreground'
-              }`}
-            >
-              FAQ
-            </Link>
+            {/* Desktop Navigation Links */}
+            <div className="hidden md:flex items-center space-x-8">
+              <Link
+                to="/"
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  isActive('/') ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              >
+                {t('nav.about')}
+              </Link>
+              <Link
+                to="/products"
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  isProductsActive ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              >
+                {t('nav.products')}
+              </Link>
+              <Link
+                to="/contact"
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  isActive('/contact') ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              >
+                {t('nav.contact')}
+              </Link>
+              <Link
+                to="/faq"
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  isActive('/faq') ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              >
+                {t('nav.faq')}
+              </Link>
+            </div>
           </div>
 
           {/* Right Side - Search, Wishlist, Cart and Mobile Menu */}
@@ -102,7 +108,7 @@ const Navigation = () => {
               <form onSubmit={handleSearch} className="flex items-center">
                 <Input
                   type="text"
-                  placeholder="Search products..."
+                  placeholder={t('nav.searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-64 pl-10 pr-4"
@@ -110,6 +116,9 @@ const Navigation = () => {
                 <Search className="absolute left-3 w-4 h-4 text-muted-foreground pointer-events-none" />
               </form>
             </div>
+
+            {/* Language Switcher */}
+            <LanguageSwitcher className="mx-1" />
 
             {/* Search Icon - Mobile */}
             <button
@@ -163,7 +172,7 @@ const Navigation = () => {
                 onClick={() => navigate('/login')}
                 className="bg-primary text-primary-foreground hover:bg-primary/90 ml-2"
               >
-                Login
+                {t('nav.login')}
               </Button>
             )}
 
@@ -192,7 +201,7 @@ const Navigation = () => {
                   isActive('/') ? 'text-primary' : 'text-muted-foreground'
                 }`}
               >
-                About
+                {t('nav.about')}
               </Link>
               <Link
                 to="/products"
@@ -201,7 +210,7 @@ const Navigation = () => {
                   isProductsActive ? 'text-primary' : 'text-muted-foreground'
                 }`}
               >
-                Products
+                {t('nav.products')}
               </Link>
               <Link
                 to="/contact"
@@ -210,7 +219,7 @@ const Navigation = () => {
                   isActive('/contact') ? 'text-primary' : 'text-muted-foreground'
                 }`}
               >
-                Contact
+                {t('nav.contact')}
               </Link>
               <Link
                 to="/faq"
@@ -219,7 +228,7 @@ const Navigation = () => {
                   isActive('/faq') ? 'text-primary' : 'text-muted-foreground'
                 }`}
               >
-                FAQ
+                {t('nav.faq')}
               </Link>
               {isLoggedIn ? (
                 <>
@@ -230,7 +239,7 @@ const Navigation = () => {
                       isActive('/orders') || (location.pathname === '/profile' && new URLSearchParams(location.search).get('tab') === 'orders') ? 'text-primary' : 'text-muted-foreground'
                     }`}
                   >
-                    My Orders
+                    {t('nav.myOrders')}
                   </Link>
                   <Link
                     to="/wishlist"
@@ -239,7 +248,7 @@ const Navigation = () => {
                       isActive('/wishlist') ? 'text-primary' : 'text-muted-foreground'
                     }`}
                   >
-                    My Wishlist
+                    {t('nav.myWishlist')}
                   </Link>
                   <Link
                     to="/profile"
@@ -248,7 +257,7 @@ const Navigation = () => {
                       isActive('/profile') ? 'text-primary' : 'text-muted-foreground'
                     }`}
                   >
-                    Profile / Dashboard
+                    {t('nav.profileDashboard')}
                   </Link>
                 </>
               ) : (
@@ -260,10 +269,16 @@ const Navigation = () => {
                       navigate('/login');
                     }}
                   >
-                    Login / Sign Up
+                    {t('nav.loginSignUp')}
                   </Button>
                 </div>
               )}
+
+              {/* Language Switcher inside mobile menu */}
+              <div className="pt-4 border-t border-border/50 flex flex-col gap-2">
+                <span className="text-xs font-semibold text-muted-foreground uppercase px-1">Language / மொழி / भाषा</span>
+                <LanguageSwitcher responsive={false} className="w-full flex justify-start" />
+              </div>
             </div>
           </div>
         )}
