@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AdminPageLoader } from '@/components/ui/AdminLoader';
 import { Link } from 'react-router-dom';
 import { Package, ShoppingCart, Users, AlertTriangle, TrendingUp, Star, ArrowUpRight, ArrowDownRight, Calendar, IndianRupee } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,11 +31,7 @@ const Dashboard = () => {
   }, [range]);
 
   if (statsLoading && !stats) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <p className="text-muted-foreground animate-pulse">Loading dashboard...</p>
-      </div>
-    );
+    return <AdminPageLoader />;
   }
 
   const d = stats || {

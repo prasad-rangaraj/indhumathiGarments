@@ -31,9 +31,9 @@ const Footer = () => {
   };
 
   return (
-    <footer className="relative bg-background/80 backdrop-blur-md border-t border-pink-200/40 mt-auto overflow-hidden">
+    <footer className="relative bg-background/30 backdrop-blur-md border-t border-pink-200/40 mt-auto overflow-hidden">
       {/* Decorative subtle top line */}
-      <div className="h-[2px] w-full bg-gradient-to-r from-pink-300/40 via-pink-500/40 to-rose-400/40" />
+      <div className="h-[2px] w-full bg-gradient-to-r from-pink-300/30 via-pink-500/40 to-rose-400/30" />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
@@ -150,7 +150,7 @@ const Footer = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Your email"
-                  className="w-full pl-4 pr-12 py-2.5 rounded-xl border border-pink-100 bg-background/80 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all shadow-xs"
+                  className="w-full pl-4 pr-12 py-2.5 rounded-xl border border-pink-200/50 bg-background/60 backdrop-blur-xs text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all shadow-xs"
                   required
                 />
                 <button

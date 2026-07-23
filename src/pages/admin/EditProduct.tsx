@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AdminPageLoader } from "@/components/ui/AdminLoader";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Plus, Star, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -247,7 +248,7 @@ const EditProduct = () => {
   };
 
   if (loading) {
-      return <div className="p-8 text-center">Loading product details...</div>;
+    return <AdminPageLoader />;
   }
 
   return (
