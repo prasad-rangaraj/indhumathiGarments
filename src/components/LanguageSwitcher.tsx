@@ -29,9 +29,9 @@ export const LanguageSwitcher = ({ className = '', responsive = true }: Language
 
   const currentLang = languages.find((lang) => lang.code === i18n.language) || languages[0];
 
-  // Pill Switcher markup (matching reference image with solid orange #FF6B00 active indicator)
+  // Pill Switcher markup (matching elegant pink/purple theme)
   const PillSwitcher = (
-    <div className="flex items-center bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-full p-1 shadow-sm select-none">
+    <div className="flex items-center bg-white/60 backdrop-blur-sm dark:bg-zinc-950 border border-pink-200/50 dark:border-zinc-800 rounded-full p-1 shadow-sm select-none">
       {languages.map((lang) => {
         const isActive = i18n.language === lang.code;
         return (
@@ -41,13 +41,13 @@ export const LanguageSwitcher = ({ className = '', responsive = true }: Language
             className={`relative px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-300 focus:outline-none flex items-center justify-center min-w-[42px] h-8 ${
               isActive
                 ? 'text-white font-bold'
-                : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200'
+                : 'text-zinc-600 hover:text-pink-600 dark:text-zinc-400 dark:hover:text-pink-300'
             }`}
           >
             {isActive && (
               <motion.div
                 layoutId="activeLangIndicator"
-                className="absolute inset-0 bg-[#FF6B00] rounded-full z-0 shadow-sm"
+                className="absolute inset-0 bg-gradient-to-r from-pink-500 to-rose-400 rounded-full z-0 shadow-md"
                 transition={{ type: 'tween', duration: 0.3, ease: 'easeInOut' }}
               />
             )}
@@ -62,10 +62,10 @@ export const LanguageSwitcher = ({ className = '', responsive = true }: Language
   const DropdownSwitcher = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2 px-3 py-1.5 text-sm font-semibold border border-zinc-200 dark:border-zinc-800 rounded-full bg-white dark:bg-zinc-950 hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:outline-none shadow-sm transition-colors h-9">
-          <Globe className="h-4 w-4 text-zinc-500" />
-          <span className="text-[#FF6B00] font-bold">{currentLang.label}</span>
-          <ChevronDown className="h-3 w-3 text-zinc-400" />
+        <button className="flex items-center gap-2 px-3 py-1.5 text-sm font-semibold border border-pink-200/60 dark:border-zinc-800 rounded-full bg-white/80 backdrop-blur-sm dark:bg-zinc-950 hover:bg-pink-50 dark:hover:bg-zinc-900 focus:outline-none shadow-sm transition-colors h-9">
+          <Globe className="h-4 w-4 text-pink-500/70" />
+          <span className="text-pink-600 dark:text-pink-400 font-bold">{currentLang.label}</span>
+          <ChevronDown className="h-3 w-3 text-pink-400/60" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40 rounded-xl p-1 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-lg z-50">
@@ -75,14 +75,14 @@ export const LanguageSwitcher = ({ className = '', responsive = true }: Language
             <DropdownMenuItem
               key={lang.code}
               onClick={() => changeLanguage(lang.code)}
-              className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-pointer transition-colors focus:bg-zinc-50 dark:focus:bg-zinc-900 ${
+              className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-pointer transition-colors focus:bg-pink-50 dark:focus:bg-zinc-900 ${
                 isActive
-                  ? 'bg-zinc-50 dark:bg-zinc-900 text-[#FF6B00] font-bold'
-                  : 'text-zinc-700 dark:text-zinc-300'
+                  ? 'bg-pink-50 dark:bg-zinc-900 text-pink-600 dark:text-pink-400 font-bold'
+                  : 'text-zinc-700 dark:text-zinc-300 hover:text-pink-600'
               }`}
             >
               <span>{lang.name}</span>
-              {isActive && <div className="h-1.5 w-1.5 rounded-full bg-[#FF6B00]" />}
+              {isActive && <div className="h-1.5 w-1.5 rounded-full bg-pink-500" />}
             </DropdownMenuItem>
           );
         })}

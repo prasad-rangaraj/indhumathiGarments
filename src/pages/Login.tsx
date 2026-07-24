@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
+import { authAPI } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +21,11 @@ const Login = () => {
   const redirectTo = searchParams.get('redirect') || '/';
   const { toast } = useToast();
   const { isAuthenticated, token } = useAuthStore();
+
+  const [view, setView] = useState<'login' | 'forgot-password' | 'reset-password'>('login');
+  const [resetEmail, setResetEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
 
   // Only redirect if BOTH isAuthenticated AND a real token exist.
   // If only isAuthenticated is true (stale persisted state, token missing/expired),
@@ -106,6 +112,45 @@ const Login = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetEmail) {
+      toast({ title: "Error", description: "Please enter your email", variant: "destructive" });
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await authAPI.forgotPassword(resetEmail);
+      toast({ title: "OTP Sent", description: "Check your email for the verification code." });
+      setView('reset-password');
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to send OTP", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otp || !newPassword) {
+      toast({ title: "Error", description: "Please enter OTP and new password", variant: "destructive" });
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await authAPI.resetPassword({ email: resetEmail, otp, password: newPassword });
+      toast({ title: "Success", description: "Password reset successfully. You can now log in." });
+      setView('login');
+      setOtp("");
+      setNewPassword("");
+      setResetEmail("");
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to reset password", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Background Image - Fixed */}
@@ -125,9 +170,9 @@ const Login = () => {
           className="h-24 sm:h-28 md:h-32 mx-auto mb-6 drop-shadow-lg object-contain"
         />
         <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl border border-pink-100/50 overflow-hidden">
-          {/* Login Form */}
-          <form onSubmit={handleLogin} className="p-6 sm:p-8 space-y-5">
-            <h2 className="text-2xl font-bold text-center text-pink-900 mb-6">Sign In</h2>
+          {view === 'login' && (
+            <form onSubmit={handleLogin} className="p-6 sm:p-8 space-y-5 animate-in fade-in slide-in-from-bottom-2">
+              <h2 className="text-2xl font-bold text-center text-pink-900 mb-6">Sign In</h2>
             
             <div className="space-y-2">
               <Label htmlFor="email" className="text-foreground font-medium">
@@ -171,7 +216,7 @@ const Login = () => {
                 <input type="checkbox" className="rounded border-border accent-pink-300" />
                 <span className="text-muted-foreground">Remember me</span>
               </label>
-              <button type="button" className="text-pink-400 hover:text-pink-500 hover:underline font-medium">
+              <button type="button" onClick={() => setView('forgot-password')} className="text-pink-400 hover:text-pink-500 hover:underline font-medium">
                 Forgot Password?
               </button>
             </div>
@@ -220,7 +265,91 @@ const Login = () => {
                 Sign Up
               </button>
             </p>
-          </form>
+            </form>
+          )}
+
+          {view === 'forgot-password' && (
+            <form onSubmit={handleForgotPassword} className="p-6 sm:p-8 space-y-5 animate-in fade-in slide-in-from-bottom-2">
+              <h2 className="text-2xl font-bold text-center text-pink-900 mb-2">Forgot Password</h2>
+              <p className="text-center text-sm text-muted-foreground mb-6">Enter your email and we'll send you an OTP to reset your password.</p>
+              
+              <div className="space-y-2">
+                <Label htmlFor="reset-email" className="text-foreground font-medium">Email Address</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  className="h-12 bg-background/50 border-border/50 focus:border-pink-300"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-12 bg-gradient-to-r from-pink-200 to-pink-300 hover:from-pink-300 hover:to-pink-400 text-pink-900 font-semibold text-base shadow-lg"
+              >
+                {isLoading ? "Sending OTP..." : "Send OTP"}
+              </Button>
+
+              <p className="text-center text-sm text-muted-foreground mt-4">
+                Remember your password?{" "}
+                <button type="button" onClick={() => setView('login')} className="text-pink-400 hover:text-pink-500 hover:underline font-medium">
+                  Log In
+                </button>
+              </p>
+            </form>
+          )}
+
+          {view === 'reset-password' && (
+            <form onSubmit={handleResetPassword} className="p-6 sm:p-8 space-y-5 animate-in fade-in slide-in-from-bottom-2">
+              <h2 className="text-2xl font-bold text-center text-pink-900 mb-2">Reset Password</h2>
+              <p className="text-center text-sm text-muted-foreground mb-6">Enter the OTP sent to {resetEmail} and your new password.</p>
+              
+              <div className="space-y-2">
+                <Label htmlFor="otp" className="text-foreground font-medium">OTP Code</Label>
+                <Input
+                  id="otp"
+                  type="text"
+                  maxLength={6}
+                  placeholder="Enter 6-digit OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="h-12 bg-background/50 border-border/50 focus:border-pink-300 tracking-widest text-center text-lg"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="new-password" className="text-foreground font-medium">New Password</Label>
+                <div className="relative">
+                  <Input
+                    id="new-password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter new password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="h-12 bg-background/50 border-border/50 focus:border-primary pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-12 bg-gradient-to-r from-pink-200 to-pink-300 hover:from-pink-300 hover:to-pink-400 text-pink-900 font-semibold text-base shadow-lg"
+              >
+                {isLoading ? "Resetting..." : "Reset Password"}
+              </Button>
+            </form>
+          )}
         </div>
 
         {/* Back to Customer Area */}

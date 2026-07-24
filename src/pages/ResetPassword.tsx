@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Lock, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Lock, Key, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
 import { authAPI } from '../lib/api';
 import { useToast } from '../components/ui/use-toast';
 import Navigation from '../components/Navigation';
@@ -8,10 +8,12 @@ import Footer from '../components/Footer';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 
 const ResetPassword = () => {
-  const { token } = useParams<{ token: string }>();
+  const location = useLocation();
+  const email = location.state?.email;
   const navigate = useNavigate();
   const { toast } = useToast();
   
+  const [otp, setOtp] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -29,10 +31,10 @@ const ResetPassword = () => {
       return;
     }
 
-    if (!token) {
+    if (!email || !otp) {
         toast({
-            title: "Invalid Token",
-            description: "No reset token found.",
+            title: "Missing Information",
+            description: "Please provide the OTP sent to your email.",
             variant: "destructive",
         });
         return;
@@ -41,7 +43,7 @@ const ResetPassword = () => {
     setLoading(true);
 
     try {
-      await authAPI.resetPassword(token, password);
+      await authAPI.resetPassword({ email, otp, password });
       toast({
         title: "Password Reset Successful",
         description: "You can now login with your new password.",
@@ -74,6 +76,25 @@ const ResetPassword = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium leading-none" htmlFor="otp">
+                Verification Code (OTP)
+              </label>
+              <div className="relative">
+                <input
+                  id="otp"
+                  type="text"
+                  required
+                  maxLength={6}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  placeholder="Enter 6-digit OTP"
+                />
+                <Key className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <label className="text-sm font-medium leading-none" htmlFor="password">
                 New Password

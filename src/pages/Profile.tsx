@@ -5,8 +5,9 @@ import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 import Footer from '@/components/Footer';
 import { useAuthStore } from '../stores/authStore';
 import { userAPI, customerAPI, ordersAPI, wishlistAPI, couponsAPI } from '../lib/api';
+import { useTranslation } from 'react-i18next';
 import { useToast } from '../components/ui/use-toast';
-import { Loader2, User, MapPin, Package, Heart, LogOut, ChevronRight, ChevronLeft, Save, Plus, Trash2, Edit2, Ticket, Headphones } from 'lucide-react';
+import { Loader2, User, MapPin, Package, Heart, LogOut, ChevronRight, ChevronLeft, Save, Plus, Trash2, Edit2, Ticket, Headphones, Eye, EyeOff } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -23,7 +24,9 @@ const toUrl = (src: string) => {
 
 import { resolveItemImage } from '@/lib/utils';
 
-const OrderCard = ({ order, navigate }: { order: any; navigate: any }) => (
+const OrderCard = ({ order, navigate }: { order: any; navigate: any }) => {
+  const { t } = useTranslation();
+  return (
   <div
     key={order.id}
     className="border border-gray-200 rounded-sm p-4 hover:shadow-md transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-50/50 hover:bg-white group"
@@ -51,15 +54,15 @@ const OrderCard = ({ order, navigate }: { order: any; navigate: any }) => (
         })()}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-sm sm:text-base font-semibold text-gray-800 group-hover:text-pink-600 transition-colors truncate">Order #{order.orderId}</p>
-        <p className="text-xs sm:text-sm text-gray-600 mt-1">{order.items?.length || 0} Items • ₹{order.total}</p>
+        <p className="text-sm sm:text-base font-semibold text-gray-800 group-hover:text-pink-600 transition-colors truncate">{t('orders.orderId')}{order.orderId}</p>
+        <p className="text-xs sm:text-sm text-gray-600 mt-1">{order.items?.length || 0} {t('orders.items')} • ₹{order.total}</p>
 
         <div className="mt-2 sm:mt-3 flex flex-wrap items-center gap-y-1 sm:gap-y-2 gap-x-3 sm:gap-x-4">
           {order.status === 'Delivered' ? (
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-green-500" />
               <span className="text-xs font-medium text-gray-500">
-                Delivered on {(() => {
+                {t('orders.deliveredOn')} {(() => {
                   const d = new Date(order.orderDate);
                   d.setDate(d.getDate() + 7);
                   return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
@@ -77,7 +80,7 @@ const OrderCard = ({ order, navigate }: { order: any; navigate: any }) => (
               </div>
 
               <div className="flex items-center gap-1.5 border-l border-gray-200 pl-4">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Est. Delivery:</span>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('orders.estDelivery')}:</span>
                 <span className={`text-xs font-semibold uppercase ${order.delayedDeliveryDate ? 'text-red-500' : 'text-green-600'}`}>
                   {order.delayedDeliveryDate ? (
                     `${new Date(order.delayedDeliveryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}${order.delayReason ? ` - ${order.delayReason}` : ''}`
@@ -101,20 +104,22 @@ const OrderCard = ({ order, navigate }: { order: any; navigate: any }) => (
         className="text-xs h-8 px-3 flex-1 sm:flex-none border-gray-200"
         onClick={() => navigate(`/order/${order.orderId}`)}
       >
-        View Details
+        {t('orders.viewDetails')}
       </Button>
       <Button
         size="sm"
         className="text-xs h-8 px-3 flex-1 sm:flex-none bg-pink-600 hover:bg-pink-700 font-bold"
         onClick={() => navigate(`/track/${order.orderId}`)}
       >
-        Track Order
+        {t('orders.trackOrder')}
       </Button>
     </div>
   </div>
-);
+  );
+};
 
 export default function Profile() {
+  const { t } = useTranslation();
   const { user, login, logout, setUser } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
@@ -137,7 +142,10 @@ export default function Profile() {
   // Sub-component States
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ name: '', phone: '', address: '' });
-  const [passwordForm, setPasswordForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
+  const [securityView, setSecurityView] = useState<'request-otp' | 'update-password'>('request-otp');
+  const [passwordForm, setPasswordForm] = useState({ otp: '', newPassword: '', confirmPassword: '' });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [coupons, setCoupons] = useState<any[]>([]);
@@ -340,17 +348,35 @@ export default function Profile() {
     }
   };
 
+  const handleRequestOtp = async () => {
+    setLoading(true);
+    try {
+      await userAPI.requestPasswordUpdateOtp();
+      toast({ title: "OTP Sent", description: "Check your email for the verification code." });
+      setSecurityView('update-password');
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to send OTP", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       toast({ title: "Error", description: "New passwords do not match", variant: "destructive" });
       return;
     }
+    if (!passwordForm.otp || passwordForm.otp.length !== 6) {
+      toast({ title: "Error", description: "Please enter a valid 6-digit OTP", variant: "destructive" });
+      return;
+    }
     setLoading(true);
     try {
-      await userAPI.updatePassword({ oldPassword: passwordForm.oldPassword, newPassword: passwordForm.newPassword });
+      await userAPI.updatePasswordOtp({ otp: passwordForm.otp, newPassword: passwordForm.newPassword });
       toast({ title: "Success", description: "Password updated successfully!" });
-      setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+      setPasswordForm({ otp: '', newPassword: '', confirmPassword: '' });
+      setSecurityView('request-otp');
     } catch (error: any) {
       toast({ title: "Failed", description: error.message, variant: "destructive" });
     } finally {
@@ -392,13 +418,13 @@ export default function Profile() {
             <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-pink-100">
               {/* Account Settings Section */}
               <div className="px-4 pt-4 pb-1">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">Account Settings</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 pl-1">{t('profile.title')}</p>
               </div>
 
               {[
-                { tab: 'profile', label: 'Profile Information', icon: <User size={16} /> },
-                { tab: 'addresses', label: 'Manage Addresses', icon: <MapPin size={16} /> },
-                { tab: 'security', label: 'Security & Password', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> },
+                { tab: 'profile', label: t('profile.personalInfo'), icon: <User size={16} /> },
+                { tab: 'addresses', label: t('profile.addresses'), icon: <MapPin size={16} /> },
+                { tab: 'security', label: t('profile.security'), icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> },
               ].map(({ tab, label, icon }) => (
                 <button
                   key={tab}
@@ -421,9 +447,9 @@ export default function Profile() {
 
               {/* Other Sections */}
               {[
-                { tab: 'coupons', label: 'My Coupons', icon: <Ticket size={16} /> },
-                { tab: 'orders', label: 'My Orders', icon: <Package size={16} /> },
-                { tab: 'wishlist', label: 'My Wishlist', icon: <Heart size={16} /> },
+                { tab: 'coupons', label: t('profile.coupons'), icon: <Ticket size={16} /> },
+                { tab: 'orders', label: t('profile.orders'), icon: <Package size={16} /> },
+                { tab: 'wishlist', label: t('profile.wishlist'), icon: <Heart size={16} /> },
               ].map(({ tab, label, icon }) => (
                 <button
                   key={tab}
@@ -458,7 +484,7 @@ export default function Profile() {
                 className="w-full flex items-center gap-3 px-4 py-3 pb-4 text-sm font-medium text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all duration-200 group"
               >
                 <LogOut size={16} className="flex-shrink-0 text-gray-400 group-hover:text-red-400" />
-                <span className="flex-1 text-left">Logout</span>
+                <span className="flex-1 text-left">{t('profile.logout')}</span>
               </button>
             </div>
           </div>
@@ -477,7 +503,7 @@ export default function Profile() {
               {/* Profile Information View */}
               {activeTab === 'profile' && (
                 <div>
-                  <h2 className="text-xl font-semibold mb-6 flex items-center gap-2 border-b border-pink-100 pb-4">Personal Information <span className="text-pink-600 text-sm font-bold cursor-pointer ml-4">Edit</span></h2>
+                  <h2 className="text-xl font-semibold mb-6 flex items-center gap-2 border-b border-pink-100 pb-4">{t('profile.personalInfo')} <span className="text-pink-600 text-sm font-bold cursor-pointer ml-4">{t('profile.edit')}</span></h2>
                   <form onSubmit={handleProfileUpdate} className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
                     <div className="space-y-2">
                       <label className="text-sm text-gray-500">First Name / Full Name</label>
@@ -496,7 +522,7 @@ export default function Profile() {
                     </div>
                     <div className="md:col-span-2 mt-4">
                       <Button type="submit" disabled={loading} className="px-8 bg-pink-600 hover:bg-pink-700 text-white rounded-sm font-bold transition-all transform hover:scale-105 active:scale-95 shadow-md hover:shadow-pink-200">
-                        {loading ? <Loader2 className="animate-spin mr-2" /> : "SAVE CHANGES"}
+                        {loading ? <Loader2 className="animate-spin mr-2" /> : t('profile.saveChanges').toUpperCase()}
                       </Button>
                     </div>
                   </form>
@@ -507,43 +533,78 @@ export default function Profile() {
               {activeTab === 'security' && (
                 <div className="max-w-2xl">
                   <h2 className="text-xl font-semibold mb-6 border-b border-pink-100 pb-4">Security Settings</h2>
-                  <form onSubmit={handlePasswordUpdate} className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
-                      <input
-                        type="password"
-                        value={passwordForm.oldPassword}
-                        onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
-                        className="w-full sm:w-2/3 border border-pink-200 rounded-md p-2 focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Leave blank if you logged in via Google and are setting a password for the first time.</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                      <input
-                        type="password"
-                        required
-                        value={passwordForm.newPassword}
-                        onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                        className="w-full sm:w-2/3 border border-pink-200 rounded-md p-2 focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-                      <input
-                        type="password"
-                        required
-                        value={passwordForm.confirmPassword}
-                        onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                        className="w-full sm:w-2/3 border border-pink-200 rounded-md p-2 focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none"
-                      />
-                    </div>
-                    <div>
-                      <Button type="submit" disabled={loading} className="bg-pink-600 hover:bg-pink-700 font-bold px-8">
-                        {loading ? <Loader2 className="animate-spin mr-2" /> : "UPDATE PASSWORD"}
+                  {securityView === 'request-otp' ? (
+                    <div className="space-y-6">
+                      <p className="text-gray-600 text-sm">To change your password, we'll send a One-Time Password (OTP) to your registered email address ({user.email}).</p>
+                      <Button onClick={handleRequestOtp} disabled={loading} className="bg-pink-600 hover:bg-pink-700 font-bold px-8">
+                        {loading ? <Loader2 className="animate-spin mr-2" /> : "SEND OTP"}
                       </Button>
                     </div>
-                  </form>
+                  ) : (
+                    <form onSubmit={handlePasswordUpdate} className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+                      <p className="text-gray-600 text-sm">An OTP has been sent to {user.email}.</p>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">OTP Code</label>
+                        <input
+                          type="text"
+                          maxLength={6}
+                          required
+                          value={passwordForm.otp}
+                          onChange={(e) => setPasswordForm({ ...passwordForm, otp: e.target.value })}
+                          className="w-full sm:w-2/3 border border-pink-200 rounded-md p-2 focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none tracking-widest font-mono"
+                          placeholder="Enter 6-digit OTP"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                        <div className="relative w-full sm:w-2/3">
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            required
+                            value={passwordForm.newPassword}
+                            onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                            className="w-full border border-pink-200 rounded-md p-2 pr-10 focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none"
+                            placeholder="Enter new password"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                          >
+                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                        <div className="relative w-full sm:w-2/3">
+                          <input
+                            type={showConfirmPassword ? "text" : "password"}
+                            required
+                            value={passwordForm.confirmPassword}
+                            onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                            className="w-full border border-pink-200 rounded-md p-2 pr-10 focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none"
+                            placeholder="Confirm new password"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                          >
+                            {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex gap-4">
+                        <Button type="submit" disabled={loading} className="bg-pink-600 hover:bg-pink-700 font-bold px-8">
+                          {loading ? <Loader2 className="animate-spin mr-2" /> : "UPDATE PASSWORD"}
+                        </Button>
+                        <Button type="button" onClick={() => setSecurityView('request-otp')} variant="outline" disabled={loading} className="px-8 border-pink-200 hover:bg-pink-50 hover:text-pink-700">
+                          Cancel
+                        </Button>
+                      </div>
+                    </form>
+                  )}
                 </div>
               )}
 

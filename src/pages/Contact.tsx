@@ -3,9 +3,11 @@ import { Mail, Phone, MapPin, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { enquiryAPI } from '@/lib/api';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useTranslation } from 'react-i18next';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 
 const Contact = () => {
+  const { t } = useTranslation();
   const { settings } = useSiteSettings();
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
@@ -53,21 +55,21 @@ const Contact = () => {
         {/* Header */}
         <div className="text-center mb-8 sm:mb-12 animate-fade-in">
           <h1 className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Contact Us
+            {t('contact.title')}
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-            We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+            {t('contact.subtitle')}
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
           {/* Contact Form */}
           <div className="card-elegant p-6 sm:p-8 animate-slide-up">
-            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-foreground">Send us a Message</h2>
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-foreground">{t('contact.sendMessage')}</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
-                  Name
+                  {t('contact.name')}
                 </label>
                 <input
                   type="text"
@@ -77,13 +79,13 @@ const Contact = () => {
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-3 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
-                  placeholder="Your full name"
+                  placeholder={t('contact.namePlaceholder')}
                 />
               </div>
               
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-                  Email
+                  {t('contact.email')}
                 </label>
                 <input
                   type="email"
@@ -93,13 +95,13 @@ const Contact = () => {
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-3 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
-                  placeholder="your.email@example.com"
+                  placeholder={t('contact.emailPlaceholder')}
                 />
               </div>
 
               <div>
                 <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
-                  Phone <span className="text-muted-foreground text-xs">(optional)</span>
+                  {t('contact.phone')} <span className="text-muted-foreground text-xs">{t('contact.phoneOptional')}</span>
                 </label>
                 <input
                   type="tel"
@@ -108,13 +110,13 @@ const Contact = () => {
                   value={formData.phone}
                   onChange={handleChange}
                   className="w-full px-4 py-3 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
-                  placeholder="Your phone number"
+                  placeholder={t('contact.phonePlaceholder')}
                 />
               </div>
 
               <div>
                 <label htmlFor="subject" className="block text-sm font-medium text-foreground mb-2">
-                  Subject <span className="text-red-500">*</span>
+                  {t('contact.subject')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -124,13 +126,13 @@ const Contact = () => {
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-3 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
-                  placeholder="What is this regarding?"
+                  placeholder={t('contact.subjectPlaceholder')}
                 />
               </div>
               
               <div>
                 <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
-                  Message <span className="text-red-500">*</span>
+                  {t('contact.message')} <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   id="message"
@@ -140,12 +142,12 @@ const Contact = () => {
                   required
                   rows={6}
                   className="w-full px-4 py-3 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors resize-none"
-                  placeholder="How can we help you?"
+                  placeholder={t('contact.messagePlaceholder')}
                 />
               </div>
               
               <button type="submit" disabled={submitting} className="btn-primary w-full hover-glow disabled:opacity-60 disabled:cursor-not-allowed">
-                {submitting ? 'Sending...' : 'Send Message'}
+                {submitting ? t('contact.submitting') : t('contact.submit')}
               </button>
             </form>
           </div>
@@ -158,7 +160,7 @@ const Contact = () => {
                   <Mail className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground mb-2">Email Us</h3>
+                  <h3 className="font-semibold text-foreground mb-2">{t('contact.emailTitle')}</h3>
                   <p className="text-muted-foreground">{settings.email}</p>
                 </div>
               </div>
@@ -170,7 +172,7 @@ const Contact = () => {
                   <Phone className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground mb-2">Call Us</h3>
+                  <h3 className="font-semibold text-foreground mb-2">{t('contact.phoneTitle')}</h3>
                   <p className="text-muted-foreground">{settings.phone}</p>
                 </div>
               </div>
@@ -182,7 +184,7 @@ const Contact = () => {
                   <MapPin className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground mb-2">Visit Us</h3>
+                  <h3 className="font-semibold text-foreground mb-2">{t('contact.addressTitle')}</h3>
                   <p className="text-muted-foreground whitespace-pre-line">{settings.address}</p>
                 </div>
               </div>
@@ -194,11 +196,10 @@ const Contact = () => {
                   <Clock className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground mb-2">Business Hours</h3>
+                  <h3 className="font-semibold text-foreground mb-2">{t('contact.hoursTitle')}</h3>
                   <p className="text-muted-foreground">
-                    Monday - Friday: 9:00 AM - 6:00 PM<br />
-                    Saturday: 9:00 AM - 4:00 PM<br />
-                    Sunday: Closed
+                    {t('contact.monSat')}: 9:00 AM - 6:00 PM<br />
+                    {t('contact.sunday')}: {t('contact.closed')}
                   </p>
                 </div>
               </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CreditCard, Smartphone, Banknote, Ticket, Check, CheckCircle, MapPin, Package, ShieldCheck, Truck } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
+import { useTranslation } from 'react-i18next';
 import { useOrdersStore } from '@/stores/ordersStore';
 import { useAuthStore } from '@/stores/authStore';
 import { resolveItemImage } from '@/lib/utils';
@@ -26,6 +27,7 @@ const loadRazorpayScript = (): Promise<boolean> => {
 };
 
 const Checkout = () => {
+  const { t } = useTranslation();
   const { items, total, clearCart } = useCartStore();
   const { createOrder } = useOrdersStore();
   const { user } = useAuthStore();
@@ -379,7 +381,7 @@ const Checkout = () => {
       <div className="sm:mx-auto px-2 sm:px-4 py-4 sm:py-8 relative z-10">
         <div className="mx-4 sm:mx-auto max-w-6xl">
           <div className="flex items-center justify-between mb-8 pb-4 border-b border-border">
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Secure Checkout</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{t('checkout.title')}</h1>
             <div className="flex items-center gap-2 text-green-600 bg-green-50 px-3 py-1.5 rounded-full border border-green-200">
               <ShieldCheck className="w-5 h-5" />
               <span className="text-sm font-semibold tracking-wide">100% SECURE</span>
@@ -409,7 +411,7 @@ const Checkout = () => {
                 <div className={`flex items-center gap-4 p-4 sm:p-5 ${currentStep === 2 ? 'bg-primary/5 border-b border-primary/20' : ''}`}>
                   <div className={`w-8 h-8 flex items-center justify-center rounded font-bold ${currentStep === 2 ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>2</div>
                   <h3 className={`font-semibold ${currentStep === 2 ? 'text-primary' : 'text-foreground'} flex items-center gap-2 flex-1`}>
-                    Delivery Address {currentStep > 2 && <CheckCircle className="w-4 h-4 text-green-500" />}
+                    {t('checkout.shippingAddress')} {currentStep > 2 && <CheckCircle className="w-4 h-4 text-green-500" />}
                   </h3>
                   {currentStep > 2 && (
                     <Button type="button" variant="ghost" size="sm" onClick={() => setCurrentStep(2)} className="h-8 text-primary font-semibold hover:bg-primary/10">
@@ -654,7 +656,7 @@ const Checkout = () => {
                 <div className={`flex items-center gap-4 p-4 sm:p-5 ${currentStep === 3 ? 'bg-primary/5 border-b border-primary/20' : ''}`}>
                   <div className={`w-8 h-8 flex items-center justify-center rounded font-bold ${currentStep === 3 ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>3</div>
                   <h3 className={`font-semibold ${currentStep === 3 ? 'text-primary' : 'text-foreground'} flex items-center gap-2 flex-1`}>
-                    Order Summary {currentStep > 3 && <CheckCircle className="w-4 h-4 text-green-500" />}
+                    {t('checkout.orderSummary')} {currentStep > 3 && <CheckCircle className="w-4 h-4 text-green-500" />}
                   </h3>
                   {currentStep > 3 && (
                     <Button type="button" variant="ghost" size="sm" onClick={() => setCurrentStep(3)} className="h-8 text-primary font-semibold hover:bg-primary/10">
@@ -714,7 +716,7 @@ const Checkout = () => {
                 <div className={`flex items-center gap-4 p-4 sm:p-5 ${currentStep === 4 ? 'bg-primary/5 border-b border-primary/20' : ''}`}>
                   <div className={`w-8 h-8 flex items-center justify-center rounded font-bold ${currentStep === 4 ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>4</div>
                   <h3 className={`font-semibold ${currentStep === 4 ? 'text-primary' : 'text-foreground'}`}>
-                    Payment Options
+                    {t('checkout.paymentMethod')}
                   </h3>
                 </div>
 
@@ -770,7 +772,7 @@ const Checkout = () => {
               <div className="bg-card border border-border shadow-sm p-0 rounded-xl sticky top-24 overflow-hidden">
 
                 <div className="p-4 sm:p-5 border-b border-border/50 bg-muted/20">
-                  <h2 className="text-sm uppercase tracking-wider font-bold text-muted-foreground">Price Details</h2>
+                  <h2 className="text-sm uppercase tracking-wider font-bold text-muted-foreground">{t('checkout.orderSummary')}</h2>
                 </div>
 
                 <div className="p-4 sm:p-5 space-y-4">

@@ -64,8 +64,8 @@ export const authAPI = {
     apiRequest<{ message: string }>('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
   logout: () => apiRequest<{ message: string }>('/auth/logout', { method: 'POST' }),
   googleLogin: (token: string) => apiRequest<any>('/auth/google', { method: 'POST', body: JSON.stringify({ token }) }),
-  resetPassword: (token: string, password: string) =>
-    apiRequest<{ message: string; token: string }>('/auth/reset-password/' + token, { method: 'POST', body: JSON.stringify({ password }) }),
+  resetPassword: (data: { email: string; otp: string; password: string; }) =>
+    apiRequest<{ message: string; token: string }>('/auth/reset-password', { method: 'POST', body: JSON.stringify(data) }),
 };
 
 // User API
@@ -73,8 +73,10 @@ export const userAPI = {
   getProfile: (id: string) => apiRequest<any>(`/users/${id}`),
   updateProfile: (data: any) =>
     apiRequest<any>('/users/profile', { method: 'PATCH', body: JSON.stringify(data) }),
-  updatePassword: (data: any) =>
-    apiRequest<any>('/users/update-password', { method: 'PATCH', body: JSON.stringify(data) }),
+  requestPasswordUpdateOtp: () =>
+    apiRequest<{ message: string }>('/users/request-password-update-otp', { method: 'POST' }),
+  updatePasswordOtp: (data: { otp: string; newPassword: string }) =>
+    apiRequest<{ message: string }>('/users/update-password-otp', { method: 'PATCH', body: JSON.stringify(data) }),
 };
 
 // Public Coupons API

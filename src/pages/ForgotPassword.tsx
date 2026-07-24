@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Mail, ArrowLeft, Loader2 } from 'lucide-react';
 import { authAPI } from '../lib/api';
 import Navigation from '../components/Navigation';
@@ -7,6 +7,7 @@ import Footer from '../components/Footer';
 import bgCotton1 from '@/assets/bg-cotton-1.jpg';
 
 const ForgotPassword = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -18,7 +19,7 @@ const ForgotPassword = () => {
 
     try {
       await authAPI.forgotPassword(email);
-      setMessage({ type: 'success', text: 'Password reset link sent to your email.' });
+      navigate('/reset-password', { state: { email } });
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message || 'Failed to send reset link.' });
     } finally {
