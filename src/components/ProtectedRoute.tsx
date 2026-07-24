@@ -18,8 +18,8 @@ export const ProtectedRoute = ({ adminOnly = false }: ProtectedRouteProps) => {
     }
   }, [authError, isAuthenticated, logout]);
 
-  // Redirect to login if not authenticated or no token
-  if (!isAuthenticated || !user || !token) {
+  // Redirect to login if not authenticated or no user object
+  if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />;
   }
 

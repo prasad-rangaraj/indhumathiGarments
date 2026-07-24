@@ -165,6 +165,7 @@ export const adminAPI = {
     const url = folder ? `${API_BASE_URL}/admin/upload?folder=${encodeURIComponent(folder)}` : `${API_BASE_URL}/admin/upload`;
     const response = await fetch(url, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
@@ -244,6 +245,7 @@ export const customerAPI = {
     const url = folder ? `${API_BASE_URL}/public/upload?folder=${encodeURIComponent(folder)}` : `${API_BASE_URL}/public/upload`;
     const response = await fetch(url, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },

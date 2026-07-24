@@ -110,6 +110,8 @@ export const useAuthStore = create<AuthState>()(
           if (response.ok) {
             const data = await response.json();
             set({ user: data, isAuthenticated: true });
+          } else if (response.status === 401) {
+            set({ user: null, token: null, isAuthenticated: false });
           }
         } catch {}
       },
