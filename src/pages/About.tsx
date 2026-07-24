@@ -78,7 +78,7 @@ const About = () => {
 
           {/* Single-row highlights (stacked on mobile) */}
           <div className="px-4 sm:px-6 py-6 sm:py-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-20 sm:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-14 sm:gap-6">
               <div className="text-center">
                 <Award className="h-10 w-10 sm:h-12 sm:w-12 text-primary mx-auto mb-3 sm:mb-4" />
                 <h3 className="font-semibold text-foreground text-xs sm:text-lg">{t('about.premiumQuality')}</h3>
