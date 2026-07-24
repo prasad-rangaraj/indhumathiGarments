@@ -86,7 +86,7 @@ const OrderDetails = () => {
 
   // Show spinner while fetching — avoids flash of "Order not found" on mobile
   if (!hasFetched || loading) {
-    return <PremiumLoader text="Loading Order Details..." />;
+    return <PremiumLoader />;
   }
 
   if (!order) {

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AdminLoader } from "@/components/ui/AdminLoader";
 import { Plus, Trash2, Copy, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -169,7 +170,7 @@ const Coupons = () => {
       )}
 
       {loading ? (
-        <div className="text-center py-12 text-muted-foreground">Loading coupons...</div>
+        <AdminLoader rows={4} cols={4} />
       ) : coupons.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">No coupons found. Create your first coupon!</div>
       ) : (

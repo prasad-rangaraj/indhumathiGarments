@@ -228,7 +228,7 @@ const OrderTracking = () => {
 
   // ── Loading ──────────────────────────────────────────────────────────────
   if (!hasFetched || loading) {
-    return <PremiumLoader text="Loading Order Details..." />;
+    return <PremiumLoader />;
   }
 
   // ── Not found ────────────────────────────────────────────────────────────
@@ -427,23 +427,23 @@ const OrderTracking = () => {
                           <div key={step.key} className="flex flex-col items-center w-1/4">
                             {/* Circle */}
                             <div
-                              className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 mb-3"
+                              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 mb-3 ${
+                                done ? 'shadow-md' : 'bg-gray-50 border-2 border-gray-300/80 shadow-xs'
+                              }`}
                               style={{
-                                background: done ? step.doneColor : 'var(--color-card, #fff)',
-                                border: done ? `2px solid ${step.doneColor}` : '2px solid var(--color-border)',
-                                boxShadow: active
-                                  ? `0 0 0 4px ${step.ringColor}`
-                                  : undefined,
+                                background: done ? step.doneColor : undefined,
+                                border: done ? `2px solid ${step.doneColor}` : undefined,
+                                boxShadow: active ? `0 0 0 4px ${step.ringColor}` : undefined,
                               }}
                             >
                               <Icon
-                                className="w-5 h-5"
-                                style={{ color: done ? '#fff' : 'var(--color-muted-foreground)' }}
+                                className="w-5 h-5 transition-colors"
+                                style={{ color: done ? '#ffffff' : '#64748b' }}
                               />
                             </div>
                             <p
-                              className="text-sm font-semibold text-center leading-tight"
-                              style={{ color: done ? step.doneColor : 'var(--color-muted-foreground)' }}
+                              className="text-sm font-semibold text-center leading-tight transition-colors"
+                              style={{ color: done ? step.doneColor : '#475569' }}
                             >
                               {step.label}
                             </p>
@@ -481,24 +481,26 @@ const OrderTracking = () => {
 
                           {/* Icon */}
                           <div
-                            className="relative z-10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 bg-background"
+                            className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ${
+                              done ? 'shadow-md' : 'bg-gray-50 border-2 border-gray-300/80 shadow-xs'
+                            }`}
                             style={{
-                              background: done ? step.doneColor : 'var(--color-card, #fff)',
-                              border: done ? `2px solid ${step.doneColor}` : '2px solid var(--color-border)',
+                              background: done ? step.doneColor : undefined,
+                              border: done ? `2px solid ${step.doneColor}` : undefined,
                               boxShadow: active ? `0 0 0 4px ${step.ringColor}` : undefined,
                             }}
                           >
                             <Icon
-                              className="w-4 h-4"
-                              style={{ color: done ? '#fff' : 'var(--color-muted-foreground)' }}
+                              className="w-4 h-4 transition-colors"
+                              style={{ color: done ? '#ffffff' : '#64748b' }}
                             />
                           </div>
 
                           {/* Text */}
                           <div className="pt-1.5">
                             <p
-                              className="text-sm font-semibold leading-tight"
-                              style={{ color: done ? step.doneColor : 'var(--color-muted-foreground)' }}
+                              className="text-sm font-semibold leading-tight transition-colors"
+                              style={{ color: done ? step.doneColor : '#475569' }}
                             >
                               {step.label}
                             </p>

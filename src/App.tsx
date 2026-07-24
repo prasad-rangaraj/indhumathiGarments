@@ -80,7 +80,7 @@ const App = () => (
         <PullToRefresh>
           <BrowserRouter>
             <AppInner />
-          <Suspense fallback={<PremiumLoader text="Loading Application..." />}>
+          <Suspense fallback={<PremiumLoader />}>
             <Routes>
               {/* Public Auth Routes */}
               <Route path="/" element={<About />} />

@@ -116,7 +116,11 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ token: state.token, user: state.user, isAuthenticated: state.isAuthenticated }),
+      // SECURITY: Never persist the raw JWT token to localStorage.
+      // The backend sets an HttpOnly cookie on login — that is the real auth mechanism.
+      // We only persist non-sensitive UI state (who is logged in) for display purposes.
+      // The backend re-validates the token from the HttpOnly cookie on every protected request.
+      partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
     }
   )
 );

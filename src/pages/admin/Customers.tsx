@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AdminLoader } from "@/components/ui/AdminLoader";
 import { Search, Eye, Ban, CheckCircle, ShieldAlert, Shield, Trash2, Package, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -297,7 +298,7 @@ const exportCustomersCSV = (customers: Customer[]) => {
                 <span className="ml-auto text-xs text-muted-foreground">{selectedCustomer.totalOrders} order(s) · ₹{selectedCustomer.totalSpent.toLocaleString()} spent</span>
               </div>
               {ordersLoading ? (
-                <div className="text-center py-10 text-muted-foreground text-sm">Loading orders...</div>
+                <AdminLoader rows={3} cols={3} />
               ) : customerOrders.length === 0 ? (
                 <div className="text-center py-10 text-muted-foreground text-sm">No orders placed yet.</div>
               ) : (

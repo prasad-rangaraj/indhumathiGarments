@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { AdminLoader } from "@/components/ui/AdminLoader";
 import { Search, Mail, CheckCircle, Clock, Reply, Calendar as CalendarIcon, MessageCircle, Filter } from "lucide-react";
 import { format, isWithinInterval, parseISO, startOfDay, endOfDay } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -215,7 +216,7 @@ const Enquiries = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading enquiries...</div>
+            <AdminLoader rows={5} cols={4} />
           ) : filteredEnquiries.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">No enquiries found</div>
           ) : (

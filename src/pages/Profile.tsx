@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import { useAuthStore } from '../stores/authStore';
 import { userAPI, customerAPI, ordersAPI, wishlistAPI, couponsAPI } from '../lib/api';
 import { useToast } from '../components/ui/use-toast';
-import { Loader2, User, MapPin, Package, Heart, LogOut, ChevronRight, ChevronLeft, Save, Plus, Trash2, Edit2, Ticket, Headphones, RotateCcw } from 'lucide-react';
+import { Loader2, User, MapPin, Package, Heart, LogOut, ChevronRight, ChevronLeft, Save, Plus, Trash2, Edit2, Ticket, Headphones } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -704,18 +704,34 @@ export default function Profile() {
               {activeTab === 'orders' && (
                 <div>
                   <div className="flex items-center justify-between border-b border-pink-100 pb-4 mb-6">
-                    <h2 className="text-xl font-semibold">My Orders</h2>
-                    <button
-                      onClick={fetchOrders}
-                      disabled={ordersLoading}
-                      className="flex items-center gap-1.5 text-xs text-pink-600 hover:text-pink-800 font-semibold border border-pink-200 hover:bg-pink-50 rounded-full px-3 py-1.5 transition-all disabled:opacity-50"
-                    >
-                      <RotateCcw size={12} className={ordersLoading ? 'animate-spin' : ''} />
-                      {ordersLoading ? 'Refreshing...' : 'Refresh'}
-                    </button>
+                    <h2 className="text-xl font-semibold text-foreground">My Orders</h2>
+                    {ordersLoading && orders.length > 0 && (
+                      <div className="flex items-center gap-2 text-xs text-pink-600 font-medium">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-pink-500"></span>
+                        </span>
+                        Updating...
+                      </div>
+                    )}
                   </div>
                   {ordersLoading && orders.length === 0 ? (
-                    <div className="flex justify-center py-10"><Loader2 className="animate-spin text-pink-600" size={32} /></div>
+                    <div className="flex flex-col items-center justify-center py-16 px-4 space-y-4">
+                      <div className="relative flex items-center justify-center w-16 h-16">
+                        {/* Glowing background aura */}
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-pink-500/30 via-rose-400/20 to-pink-300/30 animate-pulse blur-md" />
+                        {/* Outer dual spinning ring */}
+                        <div className="absolute inset-0 rounded-full border-2 border-pink-100 border-t-pink-600 border-b-rose-500 animate-spin" />
+                        {/* Inner icon container */}
+                        <div className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center border border-pink-200/60 shadow-xs">
+                          <Package className="w-5 h-5 text-pink-600 animate-bounce" />
+                        </div>
+                      </div>
+                      <div className="text-center space-y-1">
+                        <p className="text-sm font-semibold text-gray-700 tracking-wide">Fetching Your Orders</p>
+                        <p className="text-xs text-muted-foreground animate-pulse">Gathering latest status updates...</p>
+                      </div>
+                    </div>
                   ) : error ? (
                     <div className="text-center py-10">
                       <p className="text-red-500 font-medium mb-3">Error loading orders: {error}</p>
@@ -724,11 +740,8 @@ export default function Profile() {
                   ) : orders.length === 0 ? (
                     <div className="text-center py-12 text-gray-500 bg-pink-50/20 rounded-xl border border-dashed border-pink-200">
                       <Package className="w-12 h-12 text-pink-200 mx-auto mb-4" />
-                      <p className="mb-3">No orders found.</p>
-                      <button onClick={fetchOrders} disabled={ordersLoading} className="text-pink-600 underline text-sm block mx-auto mb-3">
-                        {ordersLoading ? 'Checking...' : 'Click to refresh'}
-                      </button>
-                      <Button onClick={() => navigate('/products')} className="mt-2 bg-pink-600 hover:bg-pink-700">Explore Collection</Button>
+                      <p className="mb-3 font-medium">No orders found.</p>
+                      <Button onClick={() => navigate('/products')} className="mt-2 bg-pink-600 hover:bg-pink-700 shadow-sm">Explore Collection</Button>
                     </div>
                   ) : (
                     <div className="space-y-4">

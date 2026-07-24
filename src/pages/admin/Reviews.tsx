@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { AdminLoader } from "@/components/ui/AdminLoader";
 import { Search, Star, CheckCircle, XCircle, Trash2, Filter, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -127,7 +128,7 @@ const Reviews = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading reviews...</div>
+            <AdminLoader rows={5} cols={3} />
           ) : filteredReviews.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">No reviews found</div>
           ) : (

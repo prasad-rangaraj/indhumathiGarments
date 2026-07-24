@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AdminLoader } from "@/components/ui/AdminLoader";
 import { format } from "date-fns";
 import { adminAPI } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -95,7 +96,7 @@ const Returns = () => {
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-muted-foreground">Loading Returns...</div>;
+  if (loading) return <div className="p-4"><AdminLoader rows={6} cols={5} /></div>;
 
   return (
     <div className="space-y-6">
@@ -183,10 +184,11 @@ const Returns = () => {
                                   <SelectValue placeholder="Select a status" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="Pending">Pending</SelectItem>
-                                  <SelectItem value="Approved">Approved</SelectItem>
-                                  <SelectItem value="Processed">Processed (Refunded)</SelectItem>
-                                  <SelectItem value="Rejected">Rejected</SelectItem>
+                                  <SelectItem value="Pending">Pending (Return Requested)</SelectItem>
+                                  <SelectItem value="Approved">Approved (Return Picked Up)</SelectItem>
+                                  <SelectItem value="Refund Processed">Refund Processed</SelectItem>
+                                  <SelectItem value="Processed">Refund Completed</SelectItem>
+                                  <SelectItem value="Rejected">Rejected (Return Rejected)</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>

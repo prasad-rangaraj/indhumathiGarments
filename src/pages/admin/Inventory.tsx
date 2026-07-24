@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AdminLoader } from "@/components/ui/AdminLoader";
 import { Search, AlertTriangle, CheckCircle, Package, Edit2, Save, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -146,7 +147,7 @@ const Inventory = () => {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-12 text-muted-foreground">Loading inventory...</div>
+            <AdminLoader rows={8} cols={5} />
           ) : filteredInventory.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">No products found</div>
           ) : (
