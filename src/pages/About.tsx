@@ -81,24 +81,24 @@ const About = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-20 sm:gap-6">
               <div className="text-center">
                 <Award className="h-10 w-10 sm:h-12 sm:w-12 text-primary mx-auto mb-3 sm:mb-4" />
-                <h3 className="font-semibold text-foreground text-sm sm:text-lg">{t('about.premiumQuality')}</h3>
+                <h3 className="font-semibold text-foreground text-xs sm:text-lg">{t('about.premiumQuality')}</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground">{t('about.pureCotton')}</p>
               </div>
               <div className="text-center">
                 <Heart className="h-10 w-10 sm:h-12 sm:w-12 text-primary mx-auto mb-3 sm:mb-4" />
-                <h3 className="font-semibold text-foreground text-sm sm:text-lg">{t('about.madeWithLove')}</h3>
+                <h3 className="font-semibold text-foreground text-xs sm:text-lg">{t('about.madeWithLove')}</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground">{t('about.handcraftedCare')}</p>
               </div>
               <div className="text-center">
                 <Shield className="h-10 w-10 sm:h-12 sm:w-12 text-primary mx-auto mb-3 sm:mb-4" />
-                <h3 className="font-semibold text-foreground text-sm sm:text-lg">{t('about.skinSafe')}</h3>
+                <h3 className="font-semibold text-foreground text-xs sm:text-lg">{t('about.skinSafe')}</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground">{t('about.hypoallergenic')}</p>
               </div>
               <div className="text-center">
                 <div className="h-11 w-11 sm:h-12 sm:w-12 text-lg bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <span className="text-white font-bold text-sm">{t('about.yearsExperience')}</span>
+                  <span className="text-white font-bold text-xs">{t('about.yearsExperience')}</span>
                 </div>
-                <h3 className="font-semibold text-foreground text-sm sm:text-lg">{t('about.yearsExperienceTitle')}</h3>
+                <h3 className="font-semibold text-foreground text-xs sm:text-lg">{t('about.yearsExperienceTitle')}</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground">{t('about.trustedBrand')}</p>
               </div>
             </div>
