@@ -2,22 +2,11 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
-// Helper function to get auth headers (Optional now with Cookies)
+// Auth is handled via HttpOnly cookie sent automatically with credentials: 'include'.
+// The JWT token is intentionally NOT persisted to localStorage (security).
 const getAuthHeaders = () => {
-  let token = null;
-  try {
-    const authStorage = localStorage.getItem('auth-storage');
-    if (authStorage) {
-      const parsed = JSON.parse(authStorage);
-      token = parsed.state?.token;
-    }
-  } catch (e) {
-    // Ignore parse errors
-  }
-
   return {
     'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 };
 
@@ -157,18 +146,10 @@ export const adminAPI = {
   uploadImage: async (file: File, folder?: string) => {
     const formData = new FormData();
     formData.append('file', file);
-    let token = null;
-    try {
-      const authStorage = localStorage.getItem('auth-storage');
-      if (authStorage) token = JSON.parse(authStorage).state?.token;
-    } catch (e) {}
     const url = folder ? `${API_BASE_URL}/admin/upload?folder=${encodeURIComponent(folder)}` : `${API_BASE_URL}/admin/upload`;
     const response = await fetch(url, {
       method: 'POST',
       credentials: 'include',
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
       body: formData,
     });
     if (!response.ok) {
@@ -237,18 +218,10 @@ export const customerAPI = {
   uploadImagePublic: async (file: File, folder?: string) => {
     const formData = new FormData();
     formData.append('file', file);
-    let token = null;
-    try {
-      const authStorage = localStorage.getItem('auth-storage');
-      if (authStorage) token = JSON.parse(authStorage).state?.token;
-    } catch (e) {}
     const url = folder ? `${API_BASE_URL}/public/upload?folder=${encodeURIComponent(folder)}` : `${API_BASE_URL}/public/upload`;
     const response = await fetch(url, {
       method: 'POST',
       credentials: 'include',
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
       body: formData,
     });
     if (!response.ok) {
