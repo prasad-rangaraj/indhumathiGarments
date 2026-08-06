@@ -16,12 +16,14 @@ const Navigation = () => {
   const navigate = useNavigate();
   const { getItemCount, fetchCart } = useCartStore();
   const { items: wishlistItems, fetchWishlist } = useWishlistStore();
-  const { isAuthenticated, token } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // A user is truly logged in only when BOTH isAuthenticated flag and token are present
-  const isLoggedIn = isAuthenticated && !!token;
+  // A user is truly logged in when both isAuthenticated and user object are present.
+  // NOTE: token is intentionally NOT persisted to localStorage (security), so we can't
+  // use it here — isAuthenticated + user are both persisted and restored on refresh.
+  const isLoggedIn = isAuthenticated && !!user;
 
   useEffect(() => {
     fetchCart();

@@ -156,7 +156,6 @@ export const adminAPI = {
       throw new Error('Upload failed');
     }
     const data = await response.json();
-    console.log("Upload response:", data);
     return data;
   },
   getDashboard: () => apiRequest<any>('/admin/dashboard'),
